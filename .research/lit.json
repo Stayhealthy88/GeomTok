@@ -1,0 +1,480 @@
+[
+ {
+  "findings": [
+   {
+    "title": "OmniSVG: A Unified Scalable Vector Graphics Generation Model",
+    "year": "2025",
+    "venue": "NeurIPS 2025 (arXiv:2504.06263)",
+    "url": "https://arxiv.org/abs/2504.06263",
+    "relevance": "Current AR-token SOTA. Builds on pretrained Qwen2.5-VL (3.7B and 7B). SVG tokenizer: commands {M,L,C,A,Z,F} as special tokens; coordinates quantized to a 200x200 viewbox and MERGED as one token per point via x*w+y; hex-color special tokens for Fill; <SOP>/<EOS> markers. Trained on MMSVG-2M (1.1M icons ~2.2k tokens, 0.5M illustrations ~8.1k, 0.4M characters ~28k tokens); handles SVGs >30k tokens. Outperforms prior methods on FID/CLIP/HPS (text-to-SVG) and DinoScore/SSIM/LPIPS/MSE (image-to-SVG). Open problems it states: very long generation time for complex samples (tens of thousands of tokens) and failure on natural images. Its coordinate-merging trick and the 30k-token bottleneck are the key data points for GPL."
+   },
+   {
+    "title": "Empowering LLMs to Understand and Generate Complex Vector Graphics (LLM4SVG)",
+    "year": "2024 (CVPR 2025)",
+    "venue": "CVPR 2025 (arXiv:2412.11102)",
+    "url": "https://arxiv.org/abs/2412.11102",
+    "relevance": "Adds 55 learnable semantic tokens to existing LLM vocabs (15 tag, 30 attribute, 10 path-command tokens), embeddings initialized by semantic averaging of text descriptions; numbers kept as the base tokenizer's digit tokens. Base models: GPT-2 variants, Phi-2, Falcon, LLaVA. Two-stage training: embedding alignment on 250k SVG-text pairs, then SFT on 580k instructions (SVGX-SFT). Beats GPT-4o/Claude 3.5 on CLIPScore (0.35 vs ~0.30) and human prompt alignment (0.89 vs 0.56); 12-25s inference vs 12+ min for optimization methods. Explicitly documents that tokenizer design dominates performance: models whose tokenizers collapse numbers (Qwen) lose coordinate/color precision, whereas per-number tokens up to 1000 enable decimal coordinates. Directly validates GPL's premise that the tokenizer is the bottleneck."
+   },
+   {
+    "title": "StarVector: Generating Scalable Vector Graphics Code from Images and Text",
+    "year": "2023/2025",
+    "venue": "CVPR 2025 (arXiv:2312.11556)",
+    "url": "https://arxiv.org/abs/2312.11556",
+    "relevance": "Treats vectorization as code generation: CLIP-style image encoder produces visual tokens prefixed to a StarCoder-based code LLM (1B and 8B variants) that emits raw SVG text — i.e., NO custom geometric tokenization, plain text/BPE. Trained on SVG-Stack (2M samples); introduces SVG-Bench (10 datasets, Image-to-SVG / Text-to-SVG / diagram tasks), achieving SOTA at publication with compact semantically-rich primitives (ellipses, polygons, text). Open problems: raw-text coordinates make sequences long and precision brittle — exactly the inefficiency a geometry-aware tokenizer targets. SVG-Bench is a benchmark GPL should evaluate on."
+   },
+   {
+    "title": "Chat2SVG: Vector Graphics Generation with LLMs and Image Diffusion Models",
+    "year": "2024 (CVPR 2025)",
+    "venue": "CVPR 2025 (arXiv:2411.16602)",
+    "url": "https://arxiv.org/abs/2411.16602",
+    "relevance": "Hybrid pipeline: an LLM writes a semantic SVG template from geometric primitives; SDEdit+ControlNet diffusion adds detail; dual-stage optimization refines path latents and point coordinates. No learned tokenizer — SVG stays text. Strong visual fidelity, path regularity, and language-based editing, but inherits diffusion cost and optimization loops. Relevant as the 'LLM plans primitives' paradigm: GPL's L2/L3 primitive/shape tokens could replace the fragile text-template stage with a native compressed representation."
+   },
+   {
+    "title": "SVGFusion: Scalable Text-to-SVG Generation via Vector Space Diffusion",
+    "year": "2024",
+    "venue": "arXiv:2412.10437 (project page; same group as LLM4SVG)",
+    "url": "https://arxiv.org/abs/2412.10437",
+    "relevance": "Non-autoregressive alternative: Vector-Pixel Fusion VAE jointly encodes SVG code and its rendered image into a continuous latent; a Vector Space Diffusion Transformer (VS-DiT) denoises in that latent; explicit Rendering Sequence Modeling handles layering/occlusion. Trained on SVGX-Dataset (~240k human-designed SVGs). SOTA-quality editable SVGs strictly aligned with text. Shows (a) rendering/z-order must be modeled explicitly, and (b) joint code+pixel encoding helps — both transferable lessons for GPL's L3 spatial-pattern level."
+   },
+   {
+    "title": "SVGDreamer / SVGDreamer++: Text-Guided SVG Generation with Diffusion Model",
+    "year": "2023/2024",
+    "venue": "CVPR 2024; ++ extension arXiv:2411.17832",
+    "url": "https://arxiv.org/abs/2312.16476",
+    "relevance": "Optimization-based lineage (no tokenizer): differentiable rasterization + Vectorized Particle-based Score Distillation (VPSD) with SIVE semantic primitive control and reward feedback; ++ adds hierarchical image vectorization from segmentation priors. High visual quality and diversity but minutes-long per-sample optimization and over-parameterized, hard-to-edit paths. Defines the quality bar AR-token models are converging to, and the editability/regularity weaknesses that structured token approaches (incl. GPL) exploit."
+   },
+   {
+    "title": "IconShop: Text-Guided Vector Icon Synthesis with Autoregressive Transformers",
+    "year": "2023",
+    "venue": "SIGGRAPH Asia 2023 / ACM TOG (arXiv:2304.14400)",
+    "url": "https://arxiv.org/abs/2304.14400",
+    "relevance": "Canonical small-AR-transformer precedent: serializes simplified path commands + quantized coordinates into a uniquely-decodable token sequence, trained from scratch on FIGR-8 monochrome icons. Beat image- and language-based baselines on icon quality/diversity; supports editing, interpolation, semantic combination. Limitations: monochrome, icon-scale only, uniform coordinate quantization. This is the closest scale-and-philosophy match to GPL's small synthetic-data transformer — the natural baseline to outperform."
+   },
+   {
+    "title": "DeepSVG: A Hierarchical Generative Network for Vector Graphics Animation",
+    "year": "2020",
+    "venue": "NeurIPS 2020",
+    "url": "https://arxiv.org/abs/2007.11301",
+    "relevance": "Root of the lineage: hierarchical two-stage transformer VAE (per-path encoder + global encoder), commands one-hot + quantized argument embeddings, order-invariant path sets, SVG-Icons8 dataset. Established command/coordinate embedding factorization and hierarchy (paths vs primitives) that IconShop, StrokeNUWA, OmniSVG, and HiVG all build on. GPL's L1/L2/L3 hierarchy is the tokenizer-side analog of DeepSVG's encoder hierarchy."
+   },
+   {
+    "title": "StrokeNUWA: Tokenizing Strokes for Vector Graphic Synthesis",
+    "year": "2024",
+    "venue": "ICML 2024 (arXiv:2401.17093, Microsoft)",
+    "url": "https://arxiv.org/abs/2401.17093",
+    "relevance": "First learned-VQ tokenizer for SVG: VQ-Stroke (VQ-VAE) compresses SVG code into discrete 'stroke tokens' (Code-to-Matrix then Matrix-to-Token), fed to an Encoder-Decoder LLM (Flan-T5). Achieves 6.9% compression ratio and up to 94x inference speedup over optimization methods while beating LLM baselines. Open problems: lossy reconstruction, codebook opacity, limited to stroke-like content. Strongest published evidence that aggressive token compression of SVG geometry pays off — supports GPL's L1/L2/L3 compression thesis, while GPL's interpretable primitive/quadtree tokens avoid VQ's black-box codebook."
+   },
+   {
+    "title": "Hierarchical SVG Tokenization: Learning Compact Visual Programs for SVG Modeling (HiVG)",
+    "year": "2026",
+    "venue": "arXiv (Apr 2026), hf.co/papers/2604.05072",
+    "url": "https://arxiv.org/abs/2604.05072",
+    "relevance": "CLOSEST COMPETITOR to GPL. Diagnoses the same two failures GPL targets: coordinate hallucination (byte-level tokenization fragments numbers, destroying spatial relationships) and token redundancy in long sequences. Solution: two-tier tokenization — atomic tokens (structured units from raw SVG) + segment tokens (compressed command-parameter groups preserving geometric constraints); coordinates normalized to canvas and uniformly quantized to integer bins; Hierarchical Mean-Noise embedding initialization injects numerical ordering into coordinate-token embeddings; curriculum training on increasing program complexity. Improves fidelity, spatial consistency, and sequence efficiency on text-to-SVG and image-to-SVG. Key difference: HiVG uses UNIFORM quantization — no quadtree/adaptive-resolution coordinates — leaving GPL's ARCS scheme as a clear differentiator. Must-cite and must-benchmark."
+   },
+   {
+    "title": "From Tokens to Numbers: Continuous Number Modeling for SVG Generation (CNM)",
+    "year": "2026",
+    "venue": "arXiv (Feb 2026), arXiv:2602.02820",
+    "url": "https://arxiv.org/abs/2602.02820",
+    "relevance": "The anti-tokenization position: models SVG numeric parameters as continuous values via regression heads in a multimodal transformer (no coordinate discretization at all), trained on 2M raster-to-SVG pairs + RL with perceptual feedback. Claims >30% faster training and superior perceptual fidelity by removing discretization artifacts. This is the strongest argument GPL must answer: an ablation showing quadtree ARCS coordinates match or beat continuous regression on precision (while retaining discrete-token composability, exact decoding, and pattern compression) would be high-value."
+   },
+   {
+    "title": "InternSVG: Towards Unified SVG Tasks with Multimodal Large Language Models",
+    "year": "2025",
+    "venue": "ICLR 2026 (arXiv:2510.11341)",
+    "url": "https://arxiv.org/abs/2510.11341",
+    "relevance": "Scale-up endpoint: MLLM family unifying SVG understanding, editing, and generation (including animation) with SAgoge — the largest multimodal SVG dataset — plus the SArena benchmark. SVG-specific special tokens and hierarchical-resolution coordinate handling on an InternVL backbone; outperforms open and proprietary models. Shows the field consolidating into data-benchmark-model suites at billions of parameters; GPL competes on the opposite axis (small, sample-efficient, geometry-priors) but should report on SArena/SVGEditBench-style tasks where feasible."
+   },
+   {
+    "title": "Rendering-Aware Reinforcement Learning for Vector Graphics Generation (RLRF)",
+    "year": "2025",
+    "venue": "arXiv:2505.20793 (StarVector team; NeurIPS 2025 era)",
+    "url": "https://arxiv.org/abs/2505.20793",
+    "relevance": "Post-training breakthrough orthogonal to tokenization: render generated SVG, compare to target image, use visual fidelity as RL reward (GRPO-style rollouts). On Qwen2.5-VL-7B image-to-SVG: MSE 8.60 -> 1.03, SSIM 79.1 -> 95.1, far beyond SFT; fixes failure modes SFT can't. Implication: whatever tokenizer GPL ships, a rendering-feedback RL stage is now table stakes for SOTA fidelity, and discrete geometric tokens make reward-credit assignment per-primitive feasible."
+   },
+   {
+    "title": "Reason-SVG: Enhancing Structured Reasoning for Vector Graphics Generation with RL",
+    "year": "2025",
+    "venue": "arXiv:2505.24499",
+    "url": "https://arxiv.org/abs/2505.24499",
+    "relevance": "'Drawing-with-Thought': model emits a design rationale (layout, primitives, order) before SVG code; RL with hybrid reward (structural validity + visual fidelity + semantics) handles non-differentiable rendering. Related 2026 follow-ons: SVGThinker (arXiv:2509.24299), IntroSVG generator-critic (arXiv:2603.09312), GeoSVG-RL geometry-aware RL for layout-constrained diagrams (arXiv:2605.25447). Trend: explicit structural planning before geometry emission — conceptually aligned with GPL's L3 spatial-pattern tokens acting as a learned 'plan' vocabulary."
+   },
+   {
+    "title": "NeuralSVG: An Implicit Representation for Text-to-Vector Generation",
+    "year": "2025",
+    "venue": "ICCV 2025 (arXiv:2501.03992, TAU + MIT CSAIL)",
+    "url": "https://arxiv.org/abs/2501.03992",
+    "relevance": "NeRF-style alternative: entire SVG scene encoded in weights of a small MLP optimized with Score Distillation Sampling; dropout regularization induces meaningful layered structure; inference-time control (e.g., color palette) from one representation. No tokens at all. Strength: ordered, layered, editable output; weakness: per-prompt optimization cost. Reinforces that layer/z-order structure is a first-class quality criterion GPL's representation should preserve losslessly."
+   },
+   {
+    "title": "UniSVG: A Unified Dataset for Vector Graphic Understanding and Generation with MLLMs",
+    "year": "2025",
+    "venue": "ACM MM 2025 (arXiv:2508.07766)",
+    "url": "https://arxiv.org/abs/2508.07766",
+    "relevance": "Dataset/benchmark resource (525k items) for SVG understanding + generation with MLLMs; documents that open MLLMs trained on it surpass GPT-4V on SVG tasks; highlights floating-point parameter handling as a core difficulty. Useful training/eval corpus for GPL beyond synthetic data; also SVGen + SVG-1M (arXiv:2508.09168) with CoT annotations and curriculum+RL is a comparable mid-scale text-to-SVG system."
+   },
+   {
+    "title": "Leveraging Large Language Models for Scalable Vector Graphics Processing: A Review",
+    "year": "2025",
+    "venue": "arXiv:2503.04983",
+    "url": "https://arxiv.org/abs/2503.04983",
+    "relevance": "Survey covering IconShop, StrokeNUWA, StarVector, benchmarks (SVGEditBench, VGBench, SGP-Bench). Conclusions: LLM-based approaches beat standard LLMs, reasoning-enhanced models do best, datasets remain insufficiently diverse, and SVG-specific representation/tokenization is an open problem. Good positioning citation for GPL's gap statement."
+   },
+   {
+    "title": "VecGlypher: Unified Vector Glyph Generation with Language Models; VFig: Vectorizing Complex Figures with VLMs",
+    "year": "2026",
+    "venue": "CVPR 2026 (VecGlypher, arXiv:2602.21461); arXiv:2603.24575 (VFig)",
+    "url": "https://arxiv.org/html/2602.21461",
+    "relevance": "Two 2026 datapoints on representation design: VecGlypher normalizes glyphs to a consistent coordinate system with fixed-precision quantized command/coordinate tokens for font generation; VFig shows replacing free-form paths with higher-level primitives (<rect>, <circle>) substantially shortens sequences without losing expressiveness. VFig's finding is direct independent validation of GPL's L1/L2 primitive-level compression."
+   }
+  ],
+  "sota_summary": "The field has consolidated (2024-2026) into four paradigms. (1) Optimization/SDS methods (SVGDreamer/++, NeuralSVG, Chat2SVG's refinement stage) give high visual quality but minutes-per-sample cost and over-parameterized, hard-to-edit paths — they are now mostly the quality reference, not the SOTA path. (2) Autoregressive token models are the dominant line, tracing DeepSVG (2020, hierarchical command/arg embeddings) -> IconShop (2023, quantized path tokens, icons only) -> StrokeNUWA (ICML 2024, learned VQ 'stroke tokens', 6.9% compression, 94x speedup) -> StarVector (CVPR 2025, raw SVG text through a code-LLM with image prefix, SVG-Stack 2M + SVG-Bench) -> OmniSVG (NeurIPS 2025, Qwen2.5-VL 3.7B/7B with a purpose-built tokenizer: command type tokens + one-token-per-point coordinates via x*w+y on a 200x200 grid + hex-color tokens; handles 30k-token SVGs) -> InternSVG (ICLR 2026, unified understanding/editing/generation/animation at MLLM scale with the SAgoge dataset). (3) Latent diffusion over vector representations (SVGFusion's VP-VAE + VS-DiT with explicit rendering-sequence modeling) is a credible non-AR alternative. (4) Post-training with rendering feedback is the 2025-2026 step-change: RLRF (render rollouts, image-similarity reward; MSE 8.60->1.03 on Qwen2.5-VL-7B) plus reasoning-first variants (Reason-SVG's Drawing-with-Thought, SVGThinker, IntroSVG generator-critic, GeoSVG-RL) now routinely double SFT fidelity. The most active 2026 frontier is exactly tokenization/number representation: LLM4SVG (CVPR 2025) showed tokenizer numeric handling dominates coordinate precision; HiVG (Apr 2026) introduces hierarchical atomic+segment tokens with uniform coordinate binning, ordering-aware embedding init, and curriculum training to fight 'coordinate hallucination' and token redundancy; CNM (Feb 2026) argues the opposite — drop discrete coordinate tokens entirely for continuous regression heads (30% faster training, no discretization artifacts). Consensus open problems: (a) sequence length — complex SVGs blow past 30k tokens, making generation slow; (b) coordinate precision vs vocabulary size, and embeddings that ignore numeric ordering/spatial proximity; (c) spatial consistency and z-order/occlusion modeling; (d) data — everyone converges on ~250k-2M curated SVGs (MMSVG-2M, SVG-Stack, SVGX, SAgoge, UniSVG) and synthetic instruction pipelines; (e) evaluation fragmentation across SVG-Bench, SArena, VGBench, SGP-Bench; (f) compute — SOTA now sits on 3-8B pretrained VLM backbones, leaving the small-model regime underexplored.",
+  "implications_for_gpl": [
+   "GPL's core thesis is independently validated and now contested: HiVG (arXiv:2604.05072, Apr 2026) names the exact same two problems (coordinate hallucination from fragmented numbers; token redundancy in long sequences) and answers with hierarchical atomic+segment tokens — but uses UNIFORM coordinate binning. GPL's quadtree ARCS adaptive-resolution coordinates are a genuine differentiator; HiVG is the must-cite, must-benchmark closest prior work, and GPL should explicitly frame quadtree coordinates as adaptive precision allocation vs HiVG's fixed grid.",
+   "L1/L2/L3 compression is on-trend with strong quantitative precedent: StrokeNUWA achieved 6.9% compression ratio and 94x speedup with learned VQ tokens; VFig (2026) shows primitive substitution (<rect>/<circle> for paths) shortens sequences 'substantially'; OmniSVG's pain point is >30k-token sequences and slow inference. GPL should report compression ratio and tokens-per-SVG against raw-text (StarVector-style), OmniSVG-style coordinate merging, and HiVG segment tokens — sequence efficiency is now a headline metric, not a side note. GPL's interpretable primitives also avoid VQ's black-box codebook, worth stating.",
+   "The 5.5k vocabulary sits in a defensible sweet spot: OmniSVG folds a 200x200 grid into x*w+y single-point tokens (40k coordinate combinations), LLM4SVG adds only 55 semantic tokens but leans on per-number tokens up to 1000 for decimal precision, HiVG uses uniform integer bins. A quadtree gives high effective resolution from few tokens — quantify 'effective precision per vocabulary slot' as the key ablation. Also adopt LLM4SVG's lesson: initialize coordinate-token embeddings with numeric-ordering structure (HiVG's Hierarchical Mean-Noise init is the published recipe to compare against).",
+   "Answer the continuous-coordinates challenge head-on: CNM (arXiv:2602.02820) claims discrete coordinate tokens are the problem, achieving better fidelity and 30% faster training with continuous regression heads. GPL needs an ablation showing quadtree ARCS matches continuous regression on reconstruction precision while keeping the benefits CNM gives up: exact decodability, compositional pattern tokens (L2/L3), standard cross-entropy training, and compatibility with off-the-shelf LM stacks.",
+   "Small synthetic-data transformer is a viable but contrarian position: DeepSVG/IconShop prove the from-scratch small-model regime works for icons, while SOTA rides 3.7-8B pretrained VLMs on 2M curated SVGs. Position GPL as the sample-efficiency/sequence-efficiency play, and validate on at least one public benchmark slice (SVG-Bench from StarVector, MMSVG-2M icon split, or FIGR-8) with standard metrics (SSIM/LPIPS/MSE/DinoScore for reconstruction; CLIPScore/FID/HPS for text-conditioned) so results are legible to the field. The review paper (arXiv:2503.04983) explicitly flags dataset diversity as a gap — a strong synthetic-data generator is itself a contribution.",
+   "Plan for an RL-from-rendering-feedback stage: RLRF (arXiv:2505.20793) shows render-and-compare rewards take MSE from 8.60 to 1.03 over SFT and is tokenizer-agnostic. GPL's discrete primitive tokens make per-primitive credit assignment cleaner than raw-text SVG; even a small model + cheap rasterizer reward loop is the established path from 'works' to 'SOTA fidelity'. Curriculum training over program complexity (HiVG) is the other validated training trick for exactly GPL's setup.",
+   "Preserve z-order/layering losslessly in the token stream: LLM4SVG attributes hallucinated occlusions to LLMs not modeling rendering order; SVGFusion adds explicit Rendering Sequence Modeling; NeuralSVG regularizes for layered structure. GPL's L3 spatial-pattern tokens must encode (not abstract away) paint order, and ideally expose it as an editable structural signal.",
+   "There is an open evaluation gap GPL can own: no published standard exists for tokenizer-intrinsic metrics (reconstruction error at fixed bit budget, vocabulary utilization, compression ratio vs fidelity curves, coordinate-precision histograms). Publishing such a protocol alongside the GPL tokenizer — and running it on OmniSVG-style, HiVG-style, byte-level, and CNM-style baselines — would make the work citable beyond its own model results."
+  ]
+ },
+ {
+  "findings": [
+   {
+    "title": "StrokeNUWA: Tokenizing Strokes for Vector Graphic Synthesis",
+    "year": "2024",
+    "venue": "ICML 2024 (Microsoft Research)",
+    "url": "https://arxiv.org/abs/2401.17093",
+    "relevance": "The canonical VQ approach for SVG. Representation: each SVG command becomes a 9-dim vector (command type M/L/C + start point + 2 control points + endpoint); matrices of commands pass through CNN down-sample blocks and residual vector quantization ('VQ-Stroke') into discrete stroke tokens, decoded back via up-sample blocks. Compression: SVG code compressed to 6.9% of raw size (token-level compression described as up to 6.9x in third-party reviews), 94x inference speedup vs optimization-based methods. Fidelity: evaluated with FID, CLIPScore, and Edit Score on FIGR-8-SVG icons with a Flan-T5 backbone (frozen encoder, tuned decoder); surpasses LLM-based and optimization baselines. Trade-off: tokens are opaque codebook indices, requiring a neural decoder — not human-readable SVG."
+   },
+   {
+    "title": "HiVG: Hierarchical SVG Tokenization — Learning Compact Visual Programs for Scalable Vector Graphics Modeling",
+    "year": "2026",
+    "venue": "arXiv (2604.05072)",
+    "url": "https://arxiv.org/abs/2604.05072",
+    "relevance": "The closest published analogue to the GPL Tokenizer. Representation: rule-based atomic tokens (42 structure-tag tokens, 20 command tokens incl. absolute/relative variants, 2,384 coordinate tokens — 795 absolute P_0–P_794 plus 1,589 relative offsets d_-794..d_794 on a 784x784 canvas, attribute/arc-flag tokens; ~2,450 total) plus 500 learned 'segment tokens' that merge a command with all its coordinate parameters via iterative frequency-based pairing under geometric-validity constraints. Compression: 62.7%–63.8% sequence reduction (2.68x–2.76x) vs generic Qwen2.5-VL BPE tokenization. Fidelity: image-to-SVG SSIM 0.896, LPIPS 0.114, CLIP-S 0.957 with a 3B model; wins 58.9–70.8% of human pairwise comparisons. Also introduces Hierarchical Mean-Noise (HMN) embedding init: mean embedding + Gaussian noise + semantic prior + RBF numeric encoding (K=16 bases) so coordinate-token embeddings carry numerical ordering."
+   },
+   {
+    "title": "OmniSVG: A Unified Scalable Vector Graphics Generation Model",
+    "year": "2025",
+    "venue": "arXiv (2504.06263), Qwen2.5-VL based",
+    "url": "https://arxiv.org/abs/2504.06263",
+    "relevance": "Representation: 6 atomic commands (M, L, C, A, Z, F-fill); coordinates quantized into a 200x200 viewbox and the (x,y) pair merged into a SINGLE token via x*200+y (~40k coordinate vocabulary), so one coordinate point = one token instead of ~6 BPE tokens. Compression: handles SVGs up to 30k tokens (3–4x longer than StarVector's 8.2k raw-code limit). Fidelity: text-to-SVG FID 62.16 vs IconShop 80.84, CLIP 0.3278; image-to-SVG DINO 0.988, LPIPS 0.041, competitive with optimization-based LIVE. Evidence that joint x,y tokens reduce coordinate fragmentation/hallucination — directly supports quadtree cell tokens that encode both axes jointly."
+   },
+   {
+    "title": "CAD-Tokenizer: Towards Text-based CAD Prototyping via Modality-Specific Tokenization",
+    "year": "2025",
+    "venue": "arXiv (2509.21150) / OpenReview",
+    "url": "https://arxiv.org/abs/2509.21150",
+    "relevance": "Representation: sketch-and-extrude command sequences over a 77-token base vocabulary (curve types, structural end-markers, numeric range 0–63), compressed by a sequence-based VQ-VAE (codebook 2048, dim 512, 5-layer enc/dec) with primitive-level pooling — one or a few discrete tokens per sketch-extrusion primitive instead of global pooling. Compression: ~60% sequence reduction vs raw, beating BPE baselines. Fidelity: reconstruction F1-Sketch 94.1, JSD 8.19; downstream text-to-CAD F1-Sketch 77.9 vs 68.8 (CADFusion), Chamfer 26.7 vs 38.5; invalidity ratio 8.38% vs 80.5% for vanilla LLaMA, aided by FSA-constrained decoding. Strong evidence that primitive-level (not byte-level) tokenization plus grammar-constrained decoding is what makes small geometric LMs reliable."
+   },
+   {
+    "title": "VQ-SGen: A Vector Quantized Stroke Representation for Creative Sketch Generation",
+    "year": "2024 (v2 2025)",
+    "venue": "arXiv (2411.16446)",
+    "url": "https://arxiv.org/abs/2411.16446",
+    "relevance": "Representation: each stroke decoupled into shape (translation-normalized 256x256 raster, VQ-encoded), location (bounding-box quaternion: w/2, h/2, cx, cy), and semantic label — 3 discrete tokens per stroke total. Codebook: 8,192 codes, 512-dim features, 256-dim stroke latents. Compression: an entire stroke collapses to ~3 indices (~13 bits/code). Fidelity: FID 15.78 on Creative Birds vs DoodleFormer 17.48 and DoodlerGAN 39.95; diversity 18.92. Key design lesson: decoupling shape from position before quantization makes codes reusable across locations — analogous to separating GPL's primitive shape tokens (L1/L2) from quadtree ARCS position tokens."
+   },
+   {
+    "title": "LLM4SVG: Empowering LLMs to Understand and Generate Complex Vector Graphics",
+    "year": "2025",
+    "venue": "CVPR 2025",
+    "url": "https://arxiv.org/abs/2412.11102",
+    "relevance": "Representation: only 55 learnable semantic tokens (15 tags, 30 attributes, 10 path commands) added to an LLM vocab; coordinates kept as decimal text to 2 places (no quantization). New token embeddings initialized from the semantic average of their descriptive text. Fidelity: FID 64.11 (GPT-2-XL backbone) vs Claude 3.5 82.89 and GPT-4o 127.78, CLIP 0.3496. Notable empirical finding: LLMs whose tokenizers enumerate whole numbers (GPT-2 style, all ints <1000 as single tokens) understand numeric/geometric data far better than subword-fragmented number tokenizers — direct validation for dedicated coordinate vocabularies like ARCS."
+   },
+   {
+    "title": "Hierarchical Neural Coding for Controllable CAD Model Generation (HNC-CAD)",
+    "year": "2023",
+    "venue": "ICML 2023",
+    "url": "https://arxiv.org/abs/2307.00149",
+    "relevance": "The canonical precedent for three-level geometric tokenization, mirroring GPL's L1/L2/L3. Representation: a VQ-VAE with masked skip connections extracts neural codebooks at three levels — global part arrangement, loop/profile structure, and local curve geometry — encoding each CAD model as a code tree; cascaded autoregressive transformers generate the tree then the model. Fidelity: superior random-generation and conditional-completion quality vs flat-sequence baselines; enables level-wise controllability (specify design at any level). Demonstrates that hierarchical codes improve both controllability and sample quality over flat token streams."
+   },
+   {
+    "title": "BPT: Scaling Mesh Generation via Compressive Tokenization",
+    "year": "2024",
+    "venue": "arXiv 2411.07025 / IEEE (CVPR 2025)",
+    "url": "https://arxiv.org/abs/2411.07025",
+    "relevance": "Best-in-class geometric sequence compression via hierarchical coordinates. Representation: block-wise indexing partitions the 3D coordinate grid into blocks so each vertex = coarse block index + fine offset index (a direct analogue of quadtree/ARCS coarse-to-fine coordinates), plus patch aggregation around high-degree vertices. Compression: ~75% sequence reduction (compression ratio ~0.26 at resolution 128), enabling generation of meshes with >8k faces. Fidelity: state-of-the-art mesh quality at time of publication. Strong external validation that hierarchical block/cell coordinate tokens are the highest-compression coordinate scheme known for geometry."
+   },
+   {
+    "title": "EdgeRunner: Auto-regressive Auto-encoder for Artistic Mesh Generation",
+    "year": "2024",
+    "venue": "arXiv (2409.18114)",
+    "url": "https://arxiv.org/abs/2409.18114",
+    "relevance": "Representation: EdgeBreaker-style half-edge traversal tokenization that maximizes edge sharing — each new triangle needs only 1 new vertex instead of 3. Compression: 50% (4–5 tokens/face vs 9 naive; ratio ~0.46 at res 128). Fidelity: high-quality artistic meshes at 512 resolution. Lesson for GPL: exploiting adjacency/continuity between consecutive primitives (shared endpoints in paths) is a proven second axis of compression independent of coordinate encoding — analogous to relative/continuation tokens for SVG path segments."
+   },
+   {
+    "title": "Hyperstroke: A Novel High-quality Stroke Representation for Assistive Artistic Drawing",
+    "year": "2024",
+    "venue": "SIGGRAPH Asia 2024 Technical Communications / arXiv",
+    "url": "https://arxiv.org/abs/2408.09348",
+    "relevance": "Representation: VQ-tokenized raster stroke appearance (RGB + alpha opacity) learned from real drawing videos, modeling the temporal stroke-by-stroke process with a transformer. Shows VQ stroke tokens extend beyond geometry to appearance attributes. Relevant as the appearance-attribute counterpart if GPL later adds style/fill tokens, but raster-latent codes sacrifice the editability that GPL's symbolic tokens preserve."
+   },
+   {
+    "title": "IconShop: Text-Guided Vector Icon Synthesis with Autoregressive Transformers",
+    "year": "2023",
+    "venue": "SIGGRAPH Asia 2023 / ACM TOG",
+    "url": "https://arxiv.org/abs/2304.14400",
+    "relevance": "The baseline all 2024–2026 SVG tokenizers compare against. Representation: SVG paths sequentialized into a uniquely decodable flat token sequence (command tokens + quantized integer coordinate tokens), trained with next-token prediction on FIGR-8. No compression beyond quantization — later work (StrokeNUWA, OmniSVG, HiVG) consistently beats it on FID (e.g., 80.84 vs OmniSVG's 62.16), establishing that flat command+coordinate tokenization is the floor, not the ceiling."
+   },
+   {
+    "title": "FlexCAD: Unified and Versatile Controllable CAD Generation with Fine-tuned LLMs",
+    "year": "2024",
+    "venue": "ICLR 2025 (arXiv 2411.05823, Microsoft)",
+    "url": "https://arxiv.org/abs/2411.05823",
+    "relevance": "Representation: CAD model abstracted as structured text across the full construction hierarchy (sketch-extrusion, extrusion, sketch, face, loop, curve) with hierarchy-aware masked-field infilling for controllable generation. No VQ — pure structured-text tokens. Demonstrates that explicit hierarchy levels in the token stream enable any-level conditional editing with one model; a template for how GPL's L1/L2/L3 levels could support masked editing tasks, not just compression."
+   },
+   {
+    "title": "Pointer-CAD: Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection",
+    "year": "2026",
+    "venue": "arXiv (2603.04337)",
+    "url": "https://arxiv.org/abs/2603.04337",
+    "relevance": "Documents the central failure mode of discretized geometric tokenization: coordinate quantization during sketch/extrude causes topological errors (entities that should coincide no longer do). Solution: pointer tokens that select existing geometric entities (faces/edges) instead of re-emitting quantized coordinates, reducing segmentation/topology error to near zero on a 575K-model dataset. Directly relevant warning for quadtree-quantized SVG: shared endpoints between path segments should reference, not re-quantize."
+   },
+   {
+    "title": "Leveraging Large Language Models for Scalable Vector Graphics Processing: A Review",
+    "year": "2025",
+    "venue": "arXiv (2503.04983)",
+    "url": "https://arxiv.org/abs/2503.04983",
+    "relevance": "Survey cross-checking IconShop, StrokeNUWA, and StarVector strengths/limitations plus SVG benchmarks (SVGEditBench, VGBench, SGP-Bench). Confirms the field's consensus: raw-code tokenization (StarVector) maximizes fidelity but explodes sequence length; VQ stroke tokens (StrokeNUWA) maximize compression but lose editability; structured intermediate tokenizations are the open middle ground — exactly the niche GPL targets."
+   },
+   {
+    "title": "SketchGPT: Autoregressive Modeling for Sketch Generation and Recognition",
+    "year": "2024",
+    "venue": "arXiv (2405.03099)",
+    "url": "https://arxiv.org/abs/2405.03099",
+    "relevance": "Representation: stroke-3 format sketches abstracted into sequences from a predefined finite alphabet of straight-line primitive tokens (rule-based, not learned VQ), pre-trained GPT-style on QuickDraw for generation and recognition. Shows a small hand-designed primitive alphabet suffices for sketch-level tasks — supporting GPL's compact 5.5k symbolic vocabulary over a large learned codebook for the small-data regime."
+   }
+  ],
+  "sota_summary": "The 2024–2026 literature on tokenizing vector graphics, strokes, and CAD/geometric sequences has converged from two directions. (1) Learned VQ codebooks: StrokeNUWA (ICML 2024) compresses SVG command matrices through CNN + residual VQ into 'stroke tokens' (code reduced to ~6.9% of raw SVG, 94x faster inference, FID/CLIPScore-competitive on FIGR-8); VQ-SGen collapses each sketch stroke to 3 discrete tokens (8,192-code codebook, FID 15.78 vs DoodleFormer 17.48); CAD-Tokenizer (2025) uses a sequence VQ-VAE with primitive-level pooling (2,048 codes) for ~60% compression, F1-Sketch 94.1 reconstruction, and an 8.4% vs 80.5% invalidity ratio against vanilla LLaMA; HNC-CAD pioneered three-level hierarchical code trees (part arrangement -> profile -> curve). (2) Structured symbolic tokens riding (or training) language models: IconShop set the flat command+quantized-coordinate baseline; OmniSVG (2025) merges (x,y) into a single token (x*200+y on a 200x200 canvas) on Qwen2.5-VL, beating IconShop FID 62.16 vs 80.84 and scaling to 30k-token SVGs; LLM4SVG (CVPR 2025) adds just 55 semantic tokens and shows number-enumerating tokenizers grasp geometry far better than subword fragmentation; HiVG (2026) — the current SOTA and closest analogue to GPL — combines a ~2,450-token atomic vocabulary (absolute + relative coordinate tokens) with 500 learned segment tokens (command merged with its parameters via frequency-based pairing), achieving 2.68–2.76x compression vs generic BPE with SSIM 0.896 / LPIPS 0.114 image-to-SVG at only 3B parameters, plus an RBF-based numeric embedding initialization (HMN). In the adjacent mesh domain, BPT's hierarchical block-index + offset coordinates achieve the field's best compression (~75% reduction, ratio 0.26), and EdgeRunner's adjacency-sharing traversal gets 50% — both confirming coarse-to-fine coordinates and primitive-adjacency reuse as the two strongest compression levers. Consistent findings across all 14+ sources: byte-level BPE is uniformly the worst choice for geometry (coordinate hallucination, token bloat); hierarchical/structured tokenization beats flat; joint (x,y) encoding beats per-axis digits; symbolic (invertible, human-readable) tokens are winning over opaque VQ codes in 2025–2026 because they keep editability and need less training data; coordinate quantization's topology errors (Pointer-CAD) and grammar-constrained decoding (CAD-Tokenizer's FSA) are the recognized remaining pain point and remedy. Typical operating points: vocabularies of 2k–8k, compression of 2.5–4x for symbolic schemes and up to ~14x for VQ schemes, with fidelity measured by render-based SSIM/LPIPS/DINO/FID, command-level F1, and syntactic validity rate.",
+  "implications_for_gpl": [
+   "GPL's 5.5k vocabulary is squarely in the validated sweet spot: HiVG uses ~2,950 (2,450 atomic + 500 segment), CAD-Tokenizer 2,048 codes + 77 base tokens, VQ-SGen 8,192 codes. No published evidence that growing beyond ~8k helps for geometry; OmniSVG's ~40k coordinate vocab works only because it rides a pretrained 3B+ VLM. For a small synthetic-data transformer, staying at 5.5k is defensible and arguably optimal.",
+   "The L1/L2/L3 hierarchy (primitives -> shapes -> spatial patterns) is directly validated by HNC-CAD's three-level code tree (curve -> profile -> part arrangement) and HiVG's atomic -> segment split, both of which beat flat tokenization on quality AND controllability. Concrete upgrade from HiVG: learn the upper levels via frequency-based pairing of command+parameter groups under geometric-validity constraints (their 500 'segment tokens' from Structure Segment Learning) rather than hand-enumerating all L2/L3 patterns — a BPE-like pass over L1 token corpora can discover the highest-value shape/pattern tokens automatically.",
+   "Quadtree ARCS coordinates are a genuine differentiator — no published SVG tokenizer uses quadtree coordinates yet. The closest precedents strongly support the design: BPT's hierarchical block-index + fine-offset coordinates delivered the best compression in any geometric domain (~75% reduction), and OmniSVG showed merging (x,y) into one token reduces coordinate hallucination — quadtree cells encode x and y jointly by construction. Cite BPT and S2-style hierarchical quadtree geocoding (GeoToken) as precedent when positioning the work.",
+   "Benchmark against the now-standard metric suite so results are comparable: (a) compression reported BOTH as ratio vs raw SVG characters and vs a generic BPE tokenizer (HiVG's 2.68–2.76x vs Qwen2.5 BPE is the number to beat for symbolic schemes; StrokeNUWA's ~6.9%/14x is the VQ upper bound), (b) reconstruction fidelity via render-based SSIM/LPIPS/DINO plus command-level F1 (CAD-Tokenizer's F1-Sketch 94.1 is the reference), (c) syntactic validity rate (CAD-Tokenizer: 8.38% invalid with FSA-constrained decoding vs 80.5% without — implement grammar-constrained decoding for GPL's generator; it is the single cheapest reliability win).",
+   "Embedding initialization with numeric priors matters disproportionately for small models and new vocabularies: HiVG's HMN init (mean embedding + small Gaussian noise + semantic prior + 16-basis RBF numeric encoding with JL projection) and LLM4SVG's semantic-average init both report stability/quality gains. For GPL's from-scratch transformer, initialize ARCS coordinate-token embeddings so that spatially adjacent quadtree cells have nearby embeddings (e.g., RBF encoding of cell-center coordinates) — this injects the metric structure that pure one-hot vocabularies lack.",
+   "Guard against quantization-induced topology errors, the field's documented failure mode (Pointer-CAD 2026): when consecutive path segments share endpoints or shapes share anchor points, re-quantizing each occurrence can break closure/adjacency. Mitigations with precedent: reference/pointer tokens for repeated coordinates (Pointer-CAD), relative-offset tokens alongside absolute ones (HiVG keeps 795 absolute + 1,589 relative coordinate tokens), and adaptive quadtree depth (finer cells where curvature/detail demands, mirroring BPT's resolution-adaptive blocks).",
+   "GPL's choice of symbolic, invertible tokens over a learned VQ codebook matches the 2025–2026 trend and the small-data constraint: VQ schemes (StrokeNUWA, CAD-Tokenizer) achieve 2–5x more compression but require large corpora to train codebooks, need a neural decoder (losing direct SVG round-tripping), and sacrifice editability — the review literature (arXiv 2503.04983) flags exactly this trade-off. A hybrid worth testing later: keep L1 symbolic, and distill only L3 spatial patterns into a small learned codebook once synthetic data volume permits, following CAD-Tokenizer's primitive-level pooling.",
+   "Adopt curriculum training on program complexity (HiVG progressively increases SVG program complexity during training) — it is reported to stabilize learning of executable structured sequences and is essentially free to implement with a synthetic data generator, which can emit difficulty-graded samples on demand. Combined with adjacency-aware compression (EdgeRunner's 50% from sharing edges suggests continuation tokens for connected path segments), these are the highest-leverage, lowest-cost additions from the current literature."
+  ]
+ },
+ {
+  "findings": [
+   {
+    "title": "xVal: A Continuous Number(ical) Encoding / Tokenization for Scientific Language Models",
+    "year": "2023 (v1) / 2024 (revised)",
+    "venue": "arXiv 2310.02989; NeurIPS 2023 AI4Science workshop; Polymathic AI",
+    "url": "https://arxiv.org/abs/2310.02989",
+    "relevance": "Encodes any real number as a single [NUM] token whose embedding is scaled by the value, decoded with an MSE number head. End-to-end continuous, more token-efficient than digit-BPE, better OOD interpolation on scientific data. Weakness for GPL: limited precision for exact coordinates (only scalar magnitude), best as a continuous offset head, not for high-precision absolute coordinates."
+   },
+   {
+    "title": "FoNE: Precise Single-Token Number Embeddings via Fourier Features",
+    "year": "2025 (arXiv Feb 2025; ICLR 2026 poster)",
+    "venue": "ICLR 2026; arXiv 2502.09741",
+    "url": "https://arxiv.org/abs/2502.09741",
+    "relevance": "Maps each number to one token via Fourier features (2 embedding dims per digit), preserving exact value with no fragmentation. Beats digit-wise and subword embeddings on add/sub/mul, 99%+ accuracy with 64x less data and 3-6x fewer tokens. Currently the strongest published 'single-token exact number' scheme — directly applicable to embedding GPL's ARCS coordinate tokens (deterministic Fourier init instead of random embeddings)."
+   },
+   {
+    "title": "Byte Latent Transformer: Patches Scale Better Than Tokens",
+    "year": "2024",
+    "venue": "Meta AI; arXiv 2412.09871 (ACL 2025)",
+    "url": "https://arxiv.org/abs/2412.09871",
+    "relevance": "Tokenizer-free: entropy-based dynamic patching over raw bytes; matches/outperforms BPE at 7-8B scale with up to 50% inference FLOP savings and better robustness/digit handling. But crossover only appears at large scale — at small-model, small-data regimes like GPL, BPE-class fixed vocabularies still win on compute. Idea worth borrowing: allocate more tokens where geometry entropy is high."
+   },
+   {
+    "title": "SuperBPE: Space Travel for Language Models",
+    "year": "2025",
+    "venue": "COLM 2025; arXiv 2503.13423",
+    "url": "https://arxiv.org/abs/2503.13423",
+    "relevance": "Superword tokens that cross whitespace: up to 33% fewer tokens at fixed vocab, +4% avg / +8.2% MMLU at 8B, 27% cheaper inference. Validates GPL's L2/L3 approach — at fixed vocabulary, learning multi-unit tokens (multi-coordinate/multi-command motifs) is strictly better than per-symbol BPE. A 'curriculum' BPE (subunits first, motifs second) is transferable."
+   },
+   {
+    "title": "H-Net: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling",
+    "year": "2025",
+    "venue": "arXiv 2507.07955 (Hwang, Wang, Gu et al.)",
+    "url": "https://arxiv.org/abs/2507.07955",
+    "relevance": "Learned, differentiable chunk boundaries over raw bytes; byte-level H-Net matches/exceeds BPE transformers at >1B params, ~4.5-5 bytes/chunk emerging without supervision; multi-stage hierarchy matches token Transformer of twice its size. Conceptually mirrors GPL's L1/L2/L3 hierarchy — supports the idea that hierarchical compression is the right inductive bias; a learned boundary predictor could automate L3 spatial-pattern mining."
+   },
+   {
+    "title": "Transformers Can Do Arithmetic with the Right Embeddings (Abacus Embeddings)",
+    "year": "2024",
+    "venue": "NeurIPS 2024; arXiv 2405.17399",
+    "url": "https://arxiv.org/abs/2405.17399",
+    "relevance": "Digit-significance positional embeddings (position within the number, random offset) give 6x length generalization (to 120-digit addition, 97%+); input injection cuts errors another 50%. If GPL ever emits raw digits, abacus-style significance encoding is mandatory; analog for GPL — encode quadtree depth/significance level of each ARCS symbol as a dedicated positional channel."
+   },
+   {
+    "title": "Tokenization Counts: the Impact of Tokenization on Arithmetic in Frontier LLMs",
+    "year": "2024",
+    "venue": "arXiv 2402.14903 (Singh & Strouse, DeepMind)",
+    "url": "https://arxiv.org/abs/2402.14903",
+    "relevance": "Left-to-right 3-digit BPE chunking causes systematic arithmetic errors; right-to-left (significance-aligned) chunking largely fixes them. Lesson: chunk boundaries must align with numeric significance — GPL's quadtree ARCS (most-significant cell first, fixed alignment) already satisfies this; never mix variable-length digit chunks."
+   },
+   {
+    "title": "Regress, Don't Guess — Number Token Loss (NTL)",
+    "year": "2024/2025",
+    "venue": "ICML 2025 (PMLR v267); arXiv 2411.02083",
+    "url": "https://arxiv.org/abs/2411.02083",
+    "relevance": "Adds an Lp/Wasserstein regression loss over numeric token values on top of cross-entropy; drop-in, no architecture change, consistent gains on math tasks. Directly portable to GPL: ARCS cells have known spatial values, so add a distance-weighted auxiliary loss penalizing predictions by geometric distance — cheap win for a small synthetic transformer."
+   },
+   {
+    "title": "HiVG: Hierarchical SVG Tokenization — Learning Compact Visual Programs",
+    "year": "2026",
+    "venue": "arXiv 2604.05072 (Xing et al., LLM4SVG group)",
+    "url": "https://arxiv.org/abs/2604.05072",
+    "relevance": "Closest competitor to GPL. Atomic tokens (commands/coordinates) + segment tokens (compressed command-parameter groups), Hierarchical Mean-Noise embedding initialization injecting numeric ordering, curriculum training. Explicitly shows generic/digit-BPE tokenizers cause coordinate hallucination and that geometry-aware hierarchical tokens beat them on fidelity, spatial consistency, sequence efficiency."
+   },
+   {
+    "title": "LLM4SVG: Empowering LLMs to Understand and Generate Complex Vector Graphics",
+    "year": "2024/2025",
+    "venue": "CVPR 2025; arXiv 2412.11102",
+    "url": "https://arxiv.org/abs/2412.11102",
+    "relevance": "Learnable semantic SVG tokens; ablations show coordinate accuracy depends heavily on how the base tokenizer chunks numbers (Qwen-style merged number tokens hurt coordinates). Confirms digit-BPE inherited from text LLMs is the bottleneck GPL is built to remove; SVGX-SFT-1M dataset reusable for evaluation."
+   },
+   {
+    "title": "ByteFlow: Language Modeling through Adaptive Byte Compression without a Tokenizer",
+    "year": "2026",
+    "venue": "arXiv 2603.03583 (Amazon Science)",
+    "url": "https://arxiv.org/abs/2603.03583",
+    "relevance": "Compression-driven (coding-rate) segmentation of byte streams; outperforms BPE transformers and prior byte-level models. With H-Net/BLT, establishes that 2026 tokenizer-free SOTA discovers BPE-like units automatically — but at compute budgets far above GPL's regime."
+   },
+   {
+    "title": "Value-Aware Numerical Representations for Transformer LMs / DriveCode numeric encoding",
+    "year": "2026",
+    "venue": "arXiv 2601.09706; arXiv 2603.00919",
+    "url": "https://arxiv.org/pdf/2601.09706",
+    "relevance": "2026 line of work: dedicated value-aware embeddings and number projectors into hidden space (DriveCode for trajectories) beat digit tokenization for continuous trajectory coordinates. Shows the field is converging on hybrid discrete-token + continuous-value heads for coordinates — applicable to GPL fine-offset prediction within quadtree cells."
+   }
+  ],
+  "sota_summary": "Consensus across 2024-2026: vanilla digit-BPE is the worst widely used option for numbers and coordinates, but vocabulary-free byte-level models are not the fix at small scale. The strongest current results favor structured single-token number representations: FoNE (ICLR 2026) makes each number one token via Fourier-feature embeddings (2 dims/digit) and beats digit-wise/subword tokenization with up to 64x data and 3-6x token efficiency; xVal handles continuous magnitudes well (interpolation-friendly, MSE-decoded) but lacks digit precision. Where discrete tokens are kept, three orthogonal fixes give most of the gain: significance-aligned chunking (right-to-left grouping; arXiv 2402.14903), abacus digit-position embeddings (6x length generalization; NeurIPS 2024), and Number Token Loss regression on top of cross-entropy (ICML 2025, drop-in). Tokenizer-free architectures (BLT, H-Net, ByteFlow, H-Net++) now match or beat BPE — but only at roughly >=1B params and large data, with chunks self-organizing to ~4.5-5 bytes; at small scale fixed geometry-aware vocabularies still win. At fixed vocab, SuperBPE (COLM 2025) shows multi-word/super tokens beat plain BPE (+4% avg, 27% inference savings), supporting hierarchical motif compression. For SVG/coordinates specifically, HiVG (2026) and LLM4SVG (CVPR 2025) show generic numeric tokenization causes coordinate hallucination, and that hierarchical geometry-aware tokens (atomic + segment, value-ordered embedding init, curriculum) beat digit-BPE on fidelity, spatial consistency, and sequence length. Net: best practice for coordinates = single discrete coordinate tokens with value-aware (Fourier/mean-noise) embeddings, hierarchical motif tokens for compression, plus a regression-like auxiliary loss; tokenizer-free is the wrong end of the trade-off at GPL's scale.",
+  "implications_for_gpl": [
+   "GPL's core design is validated: quadtree ARCS coordinates as discrete single tokens + L1/L2/L3 motif compression is exactly the direction HiVG (atomic+segment tokens), SuperBPE (super tokens at fixed vocab), and H-Net (hierarchy beats flat) prove out; HiVG is the closest prior art and should be cited and benchmarked against.",
+   "Highest-leverage easy upgrade: value-aware embedding initialization for ARCS coordinate tokens — initialize embeddings with FoNE-style Fourier features of cell center (sin/cos at quadtree-period frequencies, ~2 dims per level) or HiVG mean-noise ordering, so spatially adjacent cells get adjacent embeddings instead of i.i.d. random ones; near-zero cost, big data-efficiency win on a 5.5k vocab small model.",
+   "Add a Number Token Loss analog: an auxiliary loss weighting wrong coordinate predictions by geometric (L2 grid) distance between predicted and true cell, layered on cross-entropy (ICML 2025 NTL is drop-in and works for small models); also adopt HiVG's coordinate-hallucination/spatial-consistency metrics for eval.",
+   "For sub-cell precision, prefer a hybrid head over deeper quadtrees: discrete ARCS token for the cell + small xVal/DriveCode-style continuous regression head for the residual offset — continuous heads interpolate well, discrete tokens stay precise; avoids vocab blowup beyond 5.5k.",
+   "Keep significance alignment guarantees: ARCS coarse-to-fine ordering already mirrors significance-aligned chunking; never variable-width-chunk coordinates; optionally add an abacus-style positional channel encoding quadtree depth and slot index within each primitive (input injection helps small models generalize to longer shapes).",
+   "Do not switch to tokenizer-free (BLT/H-Net/ByteFlow): gains appear at >=1B params and large data, not a small synthetic-data transformer; but H-Net's learned boundary/entropy-driven chunking can be borrowed offline as a data-driven discovery tool for L2/L3 motif boundaries instead of purely greedy BPE counts.",
+   "SuperBPE's curriculum trick transfers: train motif vocab in stages (L1 first, freeze, then allow L2/L3 superwords across primitive boundaries) — this beats one-shot BPE at equal vocab and matches GPL's compression rationale (~33% token reduction reported).",
+   "Don't grow vocab with raw digit tokens (10-1000 number tokens): both Pythia numeral-system study (base-10 most data-efficient) and frequency-bias results say frequency-imbalanced number tokens hurt; quadtree cell tokens with uniform synthetic coverage avoid this failure mode entirely."
+  ]
+ },
+ {
+  "findings": [
+   {
+    "title": "VGBench: Evaluating Large Language Models on Vector Graphics Understanding and Generation (Zou et al.)",
+    "year": "2024",
+    "venue": "EMNLP 2024 main (arXiv:2407.10972)",
+    "url": "https://arxiv.org/abs/2407.10972",
+    "relevance": "EXISTS. 4,279 understanding QA pairs + 5,845 generation samples across SVG/TikZ/Graphviz. Found LLMs are weakest on low-level SVG — exactly the gap a geometry-aware tokenizer targets. Standard zero-/few-shot eval (CLIPScore, FID, QA accuracy) usable for GPL downstream tests. Project: https://vgbench.github.io, ACL: https://aclanthology.org/2024.emnlp-main.213.pdf"
+   },
+   {
+    "title": "SVG-Bench (introduced in StarVector, Rodriguez et al.)",
+    "year": "2023-2025",
+    "venue": "CVPR 2025 (arXiv:2312.11556)",
+    "url": "https://arxiv.org/abs/2312.11556",
+    "relevance": "EXISTS as part of StarVector. Image-to-SVG benchmark spanning SVG-Stack/SVG-Fonts/SVG-Icons/SVG-Emoji with MSE, SSIM, CLIP, DinoScore metrics. Also introduced SVG-Stack (2.1M train / 108k val / 5.7k test, permissively licensed) — the de facto pretraining corpus. Note a separate unrelated community 'SVGBench' exists at github.com/johnbean393/SVGBench. CVF PDF: openaccess.thecvf.com CVPR2025; dataset: https://huggingface.co/datasets/starvector/svg-stack"
+   },
+   {
+    "title": "SVGEditBench (Nishina & Matsui)",
+    "year": "2024",
+    "venue": "CVPR 2024 Workshop GDUG (arXiv:2404.13710)",
+    "url": "https://arxiv.org/abs/2404.13710",
+    "relevance": "EXISTS. 6 deterministic editing tasks (color, contour, crop, rotate, transform, compress) with MSE-based scoring. Cheap, automatic — well suited as a downstream probe of whether GPL's L1/L2 tokens preserve editability. Code: https://github.com/mti-lab/SVGEditBench"
+   },
+   {
+    "title": "SVGEditBench V2: A Benchmark for Instruction-based SVG Editing",
+    "year": "2025",
+    "venue": "arXiv:2502.19453",
+    "url": "https://arxiv.org/abs/2502.19453",
+    "relevance": "EXISTS. 1,683 triplets (original SVG, ground-truth edited SVG, GPT-4o prompt) from emoji datasets. Instruction-following SVG editing protocol; complements V1's synthetic edits."
+   },
+   {
+    "title": "FIGR-8-SVG",
+    "year": "2019 (in active use 2020-2026)",
+    "venue": "Dataset (FIGR paper, GitHub/Academic Torrents)",
+    "url": "https://github.com/marcdemers/FIGR-8",
+    "relevance": "EXISTS. ~1.5M monochrome icons, 17,375 classes. Canonical small-shape SVG corpus used by DeepSVG, IconShop, StrokeNUWA. Ideal real-data complement to GPL's synthetic training; closest in scale/simplicity to a 5.5k-vocab small transformer regime."
+   },
+   {
+    "title": "MMSVG-2M / MMSVG-Bench (OmniSVG, Yang et al.)",
+    "year": "2025",
+    "venue": "NeurIPS 2025 (arXiv:2504.06263)",
+    "url": "https://arxiv.org/abs/2504.06263",
+    "relevance": "EXISTS. 2M annotated SVGs (Icon/Illustration/Character) + standardized conditional-generation protocol. OmniSVG also tokenizes commands+coordinates into discrete tokens (coordinates as single tokens on a grid) — the nearest large-scale baseline to compare GPL's quadtree ARCS coordinates against. Data: https://huggingface.co/datasets/OmniSVG/MMSVG-Icon"
+   },
+   {
+    "title": "SVGenius: Benchmarking LLMs in SVG Understanding, Editing and Generation",
+    "year": "2025",
+    "venue": "ACM MM 2025 (arXiv:2506.03139)",
+    "url": "https://arxiv.org/abs/2506.03139",
+    "relevance": "EXISTS. 2,377 queries, 8 task categories, 18 metrics, complexity-stratified — the most complete eval suite for low-complexity-to-high-complexity scaling claims, matching GPL's L1/L2/L3 hierarchy framing. https://zju-real.github.io/SVGenius"
+   },
+   {
+    "title": "VectorGym: A Multitask Benchmark for SVG Code Generation, Sketching, and Editing (Rodriguez et al., ServiceNow)",
+    "year": "2026 (Feb 22)",
+    "venue": "arXiv:2603.29852 + OpenReview; dataset on HF",
+    "url": "https://arxiv.org/abs/2603.29852",
+    "relevance": "VERIFIED REAL (arXiv abs page, HF papers, OpenReview, HF dataset all confirm). Juan Rodriguez et al. (StarVector authors). Four tasks with expert human annotations: VG-Sketch (Sketch2SVG), VG-Edit (multi-step edits), VG-Text, VG-Cap; VLM-as-judge metric validated by human correlation; GRPO multi-task RL gets Qwen3-VL 8B to GPT-4o level. Newest, hardest target suite. Data: https://huggingface.co/datasets/ServiceNow/VectorGym"
+   },
+   {
+    "title": "HiVG: Hierarchical SVG Tokenization — Learning Compact Visual Programs (Xing et al.)",
+    "year": "2026 (Apr 6, v2 Apr 10)",
+    "venue": "arXiv:2604.05072, code github.com/ximinng/HiVG",
+    "url": "https://arxiv.org/abs/2604.05072",
+    "relevance": "VERIFIED REAL — and the closest direct competitor to GPL. Atomic tokens + geometry-constrained segment tokens compressing command-parameter groups; Hierarchical Mean-Noise embedding init; curriculum training; evaluated on text-to-SVG and image-to-SVG fidelity/spatial-consistency/sequence-efficiency. From the SVGDreamer group. Caution: name collides with HiVG visual grounding (arXiv 2404.13400, 2024). Project: https://hy-hivg.github.io"
+   },
+   {
+    "title": "'GPL tokenizer' in the literature",
+    "year": "n/a",
+    "venue": "not found",
+    "url": "",
+    "relevance": "DOES NOT EXIST in literature. Web + arXiv + HF paper searches return no paper, dataset, or repo by that name (only AGG svg_path_tokenizer code and unrelated GCP-VQVAE/GPSToken). The name is free for the user's project, but is unfortunate due to GPL-license connotation — consider renaming for publication."
+   },
+   {
+    "title": "From Tokens to Numbers: Continuous Number Modeling for SVG Generation (Ogezi et al.)",
+    "year": "2026 (Feb)",
+    "venue": "arXiv:2602.02820",
+    "url": "https://arxiv.org/abs/2602.02820",
+    "relevance": "EXISTS. The opposing camp: models coordinates as continuous values instead of tokens; 30% faster training on 2M raster-to-SVG pairs; merged corpus = SVG-Stack 2.28M + SVGX 257k + MMSVG-Icon 1.16M, deduped to 2.44M. GPL must argue discrete quadtree ARCS beats continuous regression."
+   },
+   {
+    "title": "Beyond Text Compression: Evaluating Tokenizers Across Scales",
+    "year": "2025",
+    "venue": "ACL 2025 (arXiv:2506.03101)",
+    "url": "https://arxiv.org/abs/2506.03101",
+    "relevance": "Tokenizer impact methodology: intrinsic metrics (compression, fertility, Zipf-inspired stats) correlate only partially with downstream; proposes cheap proxies cutting extrinsic eval cost 85%. Template for GPL's evaluation protocol."
+   },
+   {
+    "title": "Tokenizer Choice For LLM Training: Negligible or Crucial?",
+    "year": "2023/2024",
+    "venue": "NAACL Findings 2024 (arXiv:2310.08754)",
+    "url": "https://arxiv.org/abs/2310.08754",
+    "relevance": "Canonical extrinsic protocol: train identical small models varying only tokenizer, compare downstream suite + cost. Exactly the controlled-experiment design GPL needs at small-transformer scale."
+   },
+   {
+    "title": "Unpacking Tokenization: Evaluating Text Compression and its Correlation with Model Performance",
+    "year": "2024",
+    "venue": "ACL Findings 2024 (arXiv:2403.06265)",
+    "url": "https://arxiv.org/abs/2403.06265",
+    "relevance": "Shows compression correlates with downstream performance but is insufficient alone — GPL cannot rest its claim on compression ratio; needs rendered-fidelity and task metrics."
+   },
+   {
+    "title": "StrokeNUWA: Tokenizing Strokes for Vector Graphic Synthesis",
+    "year": "2024",
+    "venue": "ICML 2024 (arXiv:2401.17093)",
+    "url": "https://arxiv.org/abs/2401.17093",
+    "relevance": "VQ-VAE stroke tokens, ~6.9x shorter sequences, 94x speedup — prior art for learned vector tokens and the compression-ratio baseline GPL will be compared to, alongside IconShop (arXiv:2304.14400) and CAD-Tokenizer (arXiv:2509.21150)."
+   }
+  ],
+  "sota_summary": "SOTA (mid-2026): SVG modeling has moved from differentiable rendering to autoregressive program synthesis, and tokenization is now an explicit research front. HiVG (arXiv:2604.05072, Apr 2026) is the direct SOTA in geometry-aware SVG tokenization — atomic + geometry-constrained segment tokens, embedding init priors, curriculum training — beating byte-level BPE on fidelity, spatial consistency, and sequence efficiency. The continuous camp (Continuous Number Modeling, arXiv:2602.02820) attacks the same coordinate-fragmentation problem by removing coordinate tokens entirely. Benchmarks have stratified: VGBench (EMNLP'24, understanding+generation), SVGEditBench/V2 (automatic editing), SVG-Bench/StarVector (CVPR'25, image-to-SVG), MMSVG-Bench (NeurIPS'25, 2M assets), SVGenius (ACM MM'25, complexity-stratified, 18 metrics), and VectorGym (Feb 2026, ServiceNow/Rodriguez — verified real, human-annotated Sketch2SVG/Edit/Text/Cap with VLM-as-judge). Big corpora are settled: SVG-Stack 2.1M, MMSVG-2M, MMSVG-Icon 1.16M, SVGX 257k, FIGR-8-SVG 1.5M; recent works train on ~2.4M deduped merged. Verdicts: VGBench, SVG-Bench, SVGEditBench, FIGR-8-SVG, MMSVG, VectorGym (Rodriguez et al.), HiVG all exist; \"GPL tokenizer\" does not exist in the literature. Tokenizer papers establish impact via paired intrinsic (compression/fertility/vocab stats) + extrinsic protocols: identical small models differing only in tokenizer, evaluated on a downstream task suite; compression alone is established as insufficient evidence.",
+  "implications_for_gpl": [
+   "Name: 'GPL Tokenizer' is unclaimed but collides with the GPL license; consider renaming before any release. The concept is no longer novel in isolation — HiVG (Apr 2026, same thesis of structured atomic + compressed geometric tokens) must be cited and beaten or differentiated; quadtree ARCS hierarchical coordinates and explicit L3 spatial-pattern tokens are the plausible differentiators since HiVG has no quadtree multiresolution coordinates.",
+   "Evaluation protocol: copy the tokenizer-literature standard — train identical small transformers varying only tokenizer (BPE baseline, OmniSVG-style fixed grid, HiVG if reproducible, CNM continuous, GPL) and report intrinsic (tokens/SVG, vocab utilization, fertility) plus downstream rendered fidelity (MSE/SSIM/CLIP/DINO). Compression ratio alone will not be accepted as impact (per arXiv:2403.06265, 2506.03101).",
+   "Downstream suite: SVGEditBench V1/V2 (automatic, cheap, fits small models), VGBench-SVG and SVGenius low/medium complexity tiers, MMSVG-Bench icons. VectorGym is the headline 2026 target but is human-annotation hard; report it only if scaling beyond toy models.",
+   "Data: synthetic-only training is a weakness reviewers will flag — add FIGR-8-SVG (1.5M monochrome icons, matches small-vocab regime) or SVG-Stack/MMSVG-Icon subsets to show real-SVG generalization; standard preprocessing pipelines exist in DeepSVG/IconShop repos.",
+   "5.5k vocab is well-positioned: smaller than OmniSVG's coordinate vocab and far smaller than byte BPE; frame it as compute-frugal, fixed-precision quadtree coordinates with hierarchical refinement, contrasting both with HiVG's segment tokens and CNM's continuous regression. Quantify reconstruction error vs vocab size to defend discreteness against CNM.",
+   "Strongest available impact story: show GPL reduces coordinate hallucination and sequence length (the failure modes HiVG names) at 10-100x less training compute, then ablate L1/L2/L3 — hierarchical ablations are what got HiVG and StrokeNUWA accepted."
+  ]
+ }
+]

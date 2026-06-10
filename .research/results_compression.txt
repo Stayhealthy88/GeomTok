@@ -1,0 +1,9 @@
+case             chars  cl100k  o200k old_est   L1   L2   L3 L3 vs cl100k L3 vs old_est
+circle_1            67      27     28      16   28    5    5        5.40x         3.20x
+rect_1              79      31     32      19   13    5    5        6.20x         3.80x
+circles_5_row      202      79     84      50  140   25   11        7.18x         4.55x
+circles_7_row      269     105    112      67  196   35   12        8.75x         5.58x
+icon_path          173      92     93      43   28    5    5       18.40x         8.60x
+mixed_scene        201      78     82      50   67   20   15        5.20x         3.33x
+
+전체: cl100k 412 tok vs GPL-L3 53 tok → 실측 압축 7.77x
