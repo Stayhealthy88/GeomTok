@@ -199,14 +199,16 @@ class GPLVocabulary:
     # --- 토큰 ID 디코딩 ---
 
     def decode_token_id(self, token_id: int) -> dict:
-        """토큰 ID를 해석."""
-        if token_id < 10:
+        """토큰 ID를 해석. 예약 ID(5-9, 18-19, 24-29, 34-39, 56-59, 71-99)는
+        크래시 없이 'unknown'으로 디코드한다 (v0.6 — 모델은 전체 소프트맥스에서
+        샘플링하므로 예약 ID에서 ValueError가 나면 유효율이 왜곡됨)."""
+        if token_id < 5:
             return {"type": "special", "value": SpecialToken(token_id).name}
         elif 10 <= token_id < 18:
             return {"type": "command", "value": CommandToken(token_id).name}
         elif 20 <= token_id < 24:
             return {"type": "composite", "value": CompositeToken(token_id).name}
-        elif 60 <= token_id < 80:
+        elif 60 <= token_id < 71:
             return {"type": "spatial", "value": SpatialToken(token_id).name}
         elif 30 <= token_id < 34:
             return {"type": "continuity", "value": ContinuityToken(token_id).name}

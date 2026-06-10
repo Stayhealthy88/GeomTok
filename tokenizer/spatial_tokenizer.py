@@ -379,14 +379,14 @@ class SpatialTokenizer:
             tokens.append(self.vocab.spatial_token(SpatialToken.ALIGN_CENTER_H))
         else:
             tokens.append(self.vocab.spatial_token(SpatialToken.ALIGN_CENTER_V))
-        tokens.append(self._q(group["axis_value"], group["axis_value"]))
+        tokens.append(self._qs(group["axis_value"]))
 
         # 4. EQUAL_SPACE 토큰 + 간격 좌표
         if group["direction"] == "H":
             tokens.append(self.vocab.spatial_token(SpatialToken.EQUAL_SPACE_H))
         else:
             tokens.append(self.vocab.spatial_token(SpatialToken.EQUAL_SPACE_V))
-        tokens.append(self._q(group["spacing"], group["spacing"]))
+        tokens.append(self._qs(group["spacing"]))
 
         # 5. REPEAT 카운트 (추가 복사 수 = 총 요소 수 - 1)
         repeat_count = len(indices) - 1
@@ -398,7 +398,7 @@ class SpatialTokenizer:
             tokens.append(self.vocab.spatial_token(SpatialToken.REPEAT_4))
         else:
             tokens.append(self.vocab.spatial_token(SpatialToken.REPEAT_N))
-            tokens.append(self._q(float(repeat_count), float(repeat_count)))
+            tokens.append(self._qc(repeat_count))
 
         return tokens
 
@@ -456,11 +456,21 @@ class SpatialTokenizer:
             tokens.append(self.vocab.spatial_token(SpatialToken.SYM_REFLECT_X))
         else:
             tokens.append(self.vocab.spatial_token(SpatialToken.SYM_REFLECT_Y))
-        tokens.append(self._q(axis_val, axis_val))
+        tokens.append(self._qs(axis_val))
 
         return tokens
 
     # ===================== 유틸리티 =====================
+
+    def _qs(self, v: float) -> GPLToken:
+        """스칼라(축·간격)를 고정소수점 코덱으로 토큰화 (v0.6)."""
+        qc = self.arcs.quantize_scalar(v)
+        return self.vocab.coord_token(qc.level, qc.qx, qc.qy)
+
+    def _qc(self, n: int) -> GPLToken:
+        """정수 카운트를 무손실 토큰화 (v0.6)."""
+        qc = self.arcs.quantize_count(n)
+        return self.vocab.coord_token(qc.level, qc.qx, qc.qy)
 
     def _q(self, x: float, y: float) -> GPLToken:
         """좌표를 ARCS 양자화 후 토큰으로 변환."""

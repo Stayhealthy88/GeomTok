@@ -53,7 +53,7 @@
 
 ## 4. 연구 로드맵 v0.6+ (우선순위순)
 
-1. **E1. 스칼라 파탄 수정** (1주) — 스칼라 1D 양자화/REPEAT 정수 토큰. 성공: REPEAT 7→7개, r 오차 <2px
+1. ~~**E1. 스칼라 파탄 수정**~~ — **완료 (2026-06-10)**. 스칼라 고정소수점 코덱: level-6 64×64 격자를 12-bit 숫자 체계로 재해석(qx·64+qy), 어휘 추가 0개. 결과: r=20 오차 17.5px→0.04px, REPEAT 7→7 무손실(이전 38), rect/ellipse 크기 ≤0.04px. 적대적 검증으로 카운트 폭주·레벨 무시·NaN 가드 3건 보강. GeomTok-Eval 프로토콜 시드(`evaluation/value_fidelity.py`) 구현 — count_acc 100%, 남은 병목은 직선 콘텐츠의 위치 양자화(최대 17.5px, → E3에서 균일 vs 적응 격자 ablation으로 직결)
 2. **E2. 실데이터 정복** (3주) — transform/스타일 파싱 → FIGR-8 1% 샘플 파싱 성공률 ≥95%
 3. **E3. 본 실험** (4주) — FIGR-8에서 GPL/BPE/OmniSVG격자/HiVG·CNM근사, 동일 모델 — 렌더 SSIM/LPIPS+검증률
 4. **E4. 평가기 교체** (1주) — cairosvg 렌더 SSIM 직행, 문법 제약 디코딩(CAD-Tokenizer FSA: 무효율 80%→8% 전례)

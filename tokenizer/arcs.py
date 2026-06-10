@@ -265,6 +265,49 @@ class ARCS:
         cell_size = self.canvas_size / (2 ** level)
         return (cell_size / 2.0) * np.sqrt(2.0)
 
+    # --- v0.6: 스칼라 고정소수점 코덱 ---
+    #
+    # 최심층 레벨의 좌표 격자(2^max_level × 2^max_level)를 하나의 숫자 체계로
+    # 재해석한다: 스칼라 v ∈ [0, canvas)는 인덱스 s = qx·2^L + qy 인
+    # 단일 좌표 토큰이 된다. 어휘를 한 토큰도 늘리지 않고 4096-구간(레벨 6)의
+    # 균등 양자화를 얻는다 — 위치 쿼드트리를 통과하던 기존 (v,v) 방식의
+    # 원점 부근 75px 셀(최대 37.5px 오차)을 제거.
+
+    def quantize_scalar(self, v: float) -> QuantizedCoord:
+        """1D 스칼라(반지름·간격·길이)를 최심층 좌표 격자에 고정소수점 인코딩."""
+        grid = 2 ** self.max_level
+        n_codes = grid * grid
+        if not np.isfinite(v):
+            v = 0.0
+        v = max(0.0, min(v, self.canvas_size))
+        s = int(round(v / self.canvas_size * (n_codes - 1)))
+        return QuantizedCoord(level=self.max_level, qx=s // grid, qy=s % grid,
+                              original_x=v, original_y=v)
+
+    def dequantize_scalar(self, qcoord: QuantizedCoord) -> float:
+        """고정소수점 코드를 스칼라로 복원."""
+        grid = 2 ** self.max_level
+        n_codes = grid * grid
+        s = qcoord.qx * grid + qcoord.qy
+        return s / (n_codes - 1) * self.canvas_size
+
+    def quantize_count(self, n: int) -> QuantizedCoord:
+        """정수 카운트(반복 횟수 등)를 무손실 인코딩 (0 ≤ n < 2^(2·max_level))."""
+        grid = 2 ** self.max_level
+        n = max(0, min(int(n), grid * grid - 1))
+        return QuantizedCoord(level=self.max_level, qx=n // grid, qy=n % grid,
+                              original_x=float(n), original_y=float(n))
+
+    def dequantize_count(self, qcoord: QuantizedCoord) -> int:
+        """카운트 코드를 정수로 복원 (왕복 무손실)."""
+        grid = 2 ** self.max_level
+        return qcoord.qx * grid + qcoord.qy
+
+    def scalar_max_error(self) -> float:
+        """스칼라 코덱의 이론적 최대 오차 (반 구간 폭)."""
+        n_codes = (2 ** self.max_level) ** 2
+        return self.canvas_size / (n_codes - 1) / 2.0
+
     def roundtrip_fidelity(self, points: List[Tuple[float, float]]
                            ) -> Dict[str, float]:
         """

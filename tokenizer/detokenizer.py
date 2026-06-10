@@ -285,11 +285,37 @@ class Detokenizer:
             x, y = self.arcs.dequantize(qc)
             return (x, y), i + 1
 
+        def read_scalar(i):
+            """v0.6 고정소수점 스칼라 디코드. 인코더는 max_level 토큰만 방출하므로
+            얕은 레벨 토큰은 스칼라로 해석하지 않고 거부한다 (F3 가드)."""
+            if i >= len(decoded) or decoded[i]["type"] != "coord":
+                return None, i
+            dd = decoded[i]
+            if dd["level"] != self.arcs.max_level:
+                return None, i + 1
+            from .arcs import QuantizedCoord
+            qc = QuantizedCoord(level=dd["level"], qx=dd["qx"], qy=dd["qy"],
+                                original_x=0, original_y=0)
+            return self.arcs.dequantize_scalar(qc), i + 1
+
+        def read_count(i):
+            """v0.6 정수 카운트 디코드 (무손실)."""
+            if i >= len(decoded) or decoded[i]["type"] != "coord":
+                return None, i
+            dd = decoded[i]
+            from .arcs import QuantizedCoord
+            if dd["level"] != self.arcs.max_level:
+                return None, i + 1
+            qc = QuantizedCoord(level=dd["level"], qx=dd["qx"], qy=dd["qy"],
+                                original_x=0, original_y=0)
+            # 모델 샘플링 토큰이 4095 복제 폭주를 일으키지 않도록 상한 (F1 가드)
+            return min(self.arcs.dequantize_count(qc), 64), i + 1
+
         # SYM_REFLECT_X: 이전 요소들을 세로축 기준 반사 복제
         if spatial_type == "SYM_REFLECT_X":
-            axis_coord, idx = read_coord(idx)
-            if axis_coord and recent_elements:
-                axis_x = axis_coord[0]
+            axis_val, idx = read_scalar(idx)
+            if axis_val is not None and recent_elements:
+                axis_x = axis_val
                 for meta in recent_elements:
                     mirrored = self._mirror_element_x(meta, axis_x)
                     if mirrored:
@@ -298,9 +324,9 @@ class Detokenizer:
 
         # SYM_REFLECT_Y: 이전 요소들을 가로축 기준 반사 복제
         elif spatial_type == "SYM_REFLECT_Y":
-            axis_coord, idx = read_coord(idx)
-            if axis_coord and recent_elements:
-                axis_y = axis_coord[1]
+            axis_val, idx = read_scalar(idx)
+            if axis_val is not None and recent_elements:
+                axis_y = axis_val
                 for meta in recent_elements:
                     mirrored = self._mirror_element_y(meta, axis_y)
                     if mirrored:
@@ -323,15 +349,11 @@ class Detokenizer:
                 if dd["value"] in ("ALIGN_CENTER_H", "ALIGN_CENTER_V"):
                     align_dir = dd["value"]
                     idx += 1
-                    coord, idx = read_coord(idx)
-                    if coord:
-                        align_axis = coord
+                    align_axis, idx = read_scalar(idx)
 
                 elif dd["value"] in ("EQUAL_SPACE_H", "EQUAL_SPACE_V"):
                     idx += 1
-                    coord, idx = read_coord(idx)
-                    if coord:
-                        spacing_val = coord
+                    spacing_val, idx = read_scalar(idx)
 
                 elif dd["value"].startswith("REPEAT"):
                     if dd["value"] == "REPEAT_2":
@@ -342,24 +364,25 @@ class Detokenizer:
                         repeat_count = 4
                     elif dd["value"] == "REPEAT_N":
                         idx += 1
-                        coord, idx = read_coord(idx)
-                        if coord:
-                            repeat_count = int(coord[0])
+                        cnt, idx = read_count(idx)
+                        if cnt is not None:
+                            repeat_count = cnt
+                        break
                     idx += 1
                     break
                 else:
                     break
 
             # 반복 요소 생성
-            if recent_elements and repeat_count > 0 and spacing_val:
+            if recent_elements and repeat_count > 0 and spacing_val is not None:
                 anchor = recent_elements[-1]
                 for n in range(1, repeat_count + 1):
                     if align_dir == "ALIGN_CENTER_H" or (spacing_val and align_dir is None):
-                        dx = spacing_val[0] * n
+                        dx = spacing_val * n
                         dy = 0
                     else:
                         dx = 0
-                        dy = spacing_val[1] * n
+                        dy = spacing_val * n
                     translated = self._translate_element(anchor, dx, dy)
                     if translated:
                         new_elements.append(translated)
@@ -496,49 +519,61 @@ class Detokenizer:
             x, y = self.arcs.dequantize(qc)
             return (x, y), idx + 1
 
+        def read_scalar(i):
+            """v0.6 고정소수점 스칼라 디코드. 인코더는 max_level 토큰만 방출하므로
+            얕은 레벨 토큰은 스칼라로 해석하지 않고 거부한다 (F3 가드)."""
+            if i >= len(decoded) or decoded[i]["type"] != "coord":
+                return None, i
+            dd = decoded[i]
+            if dd["level"] != self.arcs.max_level:
+                return None, i + 1
+            from .arcs import QuantizedCoord
+            qc = QuantizedCoord(level=dd["level"], qx=dd["qx"], qy=dd["qy"],
+                                original_x=0, original_y=0)
+            return self.arcs.dequantize_scalar(qc), i + 1
+
         def fmt(v):
-            return f"{v:.1f}".rstrip('0').rstrip('.')
+            return f"{v:.2f}".rstrip('0').rstrip('.')
 
         idx = start + 1
 
         if shape == "CIRCLE":
             center, idx = read_coord(idx)
-            radius, idx = read_coord(idx)
-            if center and radius:
+            r, idx = read_scalar(idx)
+            if center and r is not None:
                 cx, cy = center
-                r = (radius[0] + radius[1]) / 2  # (r, r)로 인코딩됨
                 return (f'<circle cx="{fmt(cx)}" cy="{fmt(cy)}" r="{fmt(r)}" '
                         f'fill="none" stroke="black" stroke-width="1"/>',
                         idx - start)
 
         elif shape == "ELLIPSE":
             center, idx = read_coord(idx)
-            radii, idx = read_coord(idx)
-            if center and radii:
+            rx, idx = read_scalar(idx)
+            ry, idx = read_scalar(idx)
+            if center and rx is not None and ry is not None:
                 cx, cy = center
-                rx, ry = radii
                 return (f'<ellipse cx="{fmt(cx)}" cy="{fmt(cy)}" rx="{fmt(rx)}" ry="{fmt(ry)}" '
                         f'fill="none" stroke="black" stroke-width="1"/>',
                         idx - start)
 
         elif shape == "RECT":
             origin, idx = read_coord(idx)
-            size, idx = read_coord(idx)
-            if origin and size:
+            w, idx = read_scalar(idx)
+            h, idx = read_scalar(idx)
+            if origin and w is not None and h is not None:
                 x, y = origin
-                w, h = size
                 return (f'<rect x="{fmt(x)}" y="{fmt(y)}" width="{fmt(w)}" height="{fmt(h)}" '
                         f'fill="none" stroke="black" stroke-width="1"/>',
                         idx - start)
 
         elif shape == "ROUND_RECT":
             origin, idx = read_coord(idx)
-            size, idx = read_coord(idx)
-            radii, idx = read_coord(idx)
-            if origin and size and radii:
+            w, idx = read_scalar(idx)
+            h, idx = read_scalar(idx)
+            rx, idx = read_scalar(idx)
+            ry, idx = read_scalar(idx)
+            if origin and None not in (w, h, rx, ry):
                 x, y = origin
-                w, h = size
-                rx, ry = radii
                 return (f'<rect x="{fmt(x)}" y="{fmt(y)}" width="{fmt(w)}" height="{fmt(h)}" '
                         f'rx="{fmt(rx)}" ry="{fmt(ry)}" '
                         f'fill="none" stroke="black" stroke-width="1"/>',

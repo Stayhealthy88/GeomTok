@@ -158,36 +158,44 @@ class CompositeTokenizer:
         p = shape.params
 
         if shape.shape_type == ShapeType.CIRCLE:
-            # [CIRCLE] [center_coord] [radius_as_coord]
+            # [CIRCLE] [center_coord] [radius_scalar]
             tokens.append(self.vocab.composite_token(CompositeToken.CIRCLE))
             tokens.append(self._q(p["cx"], p["cy"]))
-            # 반지름을 좌표로 인코딩 (r, r)
-            tokens.append(self._q(p["r"], p["r"]))
+            tokens.append(self._qs(p["r"]))
 
         elif shape.shape_type == ShapeType.ELLIPSE:
-            # [ELLIPSE] [center_coord] [rx_ry_coord]
+            # [ELLIPSE] [center_coord] [rx_scalar] [ry_scalar]
             tokens.append(self.vocab.composite_token(CompositeToken.ELLIPSE))
             tokens.append(self._q(p["cx"], p["cy"]))
-            tokens.append(self._q(p["rx"], p["ry"]))
+            tokens.append(self._qs(p["rx"]))
+            tokens.append(self._qs(p["ry"]))
 
         elif shape.shape_type == ShapeType.RECT:
-            # [RECT] [origin_coord] [size_coord]
+            # [RECT] [origin_coord] [w_scalar] [h_scalar]
             tokens.append(self.vocab.composite_token(CompositeToken.RECT))
             tokens.append(self._q(p["x"], p["y"]))
-            tokens.append(self._q(p["width"], p["height"]))
+            tokens.append(self._qs(p["width"]))
+            tokens.append(self._qs(p["height"]))
 
         elif shape.shape_type == ShapeType.ROUND_RECT:
-            # [ROUND_RECT] [origin_coord] [size_coord] [radius_coord]
+            # [ROUND_RECT] [origin] [w] [h] [rx] [ry] — 크기/반지름은 스칼라
             tokens.append(self.vocab.composite_token(CompositeToken.ROUND_RECT))
             tokens.append(self._q(p["x"], p["y"]))
-            tokens.append(self._q(p["width"], p["height"]))
-            tokens.append(self._q(p["rx"], p["ry"]))
+            tokens.append(self._qs(p["width"]))
+            tokens.append(self._qs(p["height"]))
+            tokens.append(self._qs(p["rx"]))
+            tokens.append(self._qs(p["ry"]))
 
         return tokens
 
     def _q(self, x: float, y: float) -> GPLToken:
         """좌표를 ARCS 양자화 후 토큰으로 변환."""
         qc = self.arcs.quantize(x, y)
+        return self.vocab.coord_token(qc.level, qc.qx, qc.qy)
+
+    def _qs(self, v: float) -> GPLToken:
+        """스칼라를 고정소수점 코덱으로 토큰화 (v0.6)."""
+        qc = self.arcs.quantize_scalar(v)
         return self.vocab.coord_token(qc.level, qc.qx, qc.qy)
 
     def _tokenize_command_level1(self, index: int, cmd: PathCommand,

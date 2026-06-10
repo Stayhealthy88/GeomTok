@@ -69,6 +69,12 @@ class SyntheticSVGGenerator:
         idy = self.vocab.coord_to_id(level, qy, qy)  # y좌표용
         return idx, idy
 
+    def _scalar_id(self, v_grid: float, level: int) -> int:
+        """그리드 단위 스칼라를 캔버스 px로 변환 후 v0.6 고정소수점 토큰 ID로."""
+        v_px = v_grid * (self.arcs.canvas_size / (2 ** level))
+        qc = self.arcs.quantize_scalar(v_px)
+        return self.vocab.coord_to_id(qc.level, qc.qx, qc.qy)
+
     def _continuity(self, level: int = 0) -> int:
         """연속성 토큰."""
         return [30, 31, 32, 33][min(level, 3)]
@@ -92,7 +98,7 @@ class SyntheticSVGGenerator:
             SpecialToken.BOS,
             CompositeToken.CIRCLE,
             self.vocab.coord_to_id(level, cx, cy),
-            self.vocab.coord_to_id(level, r, 0),  # 반지름은 qx에 인코딩
+            self._scalar_id(r, level),  # v0.6: 반지름은 스칼라 코덱
             SpecialToken.EOS,
         ]
         tokens = [t for t in tokens if t is not None]
@@ -111,7 +117,8 @@ class SyntheticSVGGenerator:
             SpecialToken.BOS,
             CompositeToken.RECT,
             self.vocab.coord_to_id(level, x, y),
-            self.vocab.coord_to_id(level, w, h),
+            self._scalar_id(w, level),
+            self._scalar_id(h, level),
             SpecialToken.EOS,
         ]
         tokens = [t for t in tokens if t is not None]
@@ -130,7 +137,8 @@ class SyntheticSVGGenerator:
             SpecialToken.BOS,
             CompositeToken.ELLIPSE,
             self.vocab.coord_to_id(level, cx, cy),
-            self.vocab.coord_to_id(level, rx, ry),
+            self._scalar_id(rx, level),
+            self._scalar_id(ry, level),
             SpecialToken.EOS,
         ]
         tokens = [t for t in tokens if t is not None]

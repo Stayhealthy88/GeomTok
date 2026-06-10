@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="gpl-tokenizer",
-    version="0.1.0",
+    version="0.6.0",
     description="Geometric Primitive Language Tokenizer for SVG",
     author="Byun",
     author_email="igotthepower0128@gmail.com",
