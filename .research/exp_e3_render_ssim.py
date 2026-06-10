@@ -68,7 +68,7 @@ for svg in df["Svg"]:
         if not doc.elements:
             continue
         ref = render(recon_svg(doc, None, quant=False))
-        for key, arcs in (("adaptive", None),
+        for key, arcs in (("adaptive", ARCS(canvas_size=CANVAS, max_level=6, min_level=2)),
                           ("uniform", ARCS(canvas_size=CANVAS, max_level=6, min_level=6))):
             out = render(recon_svg(doc, arcs))
             ink = (ref < 0.9) | (out < 0.9)
