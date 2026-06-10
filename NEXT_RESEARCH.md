@@ -54,7 +54,7 @@
 ## 4. 연구 로드맵 v0.6+ (우선순위순)
 
 1. ~~**E1. 스칼라 파탄 수정**~~ — **완료 (2026-06-10)**. 스칼라 고정소수점 코덱: level-6 64×64 격자를 12-bit 숫자 체계로 재해석(qx·64+qy), 어휘 추가 0개. 결과: r=20 오차 17.5px→0.04px, REPEAT 7→7 무손실(이전 38), rect/ellipse 크기 ≤0.04px. 적대적 검증으로 카운트 폭주·레벨 무시·NaN 가드 3건 보강. GeomTok-Eval 프로토콜 시드(`evaluation/value_fidelity.py`) 구현 — count_acc 100%, 남은 병목은 직선 콘텐츠의 위치 양자화(최대 17.5px, → E3에서 균일 vs 적응 격자 ablation으로 직결)
-2. **E2. 실데이터 정복** (3주) — transform/스타일 파싱 → FIGR-8 1% 샘플 파싱 성공률 ≥95%
+2. **E2. 실데이터 정복** — **진행 중 (2026-06-11)**. 딥리서치(25개 출처 클레임; 검증 단계는 세션 한도로 미완 — 단일 출처 증거로 취급): ① 내재 평가 프로토콜 선행작 없음 → GeomTok-Eval 갭 유효. ② transform 표준은 평탄화-후-폐기(OmniSVG=picosvg, DeepSVG는 g 상속 미지원) — 우리 네이티브 평탄화가 표준과 일치하며 g-상속까지 지원해 우월. ③ 단색 도메인 fill 표준도 폐기(IconShop·DeepSVG) — 현 동작 선례 일치. ④ 쿼드트리 좌표 선점 없음(OmniSVG v2 기준). ⑤ 코퍼스: FIGR-8 HF 미공개 → StarVector svg-icons(SVG-Bench 분할, 실세계 2,682 test)로 측정. 구현 완료: affine transform 평탄화+그룹 상속, defs/clipPath 제외, viewBox 정규화(등방·중앙), 압축 arc 플래그 파싱. 테스트 200/200
 3. **E3. 본 실험** (4주) — FIGR-8에서 GPL/BPE/OmniSVG격자/HiVG·CNM근사, 동일 모델 — 렌더 SSIM/LPIPS+검증률
 4. **E4. 평가기 교체** (1주) — cairosvg 렌더 SSIM 직행, 문법 제약 디코딩(CAD-Tokenizer FSA: 무효율 80%→8% 전례)
 5. **E5. HMN 재설계** (2주) — ablation에서 확인된 노름 편향 수정(특수 토큰 노름 정합 또는 tying 해제) + FoNE/RBF 단조 감쇠 + NTL 보조손실. 성공: val_loss 개선 유지하면서 유효율 ≥ random init

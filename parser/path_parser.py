@@ -108,6 +108,14 @@ class PathParser:
     # 명령어 문자 정규식
     _CMD_RE = re.compile(r'[MmLlHhVvCcSsQqTtAaZz]')
 
+    # 호(A) 인자 정규식: 플래그는 구분자 없이 붙을 수 있다 — "A5 5 0 0110 10" (E2)
+    _ARC_NUM = r'[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?'
+    _ARC_SEP = r'[\s,]*'
+    _ARC_ARGS_RE = re.compile(
+        _ARC_SEP.join([f'({_ARC_NUM})', f'({_ARC_NUM})', f'({_ARC_NUM})',
+                       '([01])', '([01])', f'({_ARC_NUM})', f'({_ARC_NUM})'])
+    )
+
     def parse(self, d_string: str) -> List[PathCommand]:
         """
         SVG path 'd' 문자열을 PathCommand 리스트로 파싱.
@@ -176,7 +184,13 @@ class PathParser:
             else:
                 segment = d_string[pos + 1:]
 
-            nums = [float(m.group()) for m in self._NUM_RE.finditer(segment)]
+            if cmd_char in ('A', 'a'):
+                # 플래그가 숫자에 붙는 압축 표기를 위치 기반으로 파싱
+                nums = []
+                for m in self._ARC_ARGS_RE.finditer(segment):
+                    nums.extend(float(g) for g in m.groups())
+            else:
+                nums = [float(m.group()) for m in self._NUM_RE.finditer(segment)]
             result.append((cmd_char, nums))
 
         return result

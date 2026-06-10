@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Tuple
 from .path_parser import PathParser, PathCommand, CommandType
+from . import transform as tf
 
 
 @dataclass
@@ -70,8 +71,10 @@ class SVGParser:
 
     SVG_NS = "http://www.w3.org/2000/svg"
 
-    def __init__(self):
+    def __init__(self, normalize_canvas: Optional[float] = None):
+        """normalize_canvas: 지정 시 viewBox를 [0, normalize_canvas)²로 등방 정규화."""
         self._path_parser = PathParser()
+        self.normalize_canvas = normalize_canvas
 
     def parse_string(self, svg_text: str) -> SVGDocument:
         """SVG XML 문자열을 파싱."""
@@ -105,18 +108,34 @@ class SVGParser:
         if h:
             doc.height = self._parse_length(h)
 
-        # 재귀적 요소 수집
-        self._collect_elements(root, doc, group_id=None)
+        # 루트 행렬: viewBox 정규화 (E2)
+        root_m = tf.identity()
+        if self.normalize_canvas and doc.viewbox:
+            root_m = tf.viewbox_matrix(doc.viewbox, self.normalize_canvas)
+            doc.viewbox = (0.0, 0.0, self.normalize_canvas, self.normalize_canvas)
+
+        # 재귀적 요소 수집 (transform 누적)
+        self._collect_elements(root, doc, group_id=None, matrix=root_m)
         return doc
 
+    # 렌더링되지 않는 컨테이너 — 자식을 가시 요소로 수집하면 안 됨 (E2)
+    NON_RENDER_TAGS = {"defs", "clipPath", "mask", "symbol", "marker",
+                       "pattern", "filter", "style", "metadata", "title", "desc"}
+
     def _collect_elements(self, node: ET.Element, doc: SVGDocument,
-                          group_id: Optional[str]):
+                          group_id: Optional[str], matrix=None):
         tag = self._strip_ns(node.tag)
+        if matrix is None:
+            matrix = tf.identity()
+
+        if tag in self.NON_RENDER_TAGS:
+            return
 
         if tag == "g":
             gid = node.get("id", group_id)
+            child_m = matrix @ tf.parse_transform(node.get("transform"))
             for child in node:
-                self._collect_elements(child, doc, group_id=gid)
+                self._collect_elements(child, doc, group_id=gid, matrix=child_m)
             return
 
         elem = None
@@ -139,6 +158,8 @@ class SVGParser:
             elem.group_id = group_id
             elem.element_id = node.get("id")
             elem.transform = node.get("transform")
+            m = matrix @ tf.parse_transform(node.get("transform"))
+            tf.apply_to_commands(elem.commands, m)
             # 스타일 속성 수집
             for attr in ["fill", "stroke", "stroke-width", "opacity",
                          "fill-opacity", "stroke-opacity", "style", "class"]:
@@ -149,7 +170,7 @@ class SVGParser:
 
         # 자식 노드 재귀 처리
         for child in node:
-            self._collect_elements(child, doc, group_id=group_id)
+            self._collect_elements(child, doc, group_id=group_id, matrix=matrix)
 
     def _parse_path(self, node: ET.Element) -> SVGElement:
         d = node.get("d", "")
