@@ -49,10 +49,16 @@ class CompositeTokenizer:
     """
 
     def __init__(self, canvas_size: float = 300.0, max_coord_level: int = 6,
-                 circle_tolerance: float = 5.0, rect_tolerance: float = 3.0):
+                 circle_tolerance: float = 5.0, rect_tolerance: float = 3.0,
+                 uniform_coords: bool = True):
         self.canvas_size = canvas_size
         self.vocab = GPLVocabulary(max_coord_level=max_coord_level)
-        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level)
+        # v0.6/E3: 실데이터 좌표 ablation 결과 uniform-L6이 기본
+        # (mean err 1.78 vs 14.75px, SSIM 0.93 vs 0.85 @ 동일 토큰 수).
+        # 적응 트리는 uniform_coords=False 연구 경로로 유지.
+        self.uniform_coords = uniform_coords
+        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level,
+                         min_level=max_coord_level if uniform_coords else 2)
         self.shape_detector = ShapeDetector(
             circle_tolerance=circle_tolerance,
             rect_tolerance=rect_tolerance

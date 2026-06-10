@@ -70,7 +70,8 @@ class PrimitiveTokenizer:
     """
 
     def __init__(self, canvas_size: float = 300.0, max_coord_level: int = 6,
-                 use_adaptive_arcs: bool = True):
+                 use_adaptive_arcs: bool = True,
+                 uniform_coords: bool = True):
         """
         Args:
             canvas_size: SVG 캔버스 크기
@@ -79,7 +80,12 @@ class PrimitiveTokenizer:
         """
         self.canvas_size = canvas_size
         self.vocab = GPLVocabulary(max_coord_level=max_coord_level)
-        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level)
+        # v0.6/E3: 실데이터 좌표 ablation 결과 uniform-L6이 기본
+        # (mean err 1.78 vs 14.75px, SSIM 0.93 vs 0.85 @ 동일 토큰 수).
+        # 적응 트리는 uniform_coords=False 연구 경로로 유지.
+        self.uniform_coords = uniform_coords
+        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level,
+                         min_level=max_coord_level if uniform_coords else 2)
         self.curv_analyzer = CurvatureAnalyzer()
         self.cont_analyzer = ContinuityAnalyzer()
         self.use_adaptive_arcs = use_adaptive_arcs

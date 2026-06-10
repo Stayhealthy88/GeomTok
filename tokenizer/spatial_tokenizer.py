@@ -55,10 +55,14 @@ class SpatialTokenizer:
 
     def __init__(self, canvas_size: float = 300.0, max_coord_level: int = 6,
                  align_tolerance: float = 3.0, spacing_tolerance: float = 3.0,
-                 size_tolerance: float = 5.0, sym_tolerance: float = 5.0):
+                 size_tolerance: float = 5.0, sym_tolerance: float = 5.0,
+                 uniform_coords: bool = True):
         self.canvas_size = canvas_size
         self.vocab = GPLVocabulary(max_coord_level=max_coord_level)
-        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level)
+        # v0.6/E3: uniform-L6 기본 (실데이터 ablation — NEXT_RESEARCH.md 참조)
+        self.uniform_coords = uniform_coords
+        self.arcs = ARCS(canvas_size=canvas_size, max_level=max_coord_level,
+                         min_level=max_coord_level if uniform_coords else 2)
         self.level2 = CompositeTokenizer(
             canvas_size=canvas_size, max_coord_level=max_coord_level
         )
