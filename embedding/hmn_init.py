@@ -72,7 +72,8 @@ class HMNInitializer:
     """
 
     def __init__(self, max_coord_level: int = 6, d_model: int = 256,
-                 coord_scale: float = 1.0, noise_std: float = 0.02):
+                 coord_scale: float = 1.0, noise_std: float = 0.02,
+                 version: int = 1):
         """
         Args:
             max_coord_level: 최대 ARCS 좌표 레벨
@@ -84,6 +85,10 @@ class HMNInitializer:
         self.d_model = d_model
         self.coord_scale = coord_scale
         self.noise_std = noise_std
+        # v2 (E5): ① 전 토큰 노름 균등화 — weight tying에서 EOS/명령 토큰
+        # 억제(valid율 68% vs 82%) 제거, ② 주파수 0.25~64 — 주기-1 앨리어싱
+        # 제거로 유사도 단조 감쇠, ③ level 마커 제거(uniform-L6 전제)
+        self.version = version
 
     @torch.no_grad()
     def initialize(self, weight: torch.Tensor,
@@ -118,6 +123,12 @@ class HMNInitializer:
 
         # 7. 좌표 토큰: 쿼드트리 위치 기반 — 핵심 HMN 초기화
         self._init_coord_tokens(weight, vocab)
+
+        # 8. (v2) 노름 균등화: PAD 제외 전 행을 단위 노름으로
+        if self.version >= 2:
+            norms = weight.norm(dim=1, keepdim=True).clamp_min(1e-8)
+            weight.div_(norms)
+            weight[0].zero_()  # PAD 유지
 
     def _init_command_tokens(self, weight: torch.Tensor) -> None:
         """명령어 토큰을 의미 그룹으로 초기화."""
@@ -242,12 +253,15 @@ class HMNInitializer:
                     level_idx = min(level, d - 1)
                     level_enc[level_idx] = 1.0
 
-                    # 최종 초기화: 위치 인코딩 * 레벨 스케일 + 레벨 마커 + 노이즈
-                    weight[tid] = (
-                        pos_enc * level_scale +
-                        level_enc * 0.1 +
-                        torch.randn(d) * self.noise_std * 0.5
-                    )
+                    if self.version >= 2:
+                        # v2: 레벨 마커 없음 — 공간 신호 + 소노이즈만
+                        weight[tid] = pos_enc + torch.randn(d) * self.noise_std * 0.5
+                    else:
+                        weight[tid] = (
+                            pos_enc * level_scale +
+                            level_enc * 0.1 +
+                            torch.randn(d) * self.noise_std * 0.5
+                        )
 
     def _spatial_encoding(self, nx: float, ny: float, d: int) -> torch.Tensor:
         """
@@ -263,7 +277,10 @@ class HMNInitializer:
         half_d = d // 2
 
         for i in range(half_d):
-            freq = 2.0 ** (i * 6.0 / half_d)  # 주파수: 1 ~ 64
+            if getattr(self, "version", 1) >= 2:
+                freq = 2.0 ** (i * 8.0 / half_d - 2.0)  # 0.25 ~ 64 — 단조 감쇠
+            else:
+                freq = 2.0 ** (i * 6.0 / half_d)  # 주파수: 1 ~ 64
 
             enc[2 * i] = math.sin(nx * 2 * math.pi * freq)
             enc[2 * i + 1] = math.cos(ny * 2 * math.pi * freq)

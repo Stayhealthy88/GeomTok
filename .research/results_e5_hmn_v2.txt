@@ -1,0 +1,20 @@
+random s0: vl=4.553 acc=0.363 valid=70%
+random s1: vl=4.399 acc=0.363 valid=89%
+random s2: vl=4.292 acc=0.352 valid=72%
+>> random: val_loss 4.415±0.131 acc 0.359 valid 77.0%±10.4%
+
+hmn_v1 s0: vl=3.548 acc=0.385 valid=71%
+hmn_v1 s1: vl=3.547 acc=0.374 valid=69%
+hmn_v1 s2: vl=3.501 acc=0.377 valid=70%
+>> hmn_v1: val_loss 3.532±0.027 acc 0.379 valid 70.0%±1.0%
+
+hmn_v2 s0: vl=3.446 acc=0.371 valid=70%
+hmn_v2 s1: vl=3.461 acc=0.387 valid=67%
+hmn_v2 s2: vl=3.394 acc=0.371 valid=72%
+>> hmn_v2: val_loss 3.434±0.035 acc 0.377 valid 69.7%±2.5%
+
+v2_ntl s0: vl=3.499 acc=0.370 valid=71%
+v2_ntl s1: vl=3.516 acc=0.383 valid=66%
+v2_ntl s2: vl=3.449 acc=0.365 valid=73%
+>> v2_ntl: val_loss 3.488±0.035 acc 0.373 valid 70.0%±3.6%
+

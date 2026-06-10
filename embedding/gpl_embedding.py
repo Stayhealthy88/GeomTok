@@ -179,7 +179,8 @@ class GPLEmbedding(nn.Module):
                  d_coord: int = 64,
                  max_seq_len: int = 512,
                  dropout: float = 0.1,
-                 use_hmn_init: bool = True):
+                 use_hmn_init: bool = True,
+                 hmn_version: int = 1):
         """
         Args:
             vocab: GPLVocabulary 인스턴스
@@ -241,6 +242,7 @@ class GPLEmbedding(nn.Module):
             initializer = HMNInitializer(
                 max_coord_level=vocab.max_coord_level,
                 d_model=d_model,
+                version=hmn_version,
             )
             initializer.initialize(self.token_embedding.weight, vocab)
 

@@ -42,6 +42,8 @@ class GPLTransformerConfig:
 
     # HMN 초기화
     use_hmn_init: bool = True
+    hmn_version: int = 1        # 1=v0.4 원본, 2=E5 노름균등+단조감쇠
+    ntl_lambda: float = 0.0     # 좌표 거리 가중 보조손실 계수 (NTL 부류)
 
     def param_estimate(self, vocab_size: int) -> int:
         """파라미터 수 추정."""
@@ -90,6 +92,7 @@ class GPLTransformer(nn.Module):
             max_seq_len=config.max_seq_len,
             dropout=config.dropout,
             use_hmn_init=config.use_hmn_init,
+            hmn_version=config.hmn_version,
         )
 
         # 2. Transformer Decoder Layers
@@ -206,6 +209,21 @@ class GPLTransformer(nn.Module):
             ignore_index=0,  # PAD = 0
         )
 
+        # NTL 보조손실 (E5): 정답이 좌표 토큰인 위치에서, 좌표 토큰들에
+        # 국한한 소프트맥스 기대 (nx, ny)와 정답 셀 중심의 L2 거리를 벌점.
+        # 좌표 간 거리가 모든 오답을 동일 취급하는 CE를 보완 (ICML'25 NTL 부류).
+        if self.config.ntl_lambda > 0:
+            lut = self._coord_pos_lut()  # (V, 2), 비좌표=NaN
+            is_coord = ~torch.isnan(lut[:, 0])
+            tgt_flat = target_ids.reshape(-1)
+            mask = is_coord[tgt_flat]
+            if mask.any():
+                lf = logits.reshape(-1, logits.size(-1))[mask][:, is_coord]
+                probs = torch.softmax(lf, dim=-1)
+                exp_pos = probs @ lut[is_coord]
+                tgt_pos = lut[tgt_flat[mask]]
+                loss = loss + self.config.ntl_lambda * (exp_pos - tgt_pos).pow(2).sum(-1).mean()
+
         # 정확도 계산 (PAD 제외)
         with torch.no_grad():
             preds = logits.argmax(dim=-1)
@@ -219,6 +237,24 @@ class GPLTransformer(nn.Module):
             "logits": logits,
             "accuracy": accuracy,
         }
+
+    def _coord_pos_lut(self) -> torch.Tensor:
+        """토큰 ID → 셀 중심 (nx, ny) ∈ [0,1]²; 비좌표 토큰은 NaN."""
+        if getattr(self, "_pos_lut", None) is None:
+            V = self.vocab.vocab_size
+            lut = torch.full((V, 2), float("nan"))
+            for tid in range(V):
+                c = self.vocab.id_to_coord(tid)
+                if c:
+                    level, qx, qy = c
+                    g = 2 ** level
+                    lut[tid, 0] = (qx + 0.5) / g
+                    lut[tid, 1] = (qy + 0.5) / g
+            self._pos_lut = lut
+        dev = next(self.parameters()).device
+        if self._pos_lut.device != dev:
+            self._pos_lut = self._pos_lut.to(dev)
+        return self._pos_lut
 
     def count_parameters(self) -> Dict[str, int]:
         """파라미터 수 집계."""
