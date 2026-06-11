@@ -27,13 +27,28 @@ import re
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Tuple
 
-_NUM = r'([\d.]+)'
+# 음수·지수 표기 포함 — 실세계 SVG 좌표는 음수/과학표기를 쓴다 (F1)
+_NUM = r'([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)'
 _SHAPE_TAGS = ("circle", "ellipse", "rect")
 _ATTRS = ("cx", "cy", "r", "rx", "ry", "x", "y", "width", "height")
+_PATH_NUM = re.compile(_NUM)
+
+
+def _extract_path_coords(svg: str) -> List[float]:
+    """path d 속성의 모든 수치를 순서대로 추출 (F1 — path-only 아이콘 측정).
+
+    명령 문자는 보존하지 않고 수치 시퀀스만 비교한다. 원본↔복원이 같은
+    명령 구조를 따르므로 위치별 정렬 비교로 좌표 충실도를 측정할 수 있다.
+    """
+    nums = []
+    for d in re.findall(r'\bd="([^"]*)"', svg):
+        nums.extend(float(m.group(1)) for m in _PATH_NUM.finditer(d) if m.group(1) not in ("", ".", "-", "+"))
+    return nums
 
 
 def _extract_values(svg: str) -> List[Tuple[str, str, float]]:
-    """SVG 문자열에서 (태그, 속성, 값) 트리플 추출 — 비교 가능한 정규형."""
+    """SVG 문자열에서 (태그, 속성, 값) 트리플 추출 — 비교 가능한 정규형.
+    도형 속성 + path 좌표를 모두 포함 (F1: 실세계 path 아이콘 대응)."""
     values = []
     for tag in _SHAPE_TAGS:
         for elem in re.findall(rf'<{tag}\b[^>]*>', svg):
@@ -41,6 +56,8 @@ def _extract_values(svg: str) -> List[Tuple[str, str, float]]:
                 m = re.search(rf'[ "]{a}="{_NUM}"', elem)
                 if m:
                     values.append((tag, a, float(m.group(1))))
+    for i, v in enumerate(_extract_path_coords(svg)):
+        values.append(("path", "d", v))   # 위치 비교는 정렬 매칭에서 처리
     return values
 
 
@@ -68,7 +85,8 @@ class GeomTokEval:
         orig = _extract_values(svg)
         rec = _extract_values(recon)
 
-        # 태그·속성별 정렬 매칭 (요소 순서 보존 가정, 개수 불일치는 별도 지표)
+        # 도형 속성: 태그·속성별 정렬 매칭(요소 순서 무관). path 좌표: 위치순
+        # 매칭(명령 구조가 보존되므로 i번째 좌표끼리 비교) — F1.
         errs = []
         by_key_o: Dict[Tuple[str, str], List[float]] = {}
         by_key_r: Dict[Tuple[str, str], List[float]] = {}
@@ -77,9 +95,13 @@ class GeomTokEval:
         for t, a, v in rec:
             by_key_r.setdefault((t, a), []).append(v)
         for key, ov in by_key_o.items():
-            rv = sorted(by_key_r.get(key, []))
-            for o, r in zip(sorted(ov), rv):
-                errs.append(abs(o - r))
+            rv = by_key_r.get(key, [])
+            if key == ("path", "d"):
+                for o, r in zip(ov, rv):       # 위치순 (path 좌표)
+                    errs.append(abs(o - r))
+            else:
+                for o, r in zip(sorted(ov), sorted(rv)):
+                    errs.append(abs(o - r))
 
         n_orig = sum(svg.count(f"<{t}") for t in _SHAPE_TAGS)
         n_rec = sum(recon.count(f"<{t}") for t in _SHAPE_TAGS)
