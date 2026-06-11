@@ -1,0 +1,8 @@
+bpe_model_trainer.cc(268) LOG(INFO) Added: freq=16 size=3980 all=313226 active=17242 piece=丟下幍丟下
+trainer_interface.cc(689) LOG(INFO) Saving model: /tmp/l1_bpe.model
+trainer_interface.cc(701) LOG(INFO) Saving vocabs: /tmp/l1_bpe.vocab
+n=400: L1 264  L2 264  L3 250 tok/icon
+L2 발화율 0.0%, L3 발화율 14.5%
+L2 압축기여 0.0%, L3 5.2%
+
+L1+BPE(+1.5k 머지): 151 tok/icon → L1 대비 43.0% 절감
