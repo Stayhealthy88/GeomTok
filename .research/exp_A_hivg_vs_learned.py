@@ -41,9 +41,10 @@ def is_anchor(t):
     return isinstance(t, int) and ((10 <= t < 24) or (60 <= t < 71) or t in (1, 2, 3))
 
 
-def bpe_train(corpus, n_merges, constrained=False):
-    """greedy BPE — 증분 페어 카운트. constrained=True면 앵커로 시작하는 토큰을
-    오른쪽으로 받는 머지 금지(명령 경계 넘는 머지 차단 = HiVG식 구조 제약)."""
+def bpe_train(corpus, n_merges, mode="none"):
+    """greedy BPE — 증분 페어 카운트.
+    mode: 'none'=비제약, 'boundary'=명령 경계 넘는 머지 차단,
+          'hivg'=명령-루트 세그먼트만 성장(좌→앵커시작, 우→비앵커; 충실한 HiVG)."""
     seqs = [list(s) for s in corpus]
     anchor_of = {}   # 머지 심볼이 '앵커로 시작'하는지 추적
 
@@ -53,10 +54,13 @@ def bpe_train(corpus, n_merges, constrained=False):
         return is_anchor(sym)
 
     def mergeable(a, b):
-        if not constrained:
+        if mode == "none":
             return True
-        # b가 앵커로 시작하면(새 명령 시작) 머지 금지 → 세그먼트 경계 보존
-        return not starts_anchor(b)
+        if mode == "boundary":
+            return not starts_anchor(b)
+        if mode == "hivg":   # 명령-루트 세그먼트 성장만 허용
+            return starts_anchor(a) and not starts_anchor(b)
+        return True
 
     pairs = collections.Counter()
     for s in seqs:
@@ -114,23 +118,56 @@ test_l1 = [l1_ids(s) for s in te["Svg"]]
 test_l1 = [x for x in test_l1 if x]
 test_svg = [s for s in te["Svg"]]
 
-# 모든 arm 동일 머지 예산(=동일 추가 어휘). char/L1은 비제약, HiVG는 구조 제약.
+import math
+
+
+def bits_per_icon(test_seqs, merges, train_seqs):
+    """order-0 엔트로피: train 유니그램 분포로 test 시퀀스 비트 추정."""
+    tr_enc = [bpe_apply(s, merges) for s in train_seqs]
+    freq = collections.Counter(sym for s in tr_enc for sym in s)
+    tot = sum(freq.values())
+    bits = {sym: -math.log2(c / tot) for sym, c in freq.items()}
+    avg_bit = math.log2(len(freq)) if freq else 0
+    out = 0.0
+    for s in test_seqs:
+        enc = bpe_apply(s, merges)
+        out += sum(bits.get(sym, avg_bit) for sym in enc)
+    return out / len(test_seqs)
+
+
+# 모든 arm 동일 머지 수. char/L1-비제약, L1-경계제약, L1-충실HiVG(명령루트).
 subs = {
-    "char_bpe":     ([list(s) for s in tr["Svg"]], [list(s) for s in te["Svg"]], False),
-    "l1_unconstr":  (train_l1, test_l1, False),
-    "l1_hivg_constr": (train_l1, test_l1, True),
+    "char_bpe":   ([list(s) for s in tr["Svg"]], [list(s) for s in te["Svg"]], "none"),
+    "l1_uncon":   (train_l1, test_l1, "none"),
+    "l1_bound":   (train_l1, test_l1, "boundary"),
+    "l1_hivg":    (train_l1, test_l1, "hivg"),
 }
 
-print(f"train={len(train_l1)} test={len(test_l1)} 아이콘  (모든 arm 동일 머지 예산=동일 추가 어휘)")
-print(f"{'budget':>7}" + "".join(f"{k:>16}" for k in subs))
+print(f"train={len(train_l1)} test={len(test_l1)} 아이콘  (모든 arm 동일 머지 수)")
+print(f"{'budget':>7}" + "".join(f"{k:>14}" for k in subs))
+last = {}
 for N in BUDGETS:
     row = {}
-    for name, (trc, tec, con) in subs.items():
-        merges = bpe_train(trc, N, constrained=con) if N else []
+    for name, (trc, tec, mode) in subs.items():
+        merges = bpe_train(trc, N, mode=mode) if N else []
         tot = sum(len(bpe_apply(s, merges)) for s in tec)
-        row[name] = (tot / len(tec), len(merges))
-    print(f"{N:>7}" + "".join(f"{row[k][0]:>11.1f}(+{row[k][1]})" for k in subs))
+        row[name] = (tot / len(tec), merges, trc, tec)
+    print(f"{N:>7}" + "".join(f"{row[k][0]:>14.1f}" for k in subs))
+    last = row
 
-print("\n해석(동일 어휘 예산):")
-print(" l1_unconstr < l1_hivg_constr 이면 '비제약 학습 머지 > HiVG 구조 제약'(논지 i 성립).")
-print(" l1_* << char_bpe 이면 '기하 토큰 기질이 원문보다 우월'(HiVG 누락 ablation 충원).")
+print(f"\nbits/icon @{BUDGETS[-1]}머지 (order-0 엔트로피):")
+for k in subs:
+    _, merges, trc, tec = last[k]
+    print(f"  {k:<10} {bits_per_icon(tec, merges, trc):>8.0f} bits")
+
+# 동일 총어휘 대조: char-BPE에 L1 총어휘만큼 머지 부여
+print("\n동일 총어휘 대조 (char-BPE에 L1과 같은 총어휘 예산):")
+base_l1 = len({sym for s in train_l1 for sym in s})
+base_ch = len({c for s in tr["Svg"] for c in s})
+extra = base_l1 + BUDGETS[-1] - base_ch
+m_ch = bpe_train([list(s) for s in tr["Svg"]], extra, mode="none")
+tot_ch = sum(len(bpe_apply(list(s), m_ch)) for s in te["Svg"]) / len(te)
+print(f"  L1 기저어휘 {base_l1}, char 기저 {base_ch} → char에 +{extra}머지: {tot_ch:.1f} tok/icon")
+print(f"  vs L1-uncon {last['l1_uncon'][0]:.1f} → 동일 총어휘에서도 L1 {tot_ch/last['l1_uncon'][0]:.1f}배 우위")
+
+print("\n해석: l1_uncon < l1_bound < l1_hivg 이면 '비제약 학습 > 구조 제약'(논지 i, 충실 HiVG 포함).")
