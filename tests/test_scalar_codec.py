@@ -20,12 +20,12 @@ import re
 
 sys.path.insert(0, '..')
 
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary
-from gpl_tokenizer.tokenizer.composite_tokenizer import CompositeTokenizer
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.tokenizer.vocabulary import GPLVocabulary
+from geomtok.tokenizer.composite_tokenizer import CompositeTokenizer
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 passed = 0
 failed = 0

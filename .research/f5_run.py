@@ -5,7 +5,7 @@ NAACL'24 방법론: 토크나이저만 바꾼 동일 디코더-only LM을 실세
 지표: held-out NLL(bits/icon), 생성 렌더-FID-lite, 다양도(1-meanIoU), 신규성.
 """
 import sys, io, math
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer/.research")
 
 import numpy as np

@@ -15,9 +15,9 @@ import sys
 import math
 sys.path.insert(0, '..')
 
-from gpl_tokenizer.parser import SVGParser
-from gpl_tokenizer.analyzer.shape_detector import ShapeDetector, ShapeType
-from gpl_tokenizer.tokenizer import PrimitiveTokenizer, CompositeTokenizer, Detokenizer
+from geomtok.parser import SVGParser
+from geomtok.analyzer.shape_detector import ShapeDetector, ShapeType
+from geomtok.tokenizer import PrimitiveTokenizer, CompositeTokenizer, Detokenizer
 
 
 # ===================== 테스트 SVG 데이터 =====================

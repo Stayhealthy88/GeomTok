@@ -4,13 +4,13 @@
 성공 기준: parse rate >= 95% (E2 목표).
 """
 import sys, traceback, collections
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import pandas as pd
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 p = hf_hub_download("starvector/svg-icons", "data/test-00000-of-00001.parquet", repo_type="dataset")
 df = pd.read_parquet(p)

@@ -10,15 +10,15 @@
       오차당 어휘 효율 = 1 / (어휘슬롯 × 평균오차).
 """
 import sys
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import numpy as np
 import pandas as pd
 import tiktoken
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
 
 N_SAMPLE = 400
 CANVAS = 300.0

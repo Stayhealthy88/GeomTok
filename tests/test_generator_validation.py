@@ -8,12 +8,12 @@ PathParser 기반의 실제 구조 검증으로 교체.
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.training.gpl_transformer import GPLTransformer, GPLTransformerConfig
-from gpl_tokenizer.training.generator import GPLGenerator
+from geomtok.tokenizer.vocabulary import GPLVocabulary
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.training.gpl_transformer import GPLTransformer, GPLTransformerConfig
+from geomtok.training.generator import GPLGenerator
 
 
 passed = failed = 0

@@ -4,15 +4,15 @@
 SentencePiece BPE(+1.5k 머지)를 학습해 hand-crafted 매크로 vs 학습 머지를 비교.
 """
 import sys, os
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import pandas as pd
 import sentencepiece as spm
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.composite_tokenizer import CompositeTokenizer
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.composite_tokenizer import CompositeTokenizer
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
 
 CANVAS = 300.0
 parser = SVGParser(normalize_canvas=CANVAS)

@@ -9,13 +9,13 @@
 동일 알고리즘·동일 예산이므로 차이는 순수 '기질 구조'의 효과.
 """
 import sys, collections
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import pandas as pd
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.vocabulary import COORD_TOKEN_BASE
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.vocabulary import COORD_TOKEN_BASE
 
 CANVAS = 300.0
 N_TRAIN, N_TEST = 1200, 400

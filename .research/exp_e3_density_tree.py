@@ -4,13 +4,13 @@
 코퍼스 전역 트리는 같은 어휘에서 균일 64×64(1.78px)보다 정밀하다.
 """
 import sys
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import numpy as np
 import pandas as pd
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.arcs import ARCS
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.arcs import ARCS
 
 CANVAS, N = 300.0, 400
 df = pd.read_parquet(hf_hub_download("starvector/svg-icons", "data/test-00000-of-00001.parquet",

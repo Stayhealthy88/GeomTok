@@ -4,7 +4,7 @@ L1(좌표 양자화)과 L2(도형 재프리미티브화)가 렌더에 끼치는 
 원본(무양자화 렌더) 대비 L1·L2 복원의 SSIM/inkIoU. 압축 이득과 나란히 보고.
 """
 import sys, io
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import numpy as np
 import pandas as pd
@@ -12,11 +12,11 @@ import resvg_py
 from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.parser.path_parser import PathParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.composite_tokenizer import CompositeTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.parser.path_parser import PathParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.composite_tokenizer import CompositeTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 N, RES, CANVAS = 150, 256, 300.0
 df = pd.read_parquet(hf_hub_download("starvector/svg-icons", "data/test-00000-of-00001.parquet",

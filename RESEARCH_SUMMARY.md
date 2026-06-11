@@ -1,4 +1,4 @@
-# GPL Tokenizer — Research Summary
+# GeomTok — Research Summary (formerly GPL Tokenizer)
 
 **Geometric Primitive Language: A geometry-aware tokenization system for SVG vector graphics**
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-GPL Tokenizer is a complete research pipeline that transforms how AI models understand and generate vector graphics. Instead of treating SVG code as plain text (character-by-character), GPL preserves the geometric structure of shapes, paths, and spatial relationships through specialized tokenization — then connects this representation to neural networks for generation.
+GeomTok is a complete research pipeline that transforms how AI models understand and generate vector graphics. Instead of treating SVG code as plain text (character-by-character), GPL preserves the geometric structure of shapes, paths, and spatial relationships through specialized tokenization — then connects this representation to neural networks for generation.
 
 The project spans five development milestones (v0.1–v0.5), progressing from basic parsing to a fully functional AI training pipeline.
 
@@ -149,4 +149,4 @@ The remaining milestone targets production deployment:
 
 ---
 
-*GPL Tokenizer — bridging AI and visual design through geometric understanding.*
+*GeomTok — bridging AI and visual design through geometric understanding.*

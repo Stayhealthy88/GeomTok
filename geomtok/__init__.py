@@ -1,5 +1,5 @@
 """
-GPL (Geometric Primitive Language) Tokenizer
+GeomTok — geometry-native tokenization for vector graphics (formerly GPL Tokenizer)
 =============================================
 SVG의 기하학적 구조를 보존하는 토큰화 시스템.
 
@@ -17,4 +17,4 @@ Modules:
     utils/       : 수학 유틸리티
 """
 
-__version__ = "0.5.0"
+__version__ = "0.7.0"

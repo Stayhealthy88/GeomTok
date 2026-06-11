@@ -1,6 +1,6 @@
 """실험 6 (E3/E4): 렌더 기반 SSIM — adaptive vs uniform 좌표, 실세계 150 아이콘."""
 import sys, io
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import numpy as np
 import pandas as pd
@@ -8,10 +8,10 @@ import resvg_py
 from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 N, RES, CANVAS = 150, 256, 300.0
 df = pd.read_parquet(hf_hub_download("starvector/svg-icons", "data/test-00000-of-00001.parquet",

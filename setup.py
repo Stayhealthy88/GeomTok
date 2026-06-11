@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="gpl-tokenizer",
-    version="0.6.0",
-    description="Geometric Primitive Language Tokenizer for SVG",
+    name="geomtok",
+    version="0.7.0",
+    description="GeomTok — geometry-native tokenization for vector graphics",
     author="Byun",
     author_email="igotthepower0128@gmail.com",
-    packages=find_packages(),
+    packages=find_packages(include=["geomtok", "geomtok.*"]),
     python_requires=">=3.9",
     install_requires=[
         "numpy>=1.21.0",

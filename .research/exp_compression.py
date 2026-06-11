@@ -5,13 +5,13 @@
 이 실험: tiktoken cl100k_base(GPT-4) / o200k_base(GPT-4o)로 실측 비교.
 """
 import sys
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import tiktoken
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.composite_tokenizer import CompositeTokenizer
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.composite_tokenizer import CompositeTokenizer
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
 
 CASES = {
     "circle_1": '<svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="50"/></svg>',

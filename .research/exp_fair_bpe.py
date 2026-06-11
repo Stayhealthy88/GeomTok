@@ -5,14 +5,14 @@
 - test 분할에서 tokens/icon + bits/icon(=tokens×log2(V)) 비교
 """
 import sys, io, math, os
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import pandas as pd
 import sentencepiece as spm
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
 
 CANVAS, VOCAB_SIZE = 300.0, 5561
 MODEL = "/tmp/svg_bpe_5561.model"

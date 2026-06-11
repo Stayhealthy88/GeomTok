@@ -1,11 +1,11 @@
 """실험 3: GeomTok-Eval 프로토콜로 v0.5.1 vs v0.6 값-수준 충실도 비교."""
 import sys
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
-from gpl_tokenizer.evaluation import GeomTokEval
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
+from geomtok.evaluation import GeomTokEval
 
 SCENES = {
     "circle_r20": '<svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="20"/></svg>',

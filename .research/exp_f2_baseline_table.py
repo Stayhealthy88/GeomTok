@@ -5,17 +5,17 @@
 cl100k는 참고 각주로만.
 """
 import sys, os, math, re
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import numpy as np
 import pandas as pd
 import sentencepiece as spm
 import tiktoken
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
-from gpl_tokenizer.evaluation.value_fidelity import _extract_path_coords
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
+from geomtok.evaluation.value_fidelity import _extract_path_coords
 
 CANVAS, VOCAB = 300.0, 5561
 parser = SVGParser(normalize_canvas=CANVAS)
@@ -54,7 +54,7 @@ for svg in te["Svg"]:
     tot["gpl_l1_bpe"] += len(sp_l1.encode("".join(chr(0x4E00 + i) for i in ids)))
 
     # F1 좌표 충실도: 원본 end_point vs L1 왕복 후 PathParser end_point (정렬 일치)
-    from gpl_tokenizer.parser.path_parser import PathParser
+    from geomtok.parser.path_parser import PathParser
     pp = PathParser()
     for e in doc.elements:
         o = [c.end_point for c in e.commands if c.end_point]

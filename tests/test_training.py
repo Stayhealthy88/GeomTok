@@ -21,17 +21,17 @@ sys.path.insert(0, '..')
 import torch
 from torch.utils.data import DataLoader
 
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary, SpecialToken
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.training.synthetic_dataset import (
+from geomtok.tokenizer.vocabulary import GPLVocabulary, SpecialToken
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.training.synthetic_dataset import (
     SyntheticSVGDataset, SyntheticSVGGenerator, SVGCollator,
 )
-from gpl_tokenizer.training.gpl_transformer import (
+from geomtok.training.gpl_transformer import (
     GPLTransformer, GPLTransformerConfig,
 )
-from gpl_tokenizer.training.trainer import GPLTrainer, TrainingConfig
-from gpl_tokenizer.training.generator import GPLGenerator
-from gpl_tokenizer.training.evaluator import GPLEvaluator
+from geomtok.training.trainer import GPLTrainer, TrainingConfig
+from geomtok.training.generator import GPLGenerator
+from geomtok.training.evaluator import GPLEvaluator
 
 
 # ===================== 설정 =====================

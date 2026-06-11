@@ -1,12 +1,12 @@
 """F5 데이터: 실세계 아이콘을 arm별 토큰 스트림으로 (char-BPE / L1 / L1+BPE)."""
 import sys
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import pandas as pd
 import sentencepiece as spm
 from huggingface_hub import hf_hub_download
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
 
 CANVAS = 300.0
 _parser = SVGParser(normalize_canvas=CANVAS)

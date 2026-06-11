@@ -12,7 +12,7 @@ import math
 
 sys.path.insert(0, '..')
 
-from gpl_tokenizer.parser.svg_parser import SVGParser
+from geomtok.parser.svg_parser import SVGParser
 
 passed = 0
 failed = 0

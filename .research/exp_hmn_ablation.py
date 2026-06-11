@@ -4,16 +4,16 @@
 지표: 최종 train/val loss, val accuracy, 유효 SVG 생성률(n=30).
 """
 import sys, time, statistics
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 
 import torch
 from torch.utils.data import DataLoader
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.training.synthetic_dataset import SyntheticSVGDataset, SVGCollator
-from gpl_tokenizer.training.gpl_transformer import GPLTransformer, GPLTransformerConfig
-from gpl_tokenizer.training.trainer import GPLTrainer, TrainingConfig
-from gpl_tokenizer.training.generator import GPLGenerator
+from geomtok.tokenizer.vocabulary import GPLVocabulary
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.training.synthetic_dataset import SyntheticSVGDataset, SVGCollator
+from geomtok.training.gpl_transformer import GPLTransformer, GPLTransformerConfig
+from geomtok.training.trainer import GPLTrainer, TrainingConfig
+from geomtok.training.generator import GPLGenerator
 
 VOCAB = GPLVocabulary(max_coord_level=6)
 ARCS_INST = ARCS(max_level=6)

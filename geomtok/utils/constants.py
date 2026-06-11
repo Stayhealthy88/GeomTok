@@ -11,7 +11,7 @@ v0.5 분석 보고서 개선 #2:
     서로 다른 값으로 하드코딩되어 있었다. 이 모듈은 그 값을 단일 출처로 통합한다.
 
 사용법:
-    from gpl_tokenizer.utils.constants import GeometricConstants, DEFAULT_CONSTANTS
+    from geomtok.utils.constants import GeometricConstants, DEFAULT_CONSTANTS
 
     # 기본값 사용
     analyzer = ContinuityAnalyzer()   # DEFAULT_CONSTANTS 이 자동 적용

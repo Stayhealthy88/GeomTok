@@ -5,7 +5,7 @@
 l1_bpe는 정확 역매핑 위해 자체 BPE(머지 확장) 사용(SP 유니코드 해킹은 손실).
 """
 import sys, io, math
-sys.path.insert(0, "/Users/limit/Projects")
+sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer")
 sys.path.insert(0, "/Users/limit/Projects/gpl-tokenizer/.research")
 
 import numpy as np
@@ -17,8 +17,8 @@ import sentencepiece as spm
 
 import f5_data
 from f5_run import VanillaLM, train
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 torch.manual_seed(0); np.random.seed(0)
 DEV, RES, NGEN = "cpu", 64, 200
