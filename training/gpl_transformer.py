@@ -95,8 +95,11 @@ class GPLTransformer(nn.Module):
             hmn_version=config.hmn_version,
         )
 
-        # 2. Transformer Decoder Layers
-        decoder_layer = nn.TransformerDecoderLayer(
+        # 2. Decoder-only stack — Encoder layers + causal mask.
+        # E6: 기존 TransformerDecoder는 zero-memory cross-attention(죽은 파라미터
+        # ~14.7%)을 강제했다. Encoder + causal mask가 동일 self-attention 디코더-only를
+        # 죽은 cross-attn 없이 구현 (1.79M → ~1.53M).
+        encoder_layer = nn.TransformerEncoderLayer(
             d_model=config.d_model,
             nhead=config.n_heads,
             dim_feedforward=config.d_ff,
@@ -105,8 +108,8 @@ class GPLTransformer(nn.Module):
             batch_first=True,
             norm_first=True,  # Pre-LN for training stability
         )
-        self.decoder = nn.TransformerDecoder(
-            decoder_layer=decoder_layer,
+        self.decoder = nn.TransformerEncoder(
+            encoder_layer=encoder_layer,
             num_layers=config.n_layers,
         )
 
@@ -170,14 +173,11 @@ class GPLTransformer(nn.Module):
         else:
             key_padding_mask = None
 
-        # 4. Transformer decoder (self-attention only, no cross-attention)
-        # decoder requires memory input — use self as memory for decoder-only
-        memory = torch.zeros(B, 1, self.config.d_model, device=x.device)
+        # 4. Decoder-only self-attention (Encoder + causal mask, no cross-attention)
         x = self.decoder(
-            tgt=x,
-            memory=memory,
-            tgt_mask=causal,
-            tgt_key_padding_mask=key_padding_mask,
+            x,
+            mask=causal,
+            src_key_padding_mask=key_padding_mask,
         )
 
         # 5. LM Head
