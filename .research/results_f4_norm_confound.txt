@@ -1,0 +1,12 @@
+random           s0: train=5.185 val=4.563
+random           s1: train=5.165 val=4.453
+>> random          : train 5.175  val 4.508
+
+random_unitnorm  s0: train=2.497 val=3.402
+random_unitnorm  s1: train=2.481 val=3.396
+>> random_unitnorm : train 2.489  val 3.399
+
+hmn_v2           s0: train=2.444 val=3.472
+hmn_v2           s1: train=2.474 val=3.458
+>> hmn_v2          : train 2.459  val 3.465
+
