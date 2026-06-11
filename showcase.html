@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GPL Tokenizer — Teaching AI to See Geometry</title>
+<title>GeomTok — Teaching AI to See Geometry</title>
 <style>
   :root{
     --bg:#070912; --bg2:#0d1020; --ink:#e8ecf8; --mut:#8b93b0; --dim:#5a6182;
@@ -146,7 +146,7 @@
   <div class="wrap">
     <div class="logo">
       <svg viewBox="0 0 32 32" fill="none"><circle cx="9" cy="9" r="5" stroke="url(#g1)" stroke-width="2"/><rect x="17" y="17" width="10" height="10" rx="2" stroke="url(#g1)" stroke-width="2"/><path d="M14 9h6M9 14v6" stroke="url(#g1)" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="g1" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#37e6d4"/><stop offset="1" stop-color="#8b6cff"/></linearGradient></defs></svg>
-      <span>GPL&nbsp;Tokenizer</span>
+      <span>GeomTok</span>
     </div>
     <div class="nlinks">
       <a href="#problem">Problem</a>
@@ -180,7 +180,7 @@
   <div class="wrap" style="position:relative;z-index:1">
     <span class="pill reveal"><span class="dot"></span> Adversarially verified research · v0.7</span>
     <h1 class="reveal">Teaching AI to<br><span class="grad">see geometry</span>, not text.</h1>
-    <p class="lead reveal">Today's language models read a vector graphic the way they'd read a paragraph — and shred every coordinate into meaningless digits. GPL Tokenizer is a geometry-native translation layer that lets AI reason over <b>shapes and space</b>, not scrambled characters.</p>
+    <p class="lead reveal">Today's language models read a vector graphic the way they'd read a paragraph — and shred every coordinate into meaningless digits. GeomTok is a geometry-native translation layer that lets AI reason over <b>shapes and space</b>, not scrambled characters.</p>
     <div class="cta reveal">
       <a class="btn p" href="#results">See the evidence ↓</a>
       <a class="btn s" href="#business">Business case</a>
@@ -208,7 +208,7 @@
           <div class="count">One circle → <b style="color:#ffb3d1">28 tokens</b> of scrambled digits. No notion of center, radius, or roundness.</div>
         </div>
         <div class="col">
-          <div class="tag" style="color:var(--cyan)">✓ GPL geometric tokenizer</div>
+          <div class="tag" style="color:var(--cyan)">✓ GeomTok geometric tokenizer</div>
           <div id="goodToks"></div>
           <div class="count">Same circle → <b style="color:#9ef5ec">5 tokens</b> carrying center, radius &amp; shape identity. The AI sees a circle.</div>
         </div>
@@ -229,7 +229,7 @@
         <button data-m="bits">Bits / icon</button>
       </div>
       <div id="bars"></div>
-      <p class="note" id="chartNote">Lower is better. char-BPE = a SentencePiece tokenizer trained on SVG text at vocab 5,561 — the fair comparison. GPL-L1 = geometric primitive tokens. +Learned-BPE = merges learned on top.</p>
+      <p class="note" id="chartNote">Lower is better. char-BPE = a SentencePiece tokenizer trained on SVG text at vocab 5,561 — the fair comparison. GeomTok-L1 = geometric primitive tokens. +Learned-BPE = merges learned on top.</p>
     </div>
   </div>
 </section>
@@ -241,9 +241,9 @@
     <div class="discovery reveal">
       <div class="mut" style="font-weight:700;letter-spacing:.1em;font-size:13px">A COUNTERINTUITIVE RESULT</div>
       <div class="big">Compression ≠ Modelability.<br>The tokenizer that <span class="grad">compresses most</span> is <span style="color:var(--pink)">not</span> the one AI learns best from.</div>
-      <p class="mut" style="max-width:680px">Training an identical model on the same real icons — swapping only the tokenizer — geometric primitive tokens (GPL-L1) produced the <b>best</b> downstream model, beating a text tokenizer by 25%. Yet aggressive learned merges compressed 1.8× <i>more</i> while modeling <i>worse</i> — they trade token count for per-token entropy. <b>For AI that generates vectors, the right unit is a geometric primitive, not the shortest sequence.</b></p>
+      <p class="mut" style="max-width:680px">Training an identical model on the same real icons — swapping only the tokenizer — geometric primitive tokens (GeomTok-L1) produced the <b>best</b> downstream model, beating a text tokenizer by 25%. Yet aggressive learned merges compressed 1.8× <i>more</i> while modeling <i>worse</i> — they trade token count for per-token entropy. <b>For AI that generates vectors, the right unit is a geometric primitive, not the shortest sequence.</b></p>
       <div class="grid3" style="margin-top:28px">
-        <div class="card" style="text-align:center"><div class="num grad" style="font-size:30px;font-weight:800">576</div><div class="lbl mut" style="font-size:13px">GPL-L1 · best ↓</div></div>
+        <div class="card" style="text-align:center"><div class="num grad" style="font-size:30px;font-weight:800">576</div><div class="lbl mut" style="font-size:13px">GeomTok-L1 · best ↓</div></div>
         <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--amber)">666</div><div class="lbl mut" style="font-size:13px">+Learned-BPE · most compressed, worse model</div></div>
         <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--pink)">775</div><div class="lbl mut" style="font-size:13px">char-BPE · text baseline</div></div>
       </div>
@@ -342,9 +342,9 @@
 
 <footer>
   <div class="wrap">
-    <div class="logo" style="justify-content:center;font-size:18px"><svg viewBox="0 0 32 32" fill="none"><circle cx="9" cy="9" r="5" stroke="url(#g1)" stroke-width="2"/><rect x="17" y="17" width="10" height="10" rx="2" stroke="url(#g1)" stroke-width="2"/><path d="M14 9h6M9 14v6" stroke="url(#g1)" stroke-width="2" stroke-linecap="round"/></svg> GPL&nbsp;Tokenizer</div>
+    <div class="logo" style="justify-content:center;font-size:18px"><svg viewBox="0 0 32 32" fill="none"><circle cx="9" cy="9" r="5" stroke="url(#g1)" stroke-width="2"/><rect x="17" y="17" width="10" height="10" rx="2" stroke="url(#g1)" stroke-width="2"/><path d="M14 9h6M9 14v6" stroke="url(#g1)" stroke-width="2" stroke-linecap="round"/></svg> GeomTok</div>
     <p class="mut" style="margin-top:14px">Bridging AI and visual design through geometric understanding.</p>
-    <p class="disclaim">Research prototype, v0.7. All figures are from internal experiments on the public StarVector svg-icons benchmark and are reported post adversarial review — including retracted claims, shown above in the interest of integrity. Compression (3.54×) is measured against a domain-trained text tokenizer at matched 5,561 vocabulary; downstream figures use an identical 2.5M-parameter model under the NAACL'24 tokenizer-swap protocol. "GPL" is a working name under reconsideration.</p>
+    <p class="disclaim">Research prototype, v0.7. All figures are from internal experiments on the public StarVector svg-icons benchmark and are reported post adversarial review — including retracted claims, shown above in the interest of integrity. Compression (3.54×) is measured against a domain-trained text tokenizer at matched 5,561 vocabulary; downstream figures use an identical 2.5M-parameter model under the NAACL'24 tokenizer-swap protocol. "GeomTok" (formerly "GPL Tokenizer", renamed to avoid the GPL-license collision).</p>
   </div>
 </footer>
 
@@ -375,17 +375,17 @@ good.forEach((t,i)=>{const s=document.createElement('span');s.className='tok goo
 const DATA={
   tokens:[
     {name:'char-BPE',sub:'text baseline',val:935,col:'var(--pink)'},
-    {name:'GPL-L1',sub:'geometric',val:264,col:'var(--cyan)'},
+    {name:'GeomTok-L1',sub:'geometric',val:264,col:'var(--cyan)'},
     {name:'+Learned-BPE',sub:'merges',val:151,col:'var(--violet)'},
   ],
   bits:[
     {name:'char-BPE',sub:'text baseline',val:775,col:'var(--pink)'},
     {name:'+Learned-BPE',sub:'most compressed',val:666,col:'var(--amber)'},
-    {name:'GPL-L1',sub:'best downstream',val:576,col:'var(--cyan)'},
+    {name:'GeomTok-L1',sub:'best downstream',val:576,col:'var(--cyan)'},
   ]
 };
 const NOTES={
-  tokens:'Tokens per icon, 400 real icons. Lower = more compact. GPL geometric tokens are 3.54× tighter than a same-vocab text tokenizer; learned merges go further still.',
+  tokens:'Tokens per icon, 400 real icons. Lower = more compact. GeomTok geometric tokens are 3.54× tighter than a same-vocab text tokenizer; learned merges go further still.',
   bits:'Held-out bits/icon — how well an identical model predicts real icons. Lower = better. The twist: the most-compressed tokenizer (+Learned-BPE) is NOT the best to learn from. Geometry wins.'
 };
 const barsEl=document.getElementById('bars'), noteEl=document.getElementById('chartNote');
