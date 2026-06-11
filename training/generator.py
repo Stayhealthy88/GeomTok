@@ -50,11 +50,14 @@ class GPLGenerator:
                  model: GPLTransformer,
                  vocab: GPLVocabulary,
                  arcs: ARCS,
-                 detokenizer: Optional[Detokenizer] = None):
+                 detokenizer: Optional[Detokenizer] = None,
+                 constrained: bool = True):
         self.model = model
         self.vocab = vocab
         self.arcs = arcs
         self.detokenizer = detokenizer or Detokenizer(vocab, arcs)
+        # E4: FSA 문법 제약 디코딩 (False면 v0.5 무제약 샘플링)
+        self.constrained = constrained
 
     def generate_unconditional(self,
                                 max_len: int = 64,
@@ -140,15 +143,23 @@ class GPLGenerator:
                                top_p: float,
                                ) -> GeneratedSVG:
         """프롬프트에서 토큰 생성 → SVG 변환."""
-        # 토큰 생성
-        generated = self.model.generate(
-            prompt=prompt,
-            max_len=max_len,
-            temperature=temperature,
-            top_k=top_k,
-            top_p=top_p,
-            eos_id=SpecialToken.EOS,
-        )
+        # 토큰 생성 — E4: 문법 제약 디코딩 기본 (CAD-Tokenizer FSA 선례)
+        if getattr(self, "constrained", True):
+            from .grammar import constrained_generate
+            generated = constrained_generate(
+                self.model, self.vocab, prompt,
+                max_len=max_len, temperature=temperature, top_k=top_k,
+                eos_id=int(SpecialToken.EOS),
+            )
+        else:
+            generated = self.model.generate(
+                prompt=prompt,
+                max_len=max_len,
+                temperature=temperature,
+                top_k=top_k,
+                top_p=top_p,
+                eos_id=SpecialToken.EOS,
+            )
 
         token_ids = generated[0].tolist()
 
@@ -159,8 +170,15 @@ class GPLGenerator:
 
         try:
             svg_path = self.detokenizer.detokenize(token_ids)
-            svg_full = self._wrap_svg(svg_path)
-            is_valid = self._validate_svg(svg_path)
+            if svg_path.strip():
+                svg_full = self._wrap_svg(svg_path)
+                is_valid = self._validate_svg(svg_path)
+            else:
+                # E4: path 명령이 없어도 복합 도형([CIRCLE][중심][반지름] 등)이
+                # 디코드되면 유효 — 기존 검증기는 path만 인정해 도형 출력을
+                # 전부 무효 처리했다
+                svg_full = self.detokenizer.to_svg_document(token_ids)
+                is_valid = any(t in svg_full for t in ("<circle", "<rect", "<ellipse"))
         except Exception:
             svg_full = self._wrap_svg("")  # 빈 SVG
             is_valid = False
