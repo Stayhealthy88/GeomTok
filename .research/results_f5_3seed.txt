@@ -1,0 +1,9 @@
+train 1045, test 213 아이콘
+arm         vocab  tok/icon  heldout bits/icon (3 seed)
+char_bpe     5561     159.0           775 ± 6     
+l1           5561     103.7           576 ± 4     
+l1_bpe       7000      58.8           666 ± 2     
+
+해석: held-out bits/icon 낮을수록 토큰화가 실데이터 분포를 잘 모델링(토크나이저 비종속).
+  L1 576 < L1+BPE 666 이면 '압축 우위(L1+BPE 58.8tok)가 다운스트림으로 이어지지 않음' — 내재≠외재 반례.
+  L1 < char-BPE 775 이면 '기하 토큰이 최고 다운스트림 기질'.

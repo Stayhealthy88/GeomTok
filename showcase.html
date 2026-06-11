@@ -243,9 +243,9 @@
       <div class="big">Compression ≠ Modelability.<br>The tokenizer that <span class="grad">compresses most</span> is <span style="color:var(--pink)">not</span> the one AI learns best from.</div>
       <p class="mut" style="max-width:680px">Training an identical model on the same real icons — swapping only the tokenizer — geometric primitive tokens (GPL-L1) produced the <b>best</b> downstream model, beating a text tokenizer by 25%. Yet aggressive learned merges compressed 1.8× <i>more</i> while modeling <i>worse</i> — they trade token count for per-token entropy. <b>For AI that generates vectors, the right unit is a geometric primitive, not the shortest sequence.</b></p>
       <div class="grid3" style="margin-top:28px">
-        <div class="card" style="text-align:center"><div class="num grad" style="font-size:30px;font-weight:800">577</div><div class="lbl mut" style="font-size:13px">GPL-L1 · best ↓</div></div>
-        <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--amber)">667</div><div class="lbl mut" style="font-size:13px">+Learned-BPE · most compressed, worse model</div></div>
-        <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--pink)">773</div><div class="lbl mut" style="font-size:13px">char-BPE · text baseline</div></div>
+        <div class="card" style="text-align:center"><div class="num grad" style="font-size:30px;font-weight:800">576</div><div class="lbl mut" style="font-size:13px">GPL-L1 · best ↓</div></div>
+        <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--amber)">666</div><div class="lbl mut" style="font-size:13px">+Learned-BPE · most compressed, worse model</div></div>
+        <div class="card" style="text-align:center"><div class="num" style="font-size:30px;font-weight:800;color:var(--pink)">775</div><div class="lbl mut" style="font-size:13px">char-BPE · text baseline</div></div>
       </div>
       <p class="note">Held-out bits/icon, identical 2.5M vanilla transformer, real SVG icons (NAACL'24 tokenizer-swap protocol). Lower = better.</p>
     </div>
@@ -379,9 +379,9 @@ const DATA={
     {name:'+Learned-BPE',sub:'merges',val:151,col:'var(--violet)'},
   ],
   bits:[
-    {name:'char-BPE',sub:'text baseline',val:773,col:'var(--pink)'},
-    {name:'+Learned-BPE',sub:'most compressed',val:667,col:'var(--amber)'},
-    {name:'GPL-L1',sub:'best downstream',val:577,col:'var(--cyan)'},
+    {name:'char-BPE',sub:'text baseline',val:775,col:'var(--pink)'},
+    {name:'+Learned-BPE',sub:'most compressed',val:666,col:'var(--amber)'},
+    {name:'GPL-L1',sub:'best downstream',val:576,col:'var(--cyan)'},
   ]
 };
 const NOTES={
