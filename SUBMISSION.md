@@ -7,7 +7,7 @@
 | Path | Status | Gating work |
 |---|---|---|
 | **EMNLP/ACL Findings · tokenization/efficiency workshop** | **Ready now** (after this revision) | Wording/citation/structure fixes — **done** in PAPER.md |
-| **ACL/EMNLP main short** | **E1–E3 done**; needs Figs 1/3/4 + (ideally) E4 continuous-regression arm | see below |
+| **ACL/EMNLP main short** | **E1–E4 done**; needs Figs 1/3/4 (Fig 2 done) | see below |
 | **ACL/EMNLP main long · CVPR** | Out of scope | Requires scale-up (≥100M, real generator, color SVG, human eval) — a second paper |
 
 **Recommendation:** target **EMNLP Findings** (the work is a tokenizer-evaluation contribution in the NAACL'24 swap lineage, not a vision paper). Run E1+E2 for a credible main-short attempt.
@@ -30,7 +30,7 @@
 - [x] **E1. Merge-budget sweep, downstream** — DONE. budget 0→2000: tokens 105→65, NLL 608→680 (monotonic). Pure L1 is downstream-optimal. `results_E1_budget_sweep.txt`.
 - [x] **E2. Capacity trend** — DONE. 0.9M→9.3M params: L1 wins at every size, gap grows 35→62. NOT a small-model artifact. `results_E2_capacity.txt`.
 - [x] **E3. Second corpus (svg-emoji)** — DONE. Substrate claim replicates (L1/L1+BPE 1117/1086 ≪ char 1356); compression direction is corpus-dependent (tied on emoji) — reported honestly. `results_E3_second_corpus.txt`.
-- [ ] **E4. Continuous-regression arm** — small regression-head coord model on same backbone; answers Ogezi et al. (2026). *Nice-to-have, high value.*
+- [x] **E4. Continuous-regression arm** — DONE. discrete coord-token head 18% more accurate than continuous regression (35.7 vs 43.3px mean) on same backbone; CNM does not help in this regime. `results_E4_continuous.txt`.
 - [ ] **E5. (optional)** κ/continuity token ablation; coord-error >2px tail; StrokeNUWA VQ scatter point; n≈20 human forced-choice.
 
 ## Figures to produce — todo
