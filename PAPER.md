@@ -6,7 +6,7 @@
 
 ## Abstract
 
-Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate like `150.5` into characters that carry no spatial meaning. We ask a narrow, falsifiable question: does the *unit* a model reads geometry in change downstream modeling? We introduce **GeomTok**, a geometry-native SVG tokenizer (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), and **GeomTok-Eval**, a render-based intrinsic *tokenizer* protocol decoupled from any generator. Under a controlled tokenizer-swap on an identical 2.5M-parameter transformer, geometric primitive tokens model held-out icons 26% better (held-out NLL) than a domain-trained text BPE, and — under identical plain sampling — a text tokenizer generates 0% renderable SVG versus 84% for GeomTok. Our central result is a controlled counterexample, in the graphics setting, to the assumption that intrinsic compression predicts downstream modeling — a relationship already shown non-monotonic for text by PathPiece (Schmidt et al., 2024): the *most compressed* tokenizer is not the best to learn from, as learned BPE merges that compress 1.8× further raise per-token entropy and model *worse* while halving generation validity. We release the protocol, fair baselines, and a set of adversarially-verified negative results — including two retracted claims — as a methodological contribution. We scope all model-level claims to the small-model, sample-efficient regime.
+Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate like `150.5` into characters that carry no spatial meaning. We ask a narrow, falsifiable question: does the *unit* a model reads geometry in change downstream modeling? We introduce **GeomTok**, a geometry-native SVG tokenizer (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), and **GeomTok-Eval**, a render-based intrinsic *tokenizer* protocol decoupled from any generator. Under a controlled tokenizer-swap on an identical small transformer, geometric primitive tokens model held-out icons 18–26% better (held-out NLL) than a domain-trained text BPE — a result that replicates across two corpora (icons and emoji) and *grows* with model capacity over a 10× parameter range — and, under identical plain sampling, a text tokenizer generates 0% renderable SVG versus 84% for GeomTok. Our central result is a controlled counterexample, in the graphics setting, to the assumption that intrinsic compression predicts downstream modeling — a relationship already shown non-monotonic for text by PathPiece (Schmidt et al., 2024): more compression never reliably helps — on icons each added BPE merge monotonically *worsens* modeling (more compressed, higher per-token entropy), and on emoji the most-compressed variant is within noise of the least. We release the protocol, fair baselines, and a set of adversarially-verified negative results — including retracted claims — as a methodological contribution. We scope all model-level claims to the small-model, sample-efficient regime.
 
 ---
 
@@ -110,7 +110,22 @@ Identical 2.5M model, real icons (1,045 train / 213 test), tokenizer swapped, 3 
 
 Two findings; both gaps are large relative to seed variance (std across the 3 seeds is 2–6 bits, against gaps of 90–199 bits):
 1. **Geometric primitive tokens are the best downstream substrate in this regime** — 26% better modeling than a domain text tokenizer (576 vs 775).
-2. **Compression does not predict modelability** — L1+BPE compresses 1.8× more than L1 (59 vs 104 tokens) yet models *worse* (666 vs 576), because merges raise per-token entropy (11.3 vs 5.6 bits/token). The most-compressed tokenizer is not the best to learn from. We present this as a controlled counterexample, not a universal law (see §7 on scale).
+2. **Compression does not reliably predict modelability** — L1+BPE compresses 1.8× more than L1 (59 vs 104 tokens) yet models *worse* (666 vs 576), because merges raise per-token entropy (11.3 vs 5.6 bits/token). The most-compressed tokenizer is not the best to learn from. We strengthen this with a budget sweep, a capacity trend, and a second corpus below, and present it as a counterexample to the assumption that compression predicts downstream quality — not a universal law of the reverse.
+
+**Budget sweep (the counterexample is a curve, not a point).** Sweeping the merge budget N applied to L1 on svg-icons (1,000 train / 200 test, n=2): as N rises, tokens/icon falls monotonically (105→71→70→68→65 at N=0/250/500/1k/2k) while held-out NLL rises monotonically (608→635→649→668→680). Every added merge compresses more and models worse; pure L1 (N=0) is the downstream optimum. Visualized in Figure 2 (`assets/fig2_compression_modelability.svg`).
+
+**Capacity trend (the substrate gap does not vanish with scale).** Running the L1-vs-L1+BPE(1k) swap at four model sizes from 0.9M to 9.3M parameters, L1 wins at every size and the gap *grows* with capacity:
+
+| params | L1 NLL | L1+BPE NLL | gap |
+|---|---|---|---|
+| 0.9M | 754 | 788 | 35 |
+| 2.2M | 708 | 755 | 47 |
+| 4.6M | 661 | 723 | 62 |
+| 9.3M | 634 | 696 | 62 |
+
+The L1>L1+BPE advantage is not a small-model artifact across this 10× parameter range; whether it persists at 100M–1B is future work (§10).
+
+**Second corpus (the primary claim replicates; the compression direction is corpus-dependent).** Repeating the swap on **svg-emoji** (colored, 401 train / 48 test, n=3), the *primary* substrate result replicates strongly — both geometric arms crush text BPE: L1 1117 ± 27 and L1+BPE 1086 ± 44 vs char-BPE 1356 ± 5 (geometric tokens 18% better than text). The *specific* compression direction, however, does not transfer: on emoji L1+BPE (1086) is statistically tied with L1 (1117) (gap 31 < combined std ~52), rather than worse as on svg-icons. We report this honestly: across a budget sweep and two corpora, more compression *never reliably helps* — it monotonically hurts on svg-icons and is within noise on svg-emoji — which is the evidence for "compression does not reliably predict modelability." A genuine predictor would show a consistent monotone relationship; we observe none. The robust, two-corpus claim is the substrate result (geometry ≫ text); the compression–modelability relationship is non-predictive rather than reliably inverted.
 
 ### 5.4 Downstream: generation quality
 
@@ -140,7 +155,7 @@ We also note that a saturated validity metric (100% after a definition change) h
 
 ## 7. Limitations and the Continuous-Coordinate Challenge
 
-Experiments are CPU-scale: a 2.5M model on ~1k icons, monochrome path icons, held-out NLL and a lightweight FID rather than large-model human-aligned generation. We therefore scope the model-level claims (§5.3–5.4) to the small-model, sample-efficient regime; we do not claim they transfer unchanged to 3–8B VLM scale, and the compression–modelability gap may narrow with capacity — establishing its scale-dependence is the most important follow-up (see §10). Color/style and full SVG features (gradients, text, filters) are out of scope. The fixed-point codec overloads a token's meaning (position vs scalar vs count), an embedding confound we have not measured.
+Experiments are CPU-scale: models up to 9.3M parameters on ~0.4–1k icons, path-centric icons (and colored emoji as a second corpus), held-out NLL and a lightweight FID rather than large-model human-aligned generation. We therefore scope the model-level claims (§5.3–5.4) to the small-model, sample-efficient regime; we do not claim they transfer unchanged to 3–8B VLM scale. We note, however, that the substrate gap does *not* shrink over the 0.9M–9.3M range we tested (it grows; §5.3), which weakens the "small-model artifact" reading, though confirming persistence at 100M–1B remains the most important follow-up (§10). Color/style and full SVG features (gradients, text, filters) are out of scope. The fixed-point codec overloads a token's meaning (position vs scalar vs count), an embedding confound we have not measured.
 
 The sharpest challenge to our premise is the *continuous-coordinate* camp (Ogezi et al., 2026): if coordinates are modeled as continuous values rather than discrete tokens, the entire notion of a tokenization "unit" dissolves. Our claims are therefore conditional on a discrete-token interface; a head-to-head against a continuous-regression arm on the same backbone is the natural next experiment (§10).
 
@@ -154,7 +169,7 @@ The unit a model reads geometry in is not a free choice. On real vector graphics
 
 ## 9. Reproducibility
 
-All numbers are produced by scripts in `.research/` against the public StarVector svg-icons benchmark; raw outputs are archived in `.research/results_*.txt`. The package installs as `geomtok` (`pip install -e .`); tests run via `pytest` (191 assertions). Key scripts: `exp_f2_baseline_table.py` (§5.1), `exp_A_hivg_vs_learned.py` (§5.2), `f5_run.py` (§5.3), `f5_gen.py` (§5.4), `exp_init_norm_confound.py` (§6), `exp_e3_adaptive_vs_uniform.py` / `exp_e3_density_tree.py` (§6).
+All numbers are produced by scripts in `.research/` against the public StarVector svg-icons benchmark; raw outputs are archived in `.research/results_*.txt`. The package installs as `geomtok` (`pip install -e .`); tests run via `pytest` (191 assertions). Key scripts: `exp_f2_baseline_table.py` (§5.1), `exp_A_hivg_vs_learned.py` (§5.2), `f5_run.py` (§5.3 main), `exp_E1_budget_sweep.py` / `exp_E2_capacity.py` / `exp_E3_second_corpus.py` (§5.3 sweep/capacity/second-corpus), `f5_gen.py` (§5.4), `exp_init_norm_confound.py` (§6), `exp_e3_adaptive_vs_uniform.py` / `exp_e3_density_tree.py` (§6). Figure 2: `fig2_compression_modelability.py` → `assets/fig2_compression_modelability.svg`.
 
 *Camera-ready artifact checklist (to complete before submission):* HF dataset id + revision hash; checked-in train/test split manifests (the exact 1,045/213 and 1,200/400 splits); `requirements.txt` with Python and resvg versions (render metrics depend on the rasterizer version); the three training seeds and seed-setting mechanism; a model-config table (layers, width, context, LR, steps, batch for the 2.5M model); per-experiment hardware and wall-clock; a determinism note; and a license decision (the work must be released open for the methodological/protocol framing to hold).
 
@@ -162,10 +177,10 @@ All numbers are produced by scripts in `.research/` against the public StarVecto
 
 ## 10. Submission Plan (not for camera-ready)
 
-Per adversarial review, the framing/wording/citation fixes above make this a clean **Findings / tokenization-workshop** contribution as written. To clear an **ACL/EMNLP main-short** bar, the following CPU-feasible experiments are needed, in priority order:
+Per adversarial review, the framing/wording/citation fixes plus the three experiments now in §5.3 (budget sweep, capacity trend, second corpus — all **done**) target an **ACL/EMNLP main-short** bar. Remaining items, in priority order:
 
-1. **Merge-budget sweep, downstream.** Plot held-out NLL vs merge budget N for char-BPE and L1, to show the §5.3 counterexample is a *curve*, not a single operating point. (The intrinsic-compression curve already exists in §5.2; the downstream-NLL-vs-budget curve is new.)
-2. **Capacity trend.** Run the swap at ~0.5M / 2.5M / 10M / 25M params and report the direction of the L1>L1+BPE gap vs capacity — de-risks the scale critique on the headline.
-3. **Second corpus.** Add one more icon set (Twemoji / Noto-outline / Material / SVG-Stack slice) to remove the single-benchmark risk.
-4. **Continuous-regression arm.** A small regression-head coordinate model on the same backbone, to answer Ogezi et al. (2026).
-5. **Nice-to-have:** κ-curvature/continuity token ablation; coordinate-error tail (>2px perceptible rate); StrokeNUWA VQ point on the compression–fidelity scatter; small human forced-choice eval.
+1. ✅ **Merge-budget sweep, downstream** (§5.3) — the counterexample is now a monotonic curve on svg-icons.
+2. ✅ **Capacity trend** (§5.3) — the substrate gap holds and grows over 0.9M–9.3M params.
+3. ✅ **Second corpus** (§5.3) — the substrate claim replicates on svg-emoji; the compression direction is reported as corpus-dependent.
+4. **Continuous-regression arm** — a small regression-head coordinate model on the same backbone, to answer Ogezi et al. (2026). *Still open; highest-value remaining.*
+5. **Nice-to-have:** κ-curvature/continuity token ablation; coordinate-error tail (>2px perceptible rate); StrokeNUWA VQ point on the compression–fidelity scatter; small human forced-choice eval; Figures 1, 3, 4 (Figure 2 done).

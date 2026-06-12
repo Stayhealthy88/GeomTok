@@ -7,7 +7,7 @@
 | Path | Status | Gating work |
 |---|---|---|
 | **EMNLP/ACL Findings · tokenization/efficiency workshop** | **Ready now** (after this revision) | Wording/citation/structure fixes — **done** in PAPER.md |
-| **ACL/EMNLP main short** | Needs 3 experiments | E1–E3 below |
+| **ACL/EMNLP main short** | **E1–E3 done**; needs Figs 1/3/4 + (ideally) E4 continuous-regression arm | see below |
 | **ACL/EMNLP main long · CVPR** | Out of scope | Requires scale-up (≥100M, real generator, color SVG, human eval) — a second paper |
 
 **Recommendation:** target **EMNLP Findings** (the work is a tokenizer-evaluation contribution in the NAACL'24 swap lineage, not a vision paper). Run E1+E2 for a credible main-short attempt.
@@ -27,16 +27,16 @@
 
 ## Experiments for main-short (CPU-feasible) — todo
 
-- [ ] **E1. Merge-budget sweep, downstream** — held-out NLL vs merge budget N for char-BPE and L1. Converts the §5.3 single point into a curve. *Highest priority; reuses f5_run + own-BPE.* ~1 day CPU.
-- [ ] **E2. Capacity trend** — swap at ~0.5M/2.5M/10M/25M params; report L1>L1+BPE gap vs capacity. De-risks the scale critique on the headline. ~1–2 days CPU.
-- [ ] **E3. Second corpus** — Twemoji / Noto-outline / Material / SVG-Stack slice; rerun §5.1+§5.3. Removes single-benchmark reject. ~1 day.
+- [x] **E1. Merge-budget sweep, downstream** — DONE. budget 0→2000: tokens 105→65, NLL 608→680 (monotonic). Pure L1 is downstream-optimal. `results_E1_budget_sweep.txt`.
+- [x] **E2. Capacity trend** — DONE. 0.9M→9.3M params: L1 wins at every size, gap grows 35→62. NOT a small-model artifact. `results_E2_capacity.txt`.
+- [x] **E3. Second corpus (svg-emoji)** — DONE. Substrate claim replicates (L1/L1+BPE 1117/1086 ≪ char 1356); compression direction is corpus-dependent (tied on emoji) — reported honestly. `results_E3_second_corpus.txt`.
 - [ ] **E4. Continuous-regression arm** — small regression-head coord model on same backbone; answers Ogezi et al. (2026). *Nice-to-have, high value.*
 - [ ] **E5. (optional)** κ/continuity token ablation; coord-error >2px tail; StrokeNUWA VQ scatter point; n≈20 human forced-choice.
 
 ## Figures to produce — todo
 
 - [ ] **Fig.1** Pipeline + same-icon char-BPE vs GeomTok token-stream contrast (highest value; conveys whole thesis)
-- [ ] **Fig.2** Compression–modelability scatter (x=tokens/icon, y=held-out NLL bits/icon, one point/arm) — makes the non-monotonic headline visible
+- [x] **Fig.2** Compression–modelability scatter — DONE (`assets/fig2_compression_modelability.svg`, rendered).
 - [ ] **Fig.3** Qualitative render panel: original vs GeomTok vs adaptive-quadtree round-trip, captioned SSIM/ink-IoU
 - [ ] **Fig.4** Generated-samples grid: GeomTok renderable icons vs text-tokenizer (empty/garbage)
 
