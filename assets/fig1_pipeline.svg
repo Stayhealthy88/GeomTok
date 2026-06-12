@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" font-family="Inter,Arial,sans-serif">
+<rect width="760" height="430" fill="#ffffff"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#111">A coordinate `150.5` — two tokenizations</text>
+<text x="30" y="66" font-size="12.5" fill="#a23" font-weight="600">text BPE</text>
+<rect x="120" y="52" width="30" height="22" rx="4" fill="#fdeaf1" stroke="#ff5d9e" stroke-width="1"/>
+<text x="135.0" y="67" font-size="12" font-family="monospace" fill="#a23" text-anchor="middle">1</text>
+<rect x="156" y="52" width="30" height="22" rx="4" fill="#fdeaf1" stroke="#ff5d9e" stroke-width="1"/>
+<text x="171.0" y="67" font-size="12" font-family="monospace" fill="#a23" text-anchor="middle">50</text>
+<rect x="192" y="52" width="30" height="22" rx="4" fill="#fdeaf1" stroke="#ff5d9e" stroke-width="1"/>
+<text x="207.0" y="67" font-size="12" font-family="monospace" fill="#a23" text-anchor="middle">.</text>
+<rect x="228" y="52" width="30" height="22" rx="4" fill="#fdeaf1" stroke="#ff5d9e" stroke-width="1"/>
+<text x="243.0" y="67" font-size="12" font-family="monospace" fill="#a23" text-anchor="middle">5</text>
+<text x="272" y="67" font-size="11.5" fill="#999">4 fragments · no notion of a point</text>
+<text x="30" y="100" font-size="12.5" fill="#1a9b8e" font-weight="600">GeomTok</text>
+<rect x="120" y="86" width="118" height="22" rx="4" fill="#e3faf6" stroke="#37e6d4" stroke-width="1.2"/>
+<text x="179" y="101" font-size="12" font-family="monospace" fill="#1a9b8e" text-anchor="middle">COORD@cell(32,17)</text>
+<text x="250" y="101" font-size="11.5" fill="#999">1 token · a point in space (fixed-point codec, §3.2)</text>
+<rect x="30" y="175" width="158" height="96" rx="12" fill="#fff" stroke="#8b6cff" stroke-width="1.6"/>
+<rect x="30" y="175" width="158" height="26" rx="12" fill="#8b6cff" opacity="0.16"/>
+<text x="42" y="193" font-size="12.5" font-weight="800" fill="#8b6cff" letter-spacing="0.05em">PARSE</text>
+<text x="42" y="219" font-size="11" fill="#444">flatten transforms,</text>
+<text x="42" y="235" font-size="11" fill="#444">norm viewBox,</text>
+<text x="42" y="251" font-size="11" fill="#444">drop defs</text>
+<path d="M192 223 l14 0 m-5 -5 l5 5 l-5 5" stroke="#bbb" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="212" y="175" width="158" height="96" rx="12" fill="#fff" stroke="#37e6d4" stroke-width="1.6"/>
+<rect x="212" y="175" width="158" height="26" rx="12" fill="#37e6d4" opacity="0.16"/>
+<text x="224" y="193" font-size="12.5" font-weight="800" fill="#37e6d4" letter-spacing="0.05em">QUANTIZE</text>
+<text x="224" y="219" font-size="11" fill="#444">uniform 64×64 grid</text>
+<text x="224" y="235" font-size="11" fill="#444">+ fixed-point codec</text>
+<text x="224" y="251" font-size="11" fill="#444">(0.04px, §3.2)</text>
+<path d="M374 223 l14 0 m-5 -5 l5 5 l-5 5" stroke="#bbb" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="394" y="175" width="158" height="96" rx="12" fill="#fff" stroke="#ffc857" stroke-width="1.6"/>
+<rect x="394" y="175" width="158" height="26" rx="12" fill="#ffc857" opacity="0.16"/>
+<text x="406" y="193" font-size="12.5" font-weight="800" fill="#ffc857" letter-spacing="0.05em">TOKENIZE</text>
+<text x="406" y="219" font-size="11" fill="#444">commands · shapes ·</text>
+<text x="406" y="235" font-size="11" fill="#444">coordinates →</text>
+<text x="406" y="251" font-size="11" fill="#444">5,561 vocab</text>
+<path d="M556 223 l14 0 m-5 -5 l5 5 l-5 5" stroke="#bbb" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="576" y="175" width="158" height="96" rx="12" fill="#fff" stroke="#ff5d9e" stroke-width="1.6"/>
+<rect x="576" y="175" width="158" height="26" rx="12" fill="#ff5d9e" opacity="0.16"/>
+<text x="588" y="193" font-size="12.5" font-weight="800" fill="#ff5d9e" letter-spacing="0.05em">DECODE</text>
+<text x="588" y="219" font-size="11" fill="#444">FSA-constrained →</text>
+<text x="588" y="235" font-size="11" fill="#444">valid SVG</text>
+<text x="588" y="251" font-size="11" fill="#444">(bounded-error)</text>
+<text x="30" y="310" font-size="13" font-weight="700" fill="#111">Same icon, two token streams</text>
+<text x="30" y="334" font-size="12" fill="#a23" font-family="monospace">text BPE:  &lt; s v g _ v i e w B o x = " 0 …  ›  meaningless character fragments</text>
+<text x="30" y="356" font-size="12" fill="#1a9b8e" font-family="monospace">GeomTok:  ⟨BOS⟩ MOVE ● LINE ● ● ⟨G0⟩ CLOSE  CIRCLE ●center ●r  ⟨EOS⟩</text>
+<text x="30" y="380" font-size="11.5" fill="#666">● = one coordinate/scalar token. Across 400 real icons: 935 → 264 tokens/icon (3.54× at matched 5,561 vocab, §5.1).</text>
+</svg>
