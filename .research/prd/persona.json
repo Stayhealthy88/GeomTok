@@ -1,0 +1,106 @@
+{
+ "personas": [
+  {
+   "name": "Priya — Vector-AI Product Manager at a design-tool SaaS",
+   "role": "PM owning the 'AI features' roadmap at a Figma/Canva-class platform; reports to VP Product, answers to a board pushing for shippable generative-vector features.",
+   "jobs_to_be_done": [
+    "Ship an AI icon/illustration feature (generate, autocomplete, restyle vectors) that produces RENDERABLE SVG every time, not garbage that breaks the canvas",
+    "De-risk the build vs. buy decision so eng doesn't burn two quarters reinventing SVG tokenization before any product value ships",
+    "Defend a credible roadmap to leadership with numbers, not vibes — what works now (ingest/eval) vs. what needs model investment (generation)",
+    "Avoid a public-facing feature that emits malformed vectors, which generates support tickets and erodes trust in 'AI' inside the product"
+   ],
+   "pains_today": [
+    "Off-the-shelf LLMs prompted to emit SVG produce structurally invalid output a large fraction of the time; a text tokenizer baseline produces ~0% renderable SVG, so the feature can't ship as-is",
+    "No way to evaluate whether a tokenization/representation choice is actually good — internal benchmarks are gameable (a random baseline can score 1.0 on a naive metric), so eng claims are unfalsifiable",
+    "Real-world icon sets break naive parsers (transforms, viewBox quirks), so 'works in the demo' silently fails on customer files",
+    "Compression-focused vendors oversell 'smaller tokens = better model' and the team has no way to call the bluff"
+   ],
+   "what_geomtok_gives": [
+    "A geometry-native tokenizer with 100% parse + round-trip on 2,682 real-world icons (transform flattening, viewBox normalization) so customer files don't silently break",
+    "Proof that geometric primitive tokens are the best downstream substrate: 84% renderable SVG from geometric tokens vs 0% from a text tokenizer — the difference between a shippable feature and a demo",
+    "GeomTok-Eval: a render-based, game-resistant evaluation protocol so PM/eng can make representation decisions with falsifiable numbers instead of marketing claims",
+    "An honest phased story: tokenizer + eval are production-ready now; generation needs data/training investment — exactly the build-vs-buy clarity leadership needs"
+   ],
+   "adoption_trigger": "Leadership commits to a generative-vector feature for the next release and the eng lead's first spike (LLM-emits-SVG) returns mostly-broken output — PM needs a reliable substrate and a way to prove it works before staffing a multi-quarter build."
+  },
+  {
+   "name": "Marcus — Engineering Lead embedding vector-AI",
+   "role": "Senior/staff eng owning the vector pipeline at a design-tool or icon-library SaaS; the person who would otherwise have to BUILD tokenization in-house.",
+   "jobs_to_be_done": [
+    "Stand up an SVG ingestion -> tokenization -> (model) -> valid-SVG pipeline without writing a parser, transform-flattener, and grammar validator from scratch",
+    "Guarantee that anything the model emits is structurally valid SVG before it ever touches the canvas or hits a customer",
+    "Normalize a messy real-world corpus (mixed viewBoxes, nested transforms, varied path encodings) into one canonical, model-ready representation",
+    "Pick a coordinate codec and vocab size with data, and be able to swap/measure representations without re-litigating the whole stack"
+   ],
+   "pains_today": [
+    "Building a robust SVG tokenizer in-house is a multi-month tarpit: path grammar edge cases, transform math, viewBox normalization, round-trip fidelity testing — all undifferentiated heavy lifting",
+    "Hand-rolled coordinate quantization introduces visible error and balloons vocab; no principled fixed-point codec to lean on",
+    "Even with a good model, free-form decoding emits invalid SVG that crashes downstream rendering — no validity guarantee",
+    "Custom tokenizers tend to overfit the dev corpus and break on the real distribution; no game-resistant way to catch that before prod"
+   ],
+   "what_geomtok_gives": [
+    "A drop-in tokenizer/SDK (Apache-2.0): parse, transform-flatten, viewBox-normalize, tokenize, detokenize with verified 100% round-trip on real icons — months of pipeline work he doesn't have to own",
+    "A scalar fixed-point coordinate codec at 0.04px error with zero added vocab, plus measured 1.78px mean / 3.37px max fidelity on a 300px canvas and 0.929 render SSIM — concrete numbers to design against",
+    "FSA grammar-constrained decoding that GUARANTEES valid SVG output, removing the 'model emitted garbage' failure mode entirely",
+    "3.54x token compression vs a domain-trained text tokenizer at matched 5,561 vocab — shorter sequences, lower model/serving cost — without the compression-equals-quality trap"
+   ],
+   "adoption_trigger": "A backlog ticket lands estimating 1-2 quarters to build SVG tokenization + a validity layer in-house; Marcus finds an Apache-2.0 library that already passes 100% round-trip on real icons and guarantees valid decode, and pilots it instead of staffing the build."
+  },
+  {
+   "name": "Dana — Icon-Library / Design-Asset Platform Eng-PM",
+   "role": "Owns the catalog and tooling for a large commercial icon/illustration library (tens of thousands of SVGs); cares about catalog hygiene, search, dedup, and AI-assisted authoring.",
+   "jobs_to_be_done": [
+    "Normalize and canonicalize a huge heterogeneous SVG catalog so every asset has one consistent, comparable representation",
+    "Power geometry-aware features: near-duplicate detection, style-consistency checks, vector search/clustering over the actual shapes (not filenames or tags)",
+    "Add 'complete this icon set' / 'restyle to match the family' authoring assists that stay on-grid and on-style",
+    "Run all of this as managed infrastructure rather than maintaining a bespoke vector pipeline with a small team"
+   ],
+   "pains_today": [
+    "Catalog is full of inconsistent encodings, redundant transforms, and varied viewBoxes, so two visually identical icons look totally different byte-wise — dedup and search are unreliable",
+    "No shared geometric representation means similarity is done on rendered pixels (expensive, lossy) or metadata (inaccurate)",
+    "Any AI authoring assist risks emitting off-grid or invalid vectors that a design team will reject outright",
+    "Small team can't justify building and maintaining tokenization + eval infra in-house"
+   ],
+   "what_geomtok_gives": [
+    "100% parse + round-trip with transform flattening and viewBox normalization turns a messy catalog into canonical, directly-comparable geometric tokens — the foundation for dedup, search, and clustering",
+    "Geometric primitive tokens as a stable substrate for similarity/embedding work, with a render-based eval (SSIM, fidelity) to validate that canonicalization is lossless enough",
+    "FSA grammar-constrained decoding so any authoring assist stays valid; fixed-point codec keeps coordinates on-grid (0.04px)",
+    "Managed hosting + support option so the platform consumes this as infra instead of hiring a vector-ML team"
+   ],
+   "adoption_trigger": "A catalog-quality or duplicate-asset incident (or a customer demand for vector search) forces a 'canonicalize the whole library' project, and building canonicalization + a fidelity-checked pipeline in-house is clearly out of scope for the team."
+  },
+  {
+   "name": "Wei — Applied AI/ML Researcher building an SVG generation model",
+   "role": "ML engineer/researcher on a team training or fine-tuning models that emit vector graphics (secondary persona); cares about substrate quality, eval rigor, and reproducibility.",
+   "jobs_to_be_done": [
+    "Choose the input representation that gives the best downstream modeling quality, not just the smallest sequences",
+    "Evaluate tokenizer/representation choices with a rigorous, game-resistant intrinsic protocol instead of a hand-rolled metric a reviewer will shred",
+    "Get a clean, canonical, round-trip-safe SVG corpus and a vocab so training isn't bottlenecked on data plumbing",
+    "Avoid the compression trap — not optimize a number that makes the model worse"
+   ],
+   "pains_today": [
+    "No standard public intrinsic eval for SVG tokenizers; naive metrics are gameable (a random baseline can score perfectly), so results aren't trustworthy or publishable",
+    "Easy to over-index on compression and ship a representation that compresses well but models/generates worse (the most-compressed variant is the worst to model)",
+    "Reproducing or comparing against prior tokenizers means rebuilding parsing/normalization, introducing confounds",
+    "Free-form decoders emit large fractions of invalid SVG, polluting generation-quality measurement"
+   ],
+   "what_geomtok_gives": [
+    "A verified finding that geometric primitive tokens are the best downstream substrate (~576 vs 775 bits/icon vs text BPE, ~28 sigma) — a defensible representation choice grounded in matched-vocab experiments",
+    "GeomTok-Eval: a render-based, game-resistant intrinsic tokenizer evaluation protocol with no public equivalent — citable, reproducible eval that separates the generator from the tokenizer",
+    "The explicit, evidence-backed lesson that compression != modelability, so the team stops optimizing the wrong objective",
+    "Apache-2.0 tokenizer + canonical corpus handling (100% round-trip, fixed-point codec, FSA-valid decode) to remove data-plumbing confounds and standardize comparisons"
+   ],
+   "adoption_trigger": "A paper rebuttal, internal eval review, or failed generation experiment exposes that the team's representation/metric is gameable or that compression gains didn't improve generation — they adopt GeomTok-Eval and geometric tokens as the rigorous baseline."
+  }
+ ],
+ "top_use_cases": [
+  "Reliable vector generation/autocomplete in a design tool: emit only structurally valid SVG (FSA grammar-constrained decode) so AI icon/illustration features never break the canvas — 84% renderable from geometric tokens vs ~0% from a text tokenizer.",
+  "SVG corpus canonicalization at scale: parse, transform-flatten, and viewBox-normalize a heterogeneous icon/illustration catalog into one canonical geometric representation with verified 100% round-trip (validated on 2,682 real icons).",
+  "Game-resistant tokenizer/representation evaluation: use GeomTok-Eval's render-based protocol (fidelity, SSIM) to make falsifiable build-vs-buy and representation decisions instead of relying on gameable internal metrics.",
+  "Geometry-aware vector search, clustering, and near-duplicate detection across an icon library, built on canonical geometric tokens rather than lossy rendered pixels or inaccurate metadata.",
+  "Token-efficient SVG sequences for model training/serving: 3.54x compression vs a matched-vocab domain text tokenizer to cut sequence length and inference cost — without falling into the compression-equals-quality trap.",
+  "Lossless coordinate normalization with the scalar fixed-point codec (0.04px error, zero added vocab) to keep generated/edited vectors on-grid (measured 1.78px mean / 3.37px max fidelity on a 300px canvas).",
+  "Choosing the best downstream substrate for an in-house SVG model: adopt geometric primitive tokens as the modeling-optimal representation (~576 vs 775 bits/icon, ~28 sigma) backed by matched-vocab evidence.",
+  "Standardized, reproducible baseline + canonical corpus pipeline for SVG-ML research and publication: a citable tokenizer + eval that separates generator from tokenizer and removes parsing/normalization confounds."
+ ]
+}

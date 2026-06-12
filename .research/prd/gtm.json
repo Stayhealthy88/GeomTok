@@ -1,0 +1,86 @@
+{
+ "success_metrics": [
+  {
+   "metric": "PyPI + npm installs (cumulative, year 1)",
+   "target": "25,000 combined installs (pip geomtok + JS bindings), ramping to 5,000/month run-rate by month 12"
+  },
+  {
+   "metric": "GitHub stars on geomtok/GeomTok-Eval repo",
+   "target": "3,000 stars, with >=40 external contributors and >=10 community-filed eval cases"
+  },
+  {
+   "metric": "Managed API signups (free-tier accounts)",
+   "target": "600 signups; >=120 actively calling the API monthly (>0 tokens in a 30-day window)"
+  },
+  {
+   "metric": "Named design-partner logos (signed pilots/LOIs with design-tool or icon-library vendors)",
+   "target": "3-5 design partners under written pilot, with >=1 reference-able public case study"
+  },
+  {
+   "metric": "Tokens processed through managed service (cumulative)",
+   "target": "5 billion SVG tokens processed; 100M+/month run-rate by month 12"
+  },
+  {
+   "metric": "Hosted MRR (managed tokenization + support/consulting retainers)",
+   "target": "$8-15K MRR exiting year 1 (2-3 paying hosted accounts + 1-2 consulting retainers); revenue is a learning signal, not the year-1 thesis"
+  },
+  {
+   "metric": "GeomTok-Eval citations + external adoptions as a benchmark",
+   "target": "8-12 academic citations of the paper/protocol and >=2 third-party model papers or repos reporting GeomTok-Eval scores"
+  },
+  {
+   "metric": "Round-trip fidelity SLA held on customer corpora (not just the 2,682-icon set)",
+   "target": "100% parse + round-trip on >=3 partner icon sets; published mean coord error <=1.78px / SSIM >=0.929 maintained on new data"
+  },
+  {
+   "metric": "Time-to-first-token for a new integrator (docs/DX metric)",
+   "target": "<15 minutes from `pip install` to first successful tokenize+detokenize in quickstart telemetry/user testing"
+  }
+ ],
+ "gtm_motions": [
+  "OSS-led / product-led growth: ship the Apache-2.0 tokenizer + GeomTok-Eval as the front door. Frictionless `pip install geomtok` quickstart, copy-paste round-trip demo, and the interactive showcase.html as the landing artifact. Convert from self-hosted OSS to managed API only where scale/SLA/uptime hurt (batch corpora, high-QPS inference paths).",
+  "Benchmark-as-marketing: lead with GeomTok-Eval as a render-based, generator-separated, game-resistant standard. Publish a public leaderboard scoring text-BPE vs geometric vs HiVG/GeoBPE-style tokenizers on the 576<666<775 bits/icon and 0%/84%/35% render-success findings. The benchmark is the demand-gen engine: vendors who run it discover their text tokenizer produces 0% renderable SVG.",
+  "Design-partner / lighthouse-account motion: hand-pick 3-5 design-tool, icon-library, or no-code vendors and co-build a 'vector AI readiness' pilot. Offer to run their real icon corpus through parse + round-trip (proving 100% on THEIR data) and produce a private GeomTok-Eval report. Convert pilots into reference logos and case studies that de-risk the next cohort.",
+  "Research-credibility / academic motion: get the paper into ACL/CVPR/NeurIPS-track venues and onto arXiv with the GeomTok / GeomTok-Eval names locked. Citations and third-party adoptions of the eval become inbound trust signals that no closed competitor can replicate. Negative-results integrity (compression != modelability, HMN retraction) is the credibility hook.",
+  "Developer-relations content + integration cookbooks: tutorials for 'add vector AI to your design tool without building tokenization', FSA grammar-constrained decoding that guarantees valid SVG, and the scalar fixed-point codec. Target the exact pain (invalid-SVG generation, coordinate drift) that in-house teams hit. Distribute via HN, arXiv, ML newsletters, and design-eng communities.",
+  "Managed-service + support/consulting upsell: monetize the boring-but-critical layer vendors will not self-host -- hosted high-throughput tokenization, SLA-backed round-trip guarantees, corpus onboarding/normalization consulting, and (later phase) a path to generation once large-data training is funded. Position consulting as the bridge while the generation model matures from toy-scale."
+ ],
+ "risks": [
+  {
+   "risk": "Self-host gravity: tokenization is a deterministic library under Apache-2.0, so the obvious objection is 'why pay for hosting what I can pip install and run myself?' Managed revenue could stall near zero.",
+   "mitigation": "Do not sell the algorithm; sell the operational pain around it: SLA-backed 100% round-trip guarantees on the customer's evolving corpus, high-QPS/batch throughput, corpus normalization + drift monitoring, version-pinning and grammar/FSA validation as a service, and consulting. Keep the OSS genuinely complete (no crippling) so trust is high, and monetize scale + assurance + expertise, not access."
+  },
+  {
+   "risk": "Generation is not production-ready (2.5M params, CPU, monochrome path icons only). Buyers may expect 'vector AI' to mean generation and churn when they learn it is tokenizer + eval today.",
+   "mitigation": "Message with radical honesty: tokenizer + GeomTok-Eval are production-ready NOW; generation is an explicitly-roadmapped later phase needing large-data training investment. Sell the substrate value first (geometric tokens are the best downstream substrate -- 84% renderable vs 0%, 26% better bits/icon). Offer generation as a co-funded R&D engagement with design partners rather than a shipped promise."
+  },
+  {
+   "risk": "Competition from HiVG (arXiv:2604.05072), GeoBPE (arXiv:2511.11758), and OmniSVG-style work; some headline claims were already pre-empted in the literature, forcing the novelty to be repositioned.",
+   "mitigation": "Compete on the three defended, non-pre-empted axes already validated: (i) learned unconstrained merges beat HiVG's structure-constrained merges, (ii) hand-crafted macros fire 0% on real-world data (a real failure mode of rule-based approaches), (iii) GeomTok-Eval's generator-separated protocol has no public equivalent. Avoid disproven superlatives ('first', 'pre-structured advantage'). Make the eval the category-defining asset so competitors get measured ON your benchmark."
+  },
+  {
+   "risk": "Small team / bandwidth: an OSS infra project plus managed service plus academic publishing plus design-partner sales is a lot of surface for a tiny team; risk of doing all of it shallowly.",
+   "mitigation": "Sequence ruthlessly: (1) lock the paper + GeomTok-Eval standard and name (cheap, compounding trust), (2) OSS DX polish + one flagship design partner, (3) managed service only after a paying pull signal. Lean on community contributors for breadth (eval cases, language bindings) while the core team holds the tokenizer/eval correctness bar."
+  },
+  {
+   "risk": "Narrow data domain: all benchmarks are on monochrome path icons (2,682). Buyers with multicolor, gradient, text, or complex-illustration SVG may find round-trip/fidelity guarantees do not hold, undermining the headline '100%' claims.",
+   "mitigation": "State the validated domain explicitly (monochrome path icons) and never imply universality. Use design-partner pilots to expand coverage on real corpora and publish honest per-domain GeomTok-Eval numbers as the scope grows. Treat 'expand fidelity guarantees to gradients/text/multicolor' as a funded, measurable roadmap item rather than an assumed capability."
+  },
+  {
+   "risk": "Benchmark commoditization / capture: if GeomTok-Eval is fully open, a larger player could fork it, rebrand, and out-market the standard, eroding the moat.",
+   "mitigation": "Anchor authority through first-mover academic citation, a maintained canonical public leaderboard, and the integrity track record (published negative results competitors will not replicate). Govern the spec openly (versioned protocol, transparent methodology) so the community trusts the original maintainers as the reference -- standards win on legitimacy and stewardship, not just code."
+  },
+  {
+   "risk": "Monetization-timing risk: OSS-led pipelines convert slowly; hosted MRR and consulting may lag well behind adoption, straining runway before revenue validates the model.",
+   "mitigation": "Front-load consulting/services revenue (corpus onboarding, integration, custom GeomTok-Eval reports) which can bill before the managed API matures, and keep hosted infra cost-light by leaning on the deterministic, CPU-friendly tokenizer. Use design-partner pilots to surface willingness-to-pay early so the business model is validated on signal, not faith."
+  }
+ ],
+ "moats": [
+  "The evaluation standard: GeomTok-Eval is a render-based, game-resistant, generator-separated intrinsic tokenizer benchmark with no public equivalent. Owning the measuring stick that the field uses to compare SVG tokenizers is a category-defining, compounding moat -- competitors end up benchmarked on your protocol.",
+  "Research credibility + academic citation: a peer-reviewed paper (ACL/CVPR/NeurIPS-track) with the GeomTok / GeomTok-Eval names locked on arXiv creates durable trust and inbound that closed, marketing-driven competitors cannot manufacture. Citations are a moat that accrues interest.",
+  "Negative-results integrity: the project publicly retracted inflated claims (7.65x->3.54x compression, HMN geometric-acceleration retraction, compression != modelability, learned-merge fit-on-test invalidations). This demonstrated honesty is a reputational moat -- buyers and reviewers trust numbers from a team that publishes its own disconfirmations.",
+  "Real-data benchmark + verified round-trip engine: 100% parse + round-trip on 2,682 real-world icons with transform flattening and viewBox normalization, plus the scalar fixed-point codec (0.04px) and FSA grammar-constrained decoding that guarantees valid SVG. This is hard-won correctness on messy real SVG, not a clean-room demo -- a defensible engineering moat.",
+  "The core scientific finding as positioning: geometric primitive tokens are empirically the best downstream substrate (576 vs 775 bits/icon, ~28 sigma; 84% vs 0% renderable SVG). Owning the canonical, reproducible evidence for WHY vector AI should be built on geometric tokens makes GeomTok the default reference architecture in the conversation.",
+  "Community + ecosystem flywheel: Apache-2.0 OSS lowers adoption friction so installs, contributed eval cases, language bindings, and citations compound into a network effect. The standard + the reference implementation + the maintainer reputation together are far harder to displace than any single piece of code."
+ ]
+}
