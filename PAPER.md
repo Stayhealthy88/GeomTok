@@ -1,12 +1,12 @@
-# Geometry Is the Better Substrate: Tokenizing Vector Graphics for Sample-Efficient Generation
+# Compression Is Not Modelability: A Controlled Study of Tokenization Units for Vector Graphics
 
-*Working title — for ACL/EMNLP/CVPR-style submission. All numbers from this repository's experiments (`.research/results_*.txt`), reported post adversarial review.*
+*Working title — for ACL/EMNLP submission (Findings or main-short track; see §10). Backup title: "Does the Tokenization Unit Matter? A Controlled Study of Geometry-Native SVG Tokenization." All numbers from this repository's experiments (`.research/results_*.txt`), reported post adversarial review.*
 
 ---
 
 ## Abstract
 
-Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate such as `150.5` into characters that carry no spatial meaning. We ask a narrow, falsifiable question: **does it matter, downstream, what unit a model reads geometry in?** We introduce **GeomTok**, a geometry-native tokenizer that maps SVG to a small vocabulary of primitive tokens (commands, recognized shapes, and fixed-point coordinates), together with **GeomTok-Eval**, a render-based intrinsic evaluation protocol that is decoupled from any generator. On a 2,682-icon real-world benchmark, GeomTok parses and round-trips 100% of inputs and compresses 3.54× over a domain-trained text tokenizer at matched 5,561 vocabulary. Our central finding is a controlled counterexample to a common assumption: **better compression does not imply better downstream modeling.** Training an identical 2.5M-parameter transformer under the tokenizer-swap protocol, geometric primitive tokens yield the best held-out modeling of real icons (576 ± 4 vs 775 ± 6 bits/icon for text BPE, a 26% reduction at ~28σ), while learned BPE merges that compress 1.8× *more* model *worse* (666 ± 2 bits) and, when generating, drop from 84% to 35% renderable output. A text tokenizer generates 0% renderable SVG. We further show that unconstrained learned merges over primitive tokens beat HiVG-style structure-constrained merges (172 vs 236 tokens/icon at matched budget). We release the protocol, baselines, and a set of honest negative results — including a retracted adaptive-quadtree scheme and a retracted embedding-initialization claim — as a methodological contribution.
+Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate like `150.5` into characters that carry no spatial meaning. We ask a narrow, falsifiable question: does the *unit* a model reads geometry in change downstream modeling? We introduce **GeomTok**, a geometry-native SVG tokenizer (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), and **GeomTok-Eval**, a render-based intrinsic *tokenizer* protocol decoupled from any generator. Under a controlled tokenizer-swap on an identical 2.5M-parameter transformer, geometric primitive tokens model held-out icons 26% better (held-out NLL) than a domain-trained text BPE, and — under identical plain sampling — a text tokenizer generates 0% renderable SVG versus 84% for GeomTok. Our central result is a controlled counterexample, in the graphics setting, to the assumption that intrinsic compression predicts downstream modeling — a relationship already shown non-monotonic for text by PathPiece (Schmidt et al., 2024): the *most compressed* tokenizer is not the best to learn from, as learned BPE merges that compress 1.8× further raise per-token entropy and model *worse* while halving generation validity. We release the protocol, fair baselines, and a set of adversarially-verified negative results — including two retracted claims — as a methodological contribution. We scope all model-level claims to the small-model, sample-efficient regime.
 
 ---
 
@@ -14,39 +14,45 @@ Large language models tokenize vector graphics (SVG) the way they tokenize prose
 
 Vector graphics underlie nearly every digital interface: icons, logos, UI components, charts, and maps. Yet generative models remain unreliable at producing them — circles fail to close, rectangles drift off-grid, coordinates land in the wrong place. A widely cited cause is **tokenization**: a coordinate `150.5` is fragmented by a text tokenizer into `1`, `50`, `.`, `5`, destroying the fact that it denotes a point in space (Xing et al., LLM4SVG, 2024).
 
-Recent work attacks this with geometry-aware tokenization — HiVG (2026) merges geometric *segment* tokens by frequency; OmniSVG (2025) folds each `(x,y)` into a single grid token; StrokeNUWA (2024) learns a VQ codebook. These works establish that geometry-aware tokens compress SVG and improve fidelity. **What the field has not isolated is the downstream consequence of the tokenization *unit* itself**, under a controlled, generator-decoupled comparison against fair baselines. That gap is the subject of this paper.
+Recent work attacks this with geometry-aware tokenization — HiVG (2026) merges geometric *segment* tokens by frequency; OmniSVG (2025) folds each `(x,y)` into a single grid token; StrokeNUWA (2024) learns a VQ codebook. These works establish that geometry-aware tokens compress SVG and improve fidelity. **What the field has not isolated is the downstream consequence of the tokenization *unit* itself**, under a controlled, generator-decoupled comparison against fair baselines. That gap is the subject of this paper. We treat it as a *tokenizer-evaluation* question in the lineage of the fixed-model tokenizer-swap (Ali et al., Findings of NAACL 2024; Lotz et al., ACL 2025) and the text-domain finding that fewer tokens need not mean better downstream behavior (Schmidt et al., PathPiece, EMNLP 2024).
+
+A note on rigor, up front. An earlier version of this work asserted a 7.6× compression headline, a training benefit from geometry-aware embedding initialization, and an adaptive-quadtree coordinate scheme. Each was falsified by a control we ran — a matched-vocabulary baseline, a matched-embedding-norm baseline, and a real-data comparison, respectively (§6). We report these retractions as part of the contribution; the surviving claims are the ones that survived adversarial verification.
 
 We make three contributions:
 
-1. **GeomTok**, a geometry-native tokenizer with a fixed-point coordinate codec that adds zero vocabulary (§3), achieving 100% parse and 3.54× compression over a matched-vocabulary text tokenizer on real data (§5.1).
-2. **The compression-is-not-modelability result** (§5.3): under the tokenizer-swap protocol on real icons, primitive tokens model best, while the most-compressed tokenizer models and generates worst — a clean counterexample to the assumption that intrinsic compression predicts downstream quality.
-3. **GeomTok-Eval** (§4), a render-based intrinsic protocol, plus a discipline of **adversarially-verified negative results** (§6) that we argue is necessary for this subfield.
+1. **GeomTok** — a geometry-native tokenizer whose fixed-point coordinate codec adds zero vocabulary, achieving 100% parse and bounded-error round-trip and 3.54× compression at matched vocabulary (§3, §5.1).
+2. **Compression is not modelability** — under a controlled, generator-decoupled tokenizer-swap, primitive tokens model and generate best, while the most-compressed variant models and generates *worst* — a clean counterexample, for vector graphics, to the assumption that intrinsic compression predicts downstream quality (§5.3–5.4).
+3. **GeomTok-Eval and a negative-results discipline** — a render-based intrinsic protocol that resists gaming, released alongside adversarially-verified retractions of our own earlier claims (§4, §6).
 
 ---
 
 ## 2. Related Work and Positioning
 
-**Geometry-aware SVG tokenization.** HiVG (arXiv:2604.05072) is the closest prior work: it performs frequency-based merging over geometric segment tokens with uniform coordinate quantization, reporting ~2.7× compression on a 3B VLM. OmniSVG (arXiv:2504.06263) merges `(x,y)` into single grid tokens; LLM4SVG (CVPR 2025) adds semantic tokens to an LLM vocabulary; StrokeNUWA (ICML 2024) learns a VQ-Stroke codebook (~6.9% size, lossy). We do **not** claim to be first to merge over geometric primitives — HiVG and, in the protein domain, GeoBPE (arXiv:2511.11758) precede us. Our novelty is comparative and methodological: the controlled char-BPE / primitive / learned-merge / structure-constrained comparison nobody has run, plus a generator-decoupled protocol.
+**Geometry-aware SVG tokenization.** HiVG (arXiv:2604.05072) is the closest prior work: it performs frequency-based merging over geometric segment tokens with uniform coordinate quantization. OmniSVG (arXiv:2504.06263) merges `(x,y)` into single grid tokens; LLM4SVG (CVPR 2025; arXiv:2412.11102) adds semantic tokens to an LLM vocabulary; StrokeNUWA (ICML 2024; arXiv:2401.17093) learns a VQ-Stroke codebook reaching a ~6.9% compression ratio (lossy); InternSVG (arXiv:2510.11341) unifies SVG understanding/editing/generation with SVG-specific special tokens. We do **not** claim to be first to merge over geometric primitives — HiVG and, in the protein domain, GeoBPE (ICLR 2026; arXiv:2511.11758) precede us. Our novelty is comparative and methodological: to our knowledge the first controlled char-BPE / primitive / learned-merge / structure-constrained comparison on real SVG under a single fixed model, plus a generator-decoupled, render- and value-grounded protocol. A concurrent line takes the opposite route — modeling SVG numbers continuously rather than as discrete tokens (Ogezi et al., "From Tokens to Numbers," arXiv:2602.02820, 2026) — without isolating the tokenization unit; we discuss it as an orthogonal challenger in §7.
 
-**Numeric tokenization.** xVal, FoNE, and Number Token Loss study how to encode numbers in transformers. Our fixed-point codec (§3.2) is a pragmatic instance — a quadtree leaf grid reinterpreted as a base-64 numeral system — that we keep deliberately simple to isolate the substrate effect.
+**Compression vs. downstream.** That intrinsic compression does not monotonically predict downstream quality is established for *text* by PathPiece (Schmidt et al., EMNLP 2024) and by Lotz et al. (ACL 2025), and the fixed-model tokenizer-swap protocol originates in Ali et al. (Findings of NAACL 2024). We contribute the first *vector-graphics* instance with a render-grounded generation consequence.
 
-**Tokenizer evaluation.** The NAACL'24 "tokenizer-swap on a fixed small model" protocol and "Beyond Text Compression" (ACL'25) establish that compression alone is insufficient evidence. We adopt the swap protocol and contribute its render-based instantiation for graphics.
+**Numeric tokenization.** xVal (arXiv:2310.02989), FoNE (arXiv:2502.09741), and Number Token Loss (ICML 2025; arXiv:2411.02083) study how to encode numbers in transformers. Our fixed-point codec (§3.2) is a deliberately simple instance — a quadtree leaf grid reinterpreted as a base-64 numeral system — chosen to isolate the substrate effect, not to advance numeric encoding.
+
+**Name disambiguation.** "GeomTok" is unrelated to *GeoToken* (Ghasemi et al., arXiv:2511.01082), which tokenizes raster images into S2 *geographic* cells for image geolocalization; we operate on SVG geometry primitives. Render-based generator-agnostic SVG metrics also exist for generated *code structure* (Zhu et al., arXiv:2604.08809, 2026); GeomTok-Eval instead targets the *tokenizer* and adds value-level fidelity and cross-vocabulary bits/icon (§4).
 
 ---
 
-## 3. GeomTok
+## 3. Method: GeomTok
 
 ### 3.1 Pipeline
 
-SVG → **parse** (flatten transforms + group inheritance, normalize viewBox, drop non-rendered `defs`/`clipPath`) → **quantize** (uniform 64×64 coordinate grid; §3.2) → **tokenize** (commands, shapes, coordinates) → optional **grammar-constrained decode** (an FSA guarantees valid SVG). The vocabulary is 5,561 tokens: 5,461 coordinate tokens plus ~100 structural tokens (5 special, 8 command, 4 shape, 4 continuity, 16 curvature, 11 spatial), with the remaining IDs held as reserved ranges for forward-compatible extension.
+SVG → **parse** (flatten transforms + group inheritance, normalize viewBox, drop non-rendered `defs`/`clipPath`) → **quantize** (uniform 64×64 coordinate grid; §3.2) → **tokenize** (commands, shapes, coordinates) → optional **grammar-constrained decode** (an FSA guarantees valid SVG; used only when a downstream application wants a hard validity guarantee — it is *not* used in any experiment below). We adopt the uniform grid as the shipped default; the comparison against an adaptive scheme that justifies this choice is reported with the other controls in §6.
+
+The vocabulary is 5,561 tokens: **5,461 coordinate tokens** plus ~100 structural tokens (5 special, 8 command, 4 shape, 4 continuity, 16 curvature, 11 spatial), with the remaining IDs held as reserved ranges for forward-compatible extension. The 5,461 coordinate tokens cover quadtree levels 0–6; the level-6 leaf grid is 64×64 = 4,096 cells (the deepest level), which the codec below reuses as a numeral system.
 
 ### 3.2 Scalar fixed-point codec
 
-Earlier internal versions encoded a scalar (radius, gap) as a fake 2-D point `(v,v)` through the coordinate quadtree, which on coarse cells produced up to 17.5px error (a radius of 20 reconstructed as 37.5) and broke repeat counts. We replace this with a **fixed-point codec**: the level-6 grid (64×64 = 4096 cells) is reinterpreted as a base-64 numeral system, so a scalar `v ∈ [0,canvas)` maps to a single coordinate token `qx·64+qy`. This adds **zero vocabulary** and bounds scalar error to `canvas/(4096−1)/2 ≈ 0.04px`. Counts (e.g. REPEAT_N) use an exact integer variant with lossless round-trip up to 4095.
+A scalar such as a radius or gap must be encoded without inflating the vocabulary. We reinterpret the level-6 grid (64×64 = 4096 cells) as a base-64 numeral system, so a scalar `v ∈ [0,canvas)` maps to a single coordinate token `qx·64+qy`. This adds **zero vocabulary** and bounds scalar error to `canvas/(4096−1)/2 ≈ 0.04px`. Counts (e.g. a repeat count) use an exact integer variant with lossless round-trip up to 4095. (An earlier `(v,v)` encoding through the 2-D quadtree produced up to 17.5px error and broke repeat counts; full account in §6.)
 
-### 3.3 Coordinate scheme: a negative result
+### 3.3 Token levels
 
-We initially used an *adaptive* quadtree (finer cells where curvature is high). On 400 real icons (27,414 coordinates), held at equal token count, a **plain uniform 64×64 grid beat it decisively**: mean coordinate error 1.78px vs 14.75px, render SSIM 0.929 vs 0.846, ink-IoU 0.655 vs 0.284. Curvature-driven splitting starves straight content, which dominates real icons. We report this as a negative result and ship uniform-grid as the default. A density-driven global tree narrowly improved mean error (1.58px) but was fit on the test split and is reported only as such.
+L1 emits geometric primitives (commands + coordinates) and is the default. L2 applies learned (frequency-based) merges over L1; L3 adds spatial-relation tokens. As §5.3 shows that more aggressive merging is *not* downstream-optimal, **L1 is the default and compression is opt-in**, documented as a trade-off rather than a free win.
 
 ---
 
@@ -55,28 +61,31 @@ We initially used an *adaptive* quadtree (finer cells where curvature is high). 
 A geometric tokenizer needs intrinsic metrics that (a) work on real, path-only icons, (b) resist gaming, and (c) are computable without a GPU. GeomTok-Eval reports:
 
 - **Parse / round-trip rate** — fraction of a corpus that tokenizes and reconstructs.
-- **Token efficiency** — tokens/icon *and* bits/icon (= tokens × log₂ vocab), the latter making cross-vocabulary comparison fair.
+- **Token efficiency** — tokens/icon *and* **encoding bits/icon** (= tokens × log₂ vocab), the latter making cross-vocabulary comparison fair. (We distinguish this *intrinsic* encoding-bits/icon from the *held-out NLL* bits/icon of §5.3, which is a trained-model quantity.)
 - **Value-level fidelity** — per-coordinate L2 error after a tokenize→detokenize round-trip, extended to path coordinates (negative and exponent numbers, positional matching) so it does not return ∞ on path-only icons.
 - **Render fidelity** — SSIM and ink-IoU between rasterized original and reconstruction (resvg, 64–256px).
 
-We motivate the protocol with a concrete failure it catches: an earlier "structural score" awarded a perfect 1.000 to random token sequences while scoring ground truth 0.987 — a metric that ranked tokenizers backwards.
+We motivate the protocol with a concrete failure it catches: an earlier "structural score" awarded a perfect 1.000 to random token sequences while scoring ground truth 0.987 — a metric that ranked tokenizers backwards. GeomTok-Eval is *generator-decoupled* (it scores the tokenizer's reconstruction, not a generator's output), which is what makes random-sequence gaming impossible.
 
 ---
 
 ## 5. Experiments
 
-All experiments use the public **StarVector svg-icons** benchmark. Tokenizer-swap experiments train an identical 2.5M-parameter decoder-only transformer (vanilla, no GeomTok-specific embedding) on each tokenizer's stream — the only variable is the tokenizer (NAACL'24 protocol). The domain text baseline is a SentencePiece BPE trained on SVG text at vocab 5,561 (a *fair* baseline; GPT-4's cl100k, at 100k vocab and not domain-trained, is reported only as a reference).
+All experiments use the public **StarVector svg-icons** benchmark (monochrome, path-centric). Sections 5–6 evaluate the tokenizer of §3 under the protocol of §4. Tokenizer-swap experiments train an identical 2.5M-parameter decoder-only transformer (a vanilla model with no GeomTok-specific embedding) on each tokenizer's stream — the only variable is the tokenizer (Ali et al., 2024). The domain text baseline is a SentencePiece BPE trained on SVG text at vocab 5,561 (a *fair* baseline; GPT-4's cl100k, at 100k vocab and not domain-trained, is reported only as a reference). Crucially, generation (§5.4) uses **identical plain top-k sampling for every arm with no grammar constraint**, so the geometric arm receives no FSA-validity advantage.
+
+> **Figure 1 (to add).** Pipeline: SVG → parse/flatten → quantize → tokenize → (optional FSA decode), with the *same* icon shown as a char-BPE token stream vs a GeomTok stream side by side.
+> **Figure 2 (to add).** Compression–modelability scatter: x = tokens/icon (intrinsic compression), y = held-out NLL bits/icon (modelability), one point per arm from §5.3 — visualizing the non-monotonic relationship (L1+BPE more compressed yet worse).
 
 ### 5.1 Tokenizer efficiency (intrinsic), 400 real icons
 
-| Scheme | tokens/icon | bits/icon | Compression vs text BPE |
+| Scheme | tokens/icon | encoding bits/icon | Compression vs text BPE |
 |---|---|---|---|
 | GPT-4 cl100k (reference) | 2021 | 33,580 | 0.46× |
 | Domain char-BPE (vocab 5,561) | 935 | 11,636 | 1.00× |
 | **GeomTok-L1** | **264** | **3,287** | **3.54×** |
 | GeomTok-L1 + learned BPE | 151 | 1,925 | 6.21× |
 
-GeomTok-L1's coordinate fidelity is **1.78px mean / 3.37px max** on a 300px canvas (within the analytic bound), with render SSIM **0.929** — the honest fidelity cost of the 3.54× compression. Hand-crafted shape tokens (L2) fire on **0%** of real icons and add nothing.
+GeomTok-L1's coordinate fidelity is **1.78px mean / 3.37px max** on a 300px canvas (within the analytic bound), with render SSIM **0.929** — the fidelity cost of the 3.54× compression (the round-trip is geometric and bounded-error, not lossless). Hand-crafted shape tokens (L2) fire on **0%** of real icons and add nothing.
 
 ### 5.2 Learned vs structure-constrained merges (intrinsic)
 
@@ -87,25 +96,25 @@ Applying an identical greedy BPE to three substrates at a matched merge budget (
 | 0 | 4893 | 264 | 264 | 264 |
 | 1000 | 824 | **172** | 222 | 236 |
 
-bits/icon @1000: char 7245 ≫ L1 1687 < boundary 1890 < HiVG 1934 — identical ranking. **Unconstrained learned merges over primitive tokens beat HiVG-style structure-constrained merges by 27% (172 vs 236)**: the constraint forbids cross-command repeated patterns that unconstrained BPE exploits. (L1 bits/icon saturate by ~100 merges; we report bits alongside tokens to avoid overstating merge gains.)
+encoding bits/icon @1000: char 7245 ≫ L1 1687 < boundary 1890 < HiVG 1934 — identical ranking. **At matched budget, unconstrained learned merges over primitive tokens use 27% fewer tokens than HiVG-style structure-constrained merges (172 vs 236)**: the constraint forbids cross-command repeated patterns that unconstrained BPE exploits. (L1 encoding-bits/icon saturate by ~100 merges; we report bits alongside tokens to avoid overstating merge gains.) This is an intrinsic-compression comparison at fixed budget, not a claim of downstream superiority for L1+BPE — see §5.3.
 
 ### 5.3 Downstream: the compression–modelability split
 
-Identical 2.5M model, real icons (1,045 train / 213 test), tokenizer swapped, 3 seeds, held-out bits/icon (lower = better):
+Identical 2.5M model, real icons (1,045 train / 213 test), tokenizer swapped, 3 seeds, **held-out NLL bits/icon** (lower = better):
 
-| Arm | tokens/icon | held-out bits/icon |
+| Arm | tokens/icon | held-out NLL bits/icon (mean ± std, n=3) |
 |---|---|---|
 | char-BPE | 159 | 775 ± 6 |
 | L1 + learned BPE | 59 | 666 ± 2 |
 | **GeomTok-L1** | 104 | **576 ± 4** |
 
-Two findings, both far outside seed noise (separations of ~28σ and ~20σ respectively):
-1. **Geometric primitive tokens are the best downstream substrate** — 26% better modeling than a domain text tokenizer (576 vs 775, ~28σ).
-2. **Compression does not predict modelability** — L1+BPE compresses 1.8× more than L1 (59 vs 104 tokens) yet models *worse* (666 vs 576, ~20σ), because merges raise per-token entropy (11.3 vs 5.6 bits/token). The most-compressed tokenizer is not the best to learn from.
+Two findings; both gaps are large relative to seed variance (std across the 3 seeds is 2–6 bits, against gaps of 90–199 bits):
+1. **Geometric primitive tokens are the best downstream substrate in this regime** — 26% better modeling than a domain text tokenizer (576 vs 775).
+2. **Compression does not predict modelability** — L1+BPE compresses 1.8× more than L1 (59 vs 104 tokens) yet models *worse* (666 vs 576), because merges raise per-token entropy (11.3 vs 5.6 bits/token). The most-compressed tokenizer is not the best to learn from. We present this as a controlled counterexample, not a universal law (see §7 on scale).
 
 ### 5.4 Downstream: generation quality
 
-Generating 200 samples per arm, rendering, and scoring:
+Generating 200 samples per arm under **identical plain top-k sampling (no FSA for any arm)**, rendering, and scoring:
 
 | Arm | renderable | FID-lite ↓ | diversity ↑ | novelty ↑ |
 |---|---|---|---|---|
@@ -113,34 +122,50 @@ Generating 200 samples per arm, rendering, and scoring:
 | GeomTok-L1 | **84%** | 0.197 | 0.892 | 0.840 |
 | L1 + learned BPE | 35% | 0.194 | 0.920 | 0.848 |
 
-A text tokenizer generates **0% renderable SVG** — geometric tokens are *necessary*, not merely convenient. L1 is **2.4× more reliable** than L1+BPE (84% vs 35%): aggressive merges that win on compression cripple generation validity. On renderable samples FID is comparable; no mode collapse (diversity ≈0.9), no memorization (novelty ≈0.84).
+In this small-model regime, a text tokenizer yields **0% renderable SVG** under the same sampling that gives GeomTok 84% — geometric tokens appear *required* for renderable output here, not merely more efficient (we scope this to the 2.5M-parameter setting; large VLMs with massive SVG corpora may close the gap). L1 yields **2.4× more renderable samples than L1+BPE (84% vs 35%)**: aggressive merges that win on compression halve generation validity. On renderable samples FID is comparable; no mode collapse (diversity ≈0.9), no memorization (novelty ≈0.84). The diversity/novelty metrics are mask-based and we treat them as sanity checks, not headline numbers.
 
 ---
 
-## 6. Negative Results and Rigor
+## 6. Controls and Retracted Claims
 
-We retract three claims that an earlier version of this work asserted, each falsified by a control we ran:
+We subjected each component to an adversarial control; three plausible claims did not survive, and we report them so the field does not repeat them.
 
-- **"7.6× compression vs a text tokenizer"** — a strawman against GPT-4's 100k-vocab cl100k. At matched 5,561 vocabulary the honest figure is **3.54×** (bits/icon identical).
-- **"Geometry-aware embedding initialization accelerates training"** — a matched-norm control (random vectors rescaled to unit row-norm, *zero* geometric structure) closes the entire gap: random (default norm ~11.3) val 4.51 → random-unit-norm **3.40** ≈ HMN 3.47. The effect was a weight-tying embedding-*norm* artifact, not geometry.
-- **"Adaptive quadtree coordinates"** — beaten by a uniform grid on real data (§3.3).
+- **"7.6× compression vs a text tokenizer" → retracted to 3.54×.** The 7.6× figure compared against GPT-4's cl100k (100k vocab, not domain-trained) — a strawman. At matched 5,561 vocabulary the honest figure is **3.54×** (encoding bits/icon identical).
+- **"Geometry-aware embedding initialization accelerates training" → retracted.** A matched-norm control — random vectors rescaled to unit row-norm, with *zero* geometric structure — closes the entire gap: random (default norm ~11.3) val 4.51 → random-unit-norm **3.40** ≈ geometry-structured 3.47. The apparent benefit was a weight-tying embedding-*norm* artifact, not geometry. (We highlight this control in §1 as the cleanest example of the discipline: a subtle confound masquerading as a geometry effect.)
+- **"Adaptive quadtree coordinates" → retracted in favor of a uniform grid.** On 400 real icons (27,414 coordinates), at equal token count, a plain uniform 64×64 grid beat a curvature-adaptive quadtree decisively: mean coordinate error **1.78px vs 14.75px**, render SSIM **0.929 vs 0.846**, ink-IoU **0.655 vs 0.284**. Curvature-driven splitting starves straight content, which dominates real icons. A density-driven global tree narrowly improved mean error (1.58px) but was fit on the test split and is reported only as such.
 
-We also note that a saturated validity metric (100% after a definition change) has no discriminative power, and that hand-crafted L2/L3 macros fire on ~0–15% of real icons. We argue this discipline — competing baselines, matched budgets, controls for confounds, and reporting what dies — is what this subfield, awash in self-defined metrics on toy data, most needs.
+We also note that a saturated validity metric (100% after a definition change) has no discriminative power, and that hand-crafted L2/L3 macros fire on ~0–15% of real icons. We argue this discipline — competing baselines, matched budgets, controls for confounds, and reporting what dies — is what this subfield, which often relies on self-defined metrics and small synthetic corpora, most needs.
 
 ---
 
-## 7. Limitations
+## 7. Limitations and the Continuous-Coordinate Challenge
 
-Experiments are CPU-scale: a 2.5M model on ~1k icons, monochrome path icons, held-out NLL and a lightweight FID rather than large-model human-aligned generation. The downstream claims are scoped to the small-model, sample-efficient regime; we do not claim they transfer unchanged to 3–8B VLM scale. Color/style and full SVG features (gradients, text, filters) are out of scope. The fixed-point codec overloads a token's meaning (position vs scalar vs count), an embedding confound we have not measured.
+Experiments are CPU-scale: a 2.5M model on ~1k icons, monochrome path icons, held-out NLL and a lightweight FID rather than large-model human-aligned generation. We therefore scope the model-level claims (§5.3–5.4) to the small-model, sample-efficient regime; we do not claim they transfer unchanged to 3–8B VLM scale, and the compression–modelability gap may narrow with capacity — establishing its scale-dependence is the most important follow-up (see §10). Color/style and full SVG features (gradients, text, filters) are out of scope. The fixed-point codec overloads a token's meaning (position vs scalar vs count), an embedding confound we have not measured.
+
+The sharpest challenge to our premise is the *continuous-coordinate* camp (Ogezi et al., 2026): if coordinates are modeled as continuous values rather than discrete tokens, the entire notion of a tokenization "unit" dissolves. Our claims are therefore conditional on a discrete-token interface; a head-to-head against a continuous-regression arm on the same backbone is the natural next experiment (§10).
 
 ---
 
 ## 8. Conclusion
 
-The unit a model reads geometry in is not a free choice. On real vector graphics, geometric primitive tokens model and generate better than text — and, against intuition, better than the more-compressed learned-merge variant. Compression is not the objective; the *right substrate* is. We release GeomTok and GeomTok-Eval to let the field measure this directly.
+The unit a model reads geometry in is not a free choice. On real vector graphics, in the small-model regime, geometric primitive tokens model and generate better than text — and, against intuition, better than the more-compressed learned-merge variant. We do not claim compression is irrelevant; we exhibit a controlled counterexample to the assumption that it predicts downstream quality, with an information-theoretic mechanism (merges trade token count for per-token entropy). We release GeomTok and GeomTok-Eval, with our negative-results ledger, to let the field measure this directly.
 
 ---
 
-### Reproducibility
+## 9. Reproducibility
 
-All numbers are produced by scripts in `.research/` against the public StarVector svg-icons benchmark; raw outputs are archived in `.research/results_*.txt`. The package installs as `geomtok` (`pip install -e .`); tests run via `pytest` (191 assertions). Key scripts: `exp_f2_baseline_table.py` (§5.1), `exp_A_hivg_vs_learned.py` (§5.2), `f5_run.py` (§5.3), `f5_gen.py` (§5.4), `exp_init_norm_confound.py` (§6), `exp_e3_*` (§3.3).
+All numbers are produced by scripts in `.research/` against the public StarVector svg-icons benchmark; raw outputs are archived in `.research/results_*.txt`. The package installs as `geomtok` (`pip install -e .`); tests run via `pytest` (191 assertions). Key scripts: `exp_f2_baseline_table.py` (§5.1), `exp_A_hivg_vs_learned.py` (§5.2), `f5_run.py` (§5.3), `f5_gen.py` (§5.4), `exp_init_norm_confound.py` (§6), `exp_e3_adaptive_vs_uniform.py` / `exp_e3_density_tree.py` (§6).
+
+*Camera-ready artifact checklist (to complete before submission):* HF dataset id + revision hash; checked-in train/test split manifests (the exact 1,045/213 and 1,200/400 splits); `requirements.txt` with Python and resvg versions (render metrics depend on the rasterizer version); the three training seeds and seed-setting mechanism; a model-config table (layers, width, context, LR, steps, batch for the 2.5M model); per-experiment hardware and wall-clock; a determinism note; and a license decision (the work must be released open for the methodological/protocol framing to hold).
+
+---
+
+## 10. Submission Plan (not for camera-ready)
+
+Per adversarial review, the framing/wording/citation fixes above make this a clean **Findings / tokenization-workshop** contribution as written. To clear an **ACL/EMNLP main-short** bar, the following CPU-feasible experiments are needed, in priority order:
+
+1. **Merge-budget sweep, downstream.** Plot held-out NLL vs merge budget N for char-BPE and L1, to show the §5.3 counterexample is a *curve*, not a single operating point. (The intrinsic-compression curve already exists in §5.2; the downstream-NLL-vs-budget curve is new.)
+2. **Capacity trend.** Run the swap at ~0.5M / 2.5M / 10M / 25M params and report the direction of the L1>L1+BPE gap vs capacity — de-risks the scale critique on the headline.
+3. **Second corpus.** Add one more icon set (Twemoji / Noto-outline / Material / SVG-Stack slice) to remove the single-benchmark risk.
+4. **Continuous-regression arm.** A small regression-head coordinate model on the same backbone, to answer Ogezi et al. (2026).
+5. **Nice-to-have:** κ-curvature/continuity token ablation; coordinate-error tail (>2px perceptible rate); StrokeNUWA VQ point on the compression–fidelity scatter; small human forced-choice eval.
