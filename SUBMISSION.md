@@ -7,7 +7,7 @@
 | Path | Status | Gating work |
 |---|---|---|
 | **EMNLP/ACL Findings · tokenization/efficiency workshop** | **Ready now** (after this revision) | Wording/citation/structure fixes — **done** in PAPER.md |
-| **ACL/EMNLP main short** | **E1–E4 done**; needs Figs 1/3/4 (Fig 2 done) | see below |
+| **ACL/EMNLP main short** | **E1–E4 + Figs 1–4 done**; needs camera-ready artifact + license | see below |
 | **ACL/EMNLP main long · CVPR** | Out of scope | Requires scale-up (≥100M, real generator, color SVG, human eval) — a second paper |
 
 **Recommendation:** target **EMNLP Findings** (the work is a tokenizer-evaluation contribution in the NAACL'24 swap lineage, not a vision paper). Run E1+E2 for a credible main-short attempt.
@@ -35,10 +35,10 @@
 
 ## Figures to produce — todo
 
-- [ ] **Fig.1** Pipeline + same-icon char-BPE vs GeomTok token-stream contrast (highest value; conveys whole thesis)
+- [x] **Fig.1** Pipeline + token-stream contrast — DONE (`assets/fig1_pipeline.svg`).
 - [x] **Fig.2** Compression–modelability scatter — DONE (`assets/fig2_compression_modelability.svg`, rendered).
-- [ ] **Fig.3** Qualitative render panel: original vs GeomTok vs adaptive-quadtree round-trip, captioned SSIM/ink-IoU
-- [ ] **Fig.4** Generated-samples grid: GeomTok renderable icons vs text-tokenizer (empty/garbage)
+- [x] **Fig.3** Render panel original/uniform/adaptive + SSIM — DONE (`assets/fig3_render_panel.svg`).
+- [x] **Fig.4** Generated samples GeomTok (48/60 renderable) vs text BPE (0/60) — DONE (`assets/fig4_gen_samples.svg`).
 
 ## Camera-ready artifact — todo
 

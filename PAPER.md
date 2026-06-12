@@ -73,8 +73,10 @@ We motivate the protocol with a concrete failure it catches: an earlier "structu
 
 All experiments use the public **StarVector svg-icons** benchmark (monochrome, path-centric). Sections 5–6 evaluate the tokenizer of §3 under the protocol of §4. Tokenizer-swap experiments train an identical 2.5M-parameter decoder-only transformer (a vanilla model with no GeomTok-specific embedding) on each tokenizer's stream — the only variable is the tokenizer (Ali et al., 2024). The domain text baseline is a SentencePiece BPE trained on SVG text at vocab 5,561 (a *fair* baseline; GPT-4's cl100k, at 100k vocab and not domain-trained, is reported only as a reference). Crucially, generation (§5.4) uses **identical plain top-k sampling for every arm with no grammar constraint**, so the geometric arm receives no FSA-validity advantage.
 
-> **Figure 1 (to add).** Pipeline: SVG → parse/flatten → quantize → tokenize → (optional FSA decode), with the *same* icon shown as a char-BPE token stream vs a GeomTok stream side by side.
-> **Figure 2 (to add).** Compression–modelability scatter: x = tokens/icon (intrinsic compression), y = held-out NLL bits/icon (modelability), one point per arm from §5.3 — visualizing the non-monotonic relationship (L1+BPE more compressed yet worse).
+> **Figure 1** (`assets/fig1_pipeline.svg`). Pipeline: SVG → parse/flatten → quantize → tokenize → (optional FSA decode), with a coordinate `150.5` shredded by text BPE (4 fragments) vs one GeomTok coordinate token, and the same-icon token-stream contrast.
+> **Figure 2** (`assets/fig2_compression_modelability.svg`). Compression–modelability scatter: x = tokens/icon (intrinsic compression), y = held-out NLL bits/icon (modelability) — the non-monotonic relationship (L1+BPE more compressed yet worse; the L1 budget-sweep trend overlaid).
+> **Figure 3** (`assets/fig3_render_panel.svg`, §6). Qualitative render panel: original vs uniform-L6 vs adaptive-quadtree round-trip, per-icon SSIM.
+> **Figure 4** (`assets/fig4_gen_samples.svg`, §5.4). Generated samples: GeomTok-L1 (48/60 renderable) vs text BPE (0/60), identical plain sampling.
 
 ### 5.1 Tokenizer efficiency (intrinsic), 400 real icons
 
@@ -137,7 +139,7 @@ Generating 200 samples per arm under **identical plain top-k sampling (no FSA fo
 | GeomTok-L1 | **84%** | 0.197 | 0.892 | 0.840 |
 | L1 + learned BPE | 35% | 0.194 | 0.920 | 0.848 |
 
-In this small-model regime, a text tokenizer yields **0% renderable SVG** under the same sampling that gives GeomTok 84% — geometric tokens appear *required* for renderable output here, not merely more efficient (we scope this to the 2.5M-parameter setting; large VLMs with massive SVG corpora may close the gap). L1 yields **2.4× more renderable samples than L1+BPE (84% vs 35%)**: aggressive merges that win on compression halve generation validity. On renderable samples FID is comparable; no mode collapse (diversity ≈0.9), no memorization (novelty ≈0.84). The diversity/novelty metrics are mask-based and we treat them as sanity checks, not headline numbers.
+In this small-model regime, a text tokenizer yields **0% renderable SVG** under the same sampling that gives GeomTok 84% (Figure 4) — geometric tokens appear *required* for renderable output here, not merely more efficient (we scope this to the 2.5M-parameter setting; large VLMs with massive SVG corpora may close the gap). L1 yields **2.4× more renderable samples than L1+BPE (84% vs 35%)**: aggressive merges that win on compression halve generation validity. On renderable samples FID is comparable; no mode collapse (diversity ≈0.9), no memorization (novelty ≈0.84). The diversity/novelty metrics are mask-based and we treat them as sanity checks, not headline numbers.
 
 ---
 
@@ -147,7 +149,7 @@ We subjected each component to an adversarial control; three plausible claims di
 
 - **"7.6× compression vs a text tokenizer" → retracted to 3.54×.** The 7.6× figure compared against GPT-4's cl100k (100k vocab, not domain-trained) — a strawman. At matched 5,561 vocabulary the honest figure is **3.54×** (encoding bits/icon identical).
 - **"Geometry-aware embedding initialization accelerates training" → retracted.** A matched-norm control — random vectors rescaled to unit row-norm, with *zero* geometric structure — closes the entire gap: random (default norm ~11.3) val 4.51 → random-unit-norm **3.40** ≈ geometry-structured 3.47. The apparent benefit was a weight-tying embedding-*norm* artifact, not geometry. (We highlight this control in §1 as the cleanest example of the discipline: a subtle confound masquerading as a geometry effect.)
-- **"Adaptive quadtree coordinates" → retracted in favor of a uniform grid.** On 400 real icons (27,414 coordinates), at equal token count, a plain uniform 64×64 grid beat a curvature-adaptive quadtree decisively: mean coordinate error **1.78px vs 14.75px**, render SSIM **0.929 vs 0.846**, ink-IoU **0.655 vs 0.284**. Curvature-driven splitting starves straight content, which dominates real icons. A density-driven global tree narrowly improved mean error (1.58px) but was fit on the test split and is reported only as such.
+- **"Adaptive quadtree coordinates" → retracted in favor of a uniform grid.** On 400 real icons (27,414 coordinates), at equal token count, a plain uniform 64×64 grid beat a curvature-adaptive quadtree decisively: mean coordinate error **1.78px vs 14.75px**, render SSIM **0.929 vs 0.846**, ink-IoU **0.655 vs 0.284** (Figure 3 shows the visual difference). Curvature-driven splitting starves straight content, which dominates real icons. A density-driven global tree narrowly improved mean error (1.58px) but was fit on the test split and is reported only as such.
 
 We also note that a saturated validity metric (100% after a definition change) has no discriminative power, and that hand-crafted L2/L3 macros fire on ~0–15% of real icons. We argue this discipline — competing baselines, matched budgets, controls for confounds, and reporting what dies — is what this subfield, which often relies on self-defined metrics and small synthetic corpora, most needs.
 
