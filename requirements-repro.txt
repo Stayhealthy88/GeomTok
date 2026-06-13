@@ -12,4 +12,4 @@ huggingface-hub==1.18.0
 resvg-py==0.3.2
 pillow==12.2.0
 scikit-image==0.26.0
-pytest==8.4.0
+pytest==9.0.3

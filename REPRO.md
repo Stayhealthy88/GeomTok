@@ -49,7 +49,7 @@ Seeds are set with `torch.manual_seed(seed); np.random.seed(seed)` before each m
 | Paper § | Script (`.research/`) | Archived result |
 |---|---|---|
 | §5.1 efficiency table | `exp_f2_baseline_table.py` | `results_f2_baseline_table.txt` |
-| §5.2 learned vs structure-constrained | `exp_A_hivg_vs_learned.py` | `results_A_hivg_vs_learned.txt` |
+| §5.2 learned vs structure-constrained | `exp_A_hivg_vs_learned.py` | `results_A_hivg_vs_learned.txt` (split 1200/400 verified via manifest + script, not printed in the archived table) |
 | §5.3 main swap (3 seed) | `f5_run.py` | `results_f5_3seed.txt` |
 | §5.3 E1 budget sweep | `exp_E1_budget_sweep.py` | `results_E1_budget_sweep.txt` |
 | §5.3 E2 capacity trend | `exp_E2_capacity.py` | `results_E2_capacity.txt` |
