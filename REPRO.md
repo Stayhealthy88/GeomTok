@@ -22,7 +22,7 @@ Public Hugging Face datasets, pinned by revision so `df.head(N)` row order is st
 | `starvector/svg-icons` | `0dfc1bee7132` | §5.1–5.4, §6, E1, E2, A |
 | `starvector/svg-emoji` | `a4209d1752ba` | E3 (second corpus) |
 
-Each experiment applies `df.head(N)` then filters by parse-success and L1-token length. The **exact icons used** (by `Filename`) are checked in under [`.research/splits/`](.research/splits/) (regenerate with `.research/make_splits.py`). Representative split sizes after filtering: F5/E1 svg-icons = 1,045 train / 213 test (max_len 160); E3 svg-emoji = 401 train / 48 test; A/E2 svg-icons = 1,200 train / 400 test.
+Each experiment applies `df.head(N)` then filters by parse-success and L1-token length. The **exact icons used** (by `Filename`) are checked in under [`.research/splits/`](.research/splits/) (regenerate with `.research/make_splits.py`). Split sizes after filtering, one manifest per loader: `f5_icons` (F5 §5.1/5.3/5.4, `head(n·2)`, max_len 160) = **1,045 / 213**; `e12_icons` (E1, E2; `head(n·3)`, max_len 160) = **1,000 / 200**; `e3_emoji` (E3; `head(n·3)`, max_len 160) = **401 / 48**; `expA_icons` (§5.2; `head(N)`, parse-success only) = **1,200 / 400**.
 
 ## 3. Model configuration (tokenizer-swap experiments)
 
