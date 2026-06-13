@@ -7,7 +7,7 @@
 | Path | Status | Gating work |
 |---|---|---|
 | **EMNLP/ACL Findings · tokenization/efficiency workshop** | **Ready now** (after this revision) | Wording/citation/structure fixes — **done** in PAPER.md |
-| **ACL/EMNLP main short** | **E1–E4 + Figs 1–4 done**; needs camera-ready artifact + license | see below |
+| **ACL/EMNLP main short** | **E1–E4 + Figs 1–4 + camera-ready artifact done**; ready to draft submission | — |
 | **ACL/EMNLP main long · CVPR** | Out of scope | Requires scale-up (≥100M, real generator, color SVG, human eval) — a second paper |
 
 **Recommendation:** target **EMNLP Findings** (the work is a tokenizer-evaluation contribution in the NAACL'24 swap lineage, not a vision paper). Run E1+E2 for a credible main-short attempt.
@@ -42,14 +42,14 @@
 
 ## Camera-ready artifact — todo
 
-- [ ] HF dataset id + revision hash; checked-in split manifests (1,045/213, 1,200/400)
-- [ ] `requirements.txt` + Python + **resvg version** (render metrics depend on rasterizer)
-- [ ] 3 seeds + seed mechanism; 2.5M model config table (layers/width/ctx/LR/steps/batch)
-- [ ] per-experiment hardware + wall-clock; determinism note
-- [ ] **License decision** — must be open (Apache-2.0) for the protocol/methodology framing to hold (currently repo notes "proprietary")
-- [ ] arXiv final-listing name check before submission (GeomTok/GeomTok-Eval still clear as of 2026-06-12)
+- [x] HF dataset revisions pinned (svg-icons@0dfc1bee7132, svg-emoji@a4209d1752ba); split manifests in `.research/splits/` (make_splits.py)
+- [x] `requirements-repro.txt` (Python 3.14.5, torch 2.12, resvg-py 0.3.2, etc.)
+- [x] seeds + 2.5M config table → REPRO.md §3 (d=192, 4 layers, AdamW 3e-4, tied head)
+- [x] hardware (Apple M4 CPU) + wall-clock + determinism → REPRO.md §5–6
+- [x] **License = Apache-2.0** (LICENSE file present)
+- [x] name check done (GeomTok/GeomTok-Eval clear in SVG domain, 2026-06-12); RE-CHECK arXiv listing immediately before submission
 
 ## Spot-checks before submission
 
-- [ ] Verify HiVG's "~2.7×/3B VLM" specifics against the PDF (cited precisely in earlier drafts; current §2 avoids the exact numbers — keep it that way unless verified)
-- [ ] Confirm no stray retracted number (7.6×, σ-multipliers) leaks outside §6
+- [x] §2 avoids HiVG's exact 2.7×/3B numbers (no precise unverified claim) — kept generic
+- [x] verified: 7.6× appears only in §1 disclosure + §6 retraction; no σ-multipliers / 'nobody has run' anywhere
