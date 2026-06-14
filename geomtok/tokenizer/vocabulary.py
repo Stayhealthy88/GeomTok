@@ -202,7 +202,7 @@ class GPLVocabulary:
         """토큰 ID를 해석. 예약 ID(5-9, 18-19, 24-29, 34-39, 56-59, 71-99)는
         크래시 없이 'unknown'으로 디코드한다 (v0.6 — 모델은 전체 소프트맥스에서
         샘플링하므로 예약 ID에서 ValueError가 나면 유효율이 왜곡됨)."""
-        if token_id < 5:
+        if 0 <= token_id < 5:
             return {"type": "special", "value": SpecialToken(token_id).name}
         elif 10 <= token_id < 18:
             return {"type": "command", "value": CommandToken(token_id).name}

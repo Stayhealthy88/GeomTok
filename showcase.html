@@ -138,6 +138,57 @@
   footer{padding:60px 0 80px;border-top:1px solid var(--line);text-align:center}
   .disclaim{font-size:12px;color:var(--dim);max-width:680px;margin:20px auto 0;line-height:1.7}
   ::selection{background:rgba(139,108,255,.4)}
+
+  /* ── Live API console ── */
+  .console{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--bg2)}
+  .console .bar{display:flex;align-items:center;gap:8px;padding:13px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .console .dots{display:flex;gap:7px;margin-right:8px}
+  .console .dots i{width:11px;height:11px;border-radius:50%;display:block}
+  .console .dots i:nth-child(1){background:#ff5f57}.console .dots i:nth-child(2){background:#febc2e}.console .dots i:nth-child(3){background:#28c840}
+  .console .route{font-family:"SF Mono",ui-monospace,monospace;font-size:13px;color:var(--mut)}
+  .console .route b{color:var(--cyan)}
+  .iconpick{display:flex;gap:10px;flex-wrap:wrap;padding:18px;border-bottom:1px solid var(--line)}
+  .iconpick button{width:54px;height:54px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+    display:grid;place-items:center;cursor:pointer;transition:all .2s;padding:9px;color:var(--mut)}
+  .iconpick button svg{width:100%;height:100%;display:block}
+  .iconpick button:hover{border-color:var(--cyan);transform:translateY(-2px);color:var(--ink)}
+  .iconpick button.on{border-color:var(--cyan);background:rgba(55,230,212,.1);box-shadow:0 0 0 1px var(--cyan);color:var(--cyan)}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);padding:0 18px}
+  .tabs button{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--mut);
+    padding:14px 16px;font-family:"SF Mono",monospace;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:-1px}
+  .tabs button.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+  .tabs button:hover{color:var(--ink)}
+  .panel{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:340px}
+  @media(max-width:820px){.panel{grid-template-columns:1fr}}
+  .panel .side{padding:22px}
+  .panel .side+.side{border-left:1px solid var(--line)}
+  @media(max-width:820px){.panel .side+.side{border-left:0;border-top:1px solid var(--line)}}
+  .plabel{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+  .codeblk{font-family:"SF Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.65;background:#06080f;
+    border:1px solid var(--line);border-radius:11px;padding:15px 16px;overflow:auto;max-height:300px;white-space:pre;color:#c5cde6}
+  .codeblk .k{color:#8b9bd4}.codeblk .s{color:#9ef5ec}.codeblk .n{color:#ffc857}.codeblk .b{color:#54e08a}
+  .render-pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+  .rbox{aspect-ratio:1;border:1px solid var(--line);border-radius:13px;background:
+    linear-gradient(rgba(255,255,255,.02),rgba(255,255,255,0)),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 8px,transparent 8px 16px);
+    display:grid;place-items:center;padding:16px;position:relative}
+  .rbox svg{width:100%;height:100%}
+  .rbox .cap{position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  .render-pair .arrow{font-size:22px;color:var(--violet)}
+  .tokchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;max-height:150px;overflow:auto}
+  .tc{font-family:"SF Mono",monospace;font-size:11.5px;padding:3px 7px;border-radius:6px;border:1px solid var(--line)}
+  .tc.cmd{background:rgba(139,108,255,.12);color:#c3b4ff;border-color:rgba(139,108,255,.3)}
+  .tc.coord{background:rgba(55,230,212,.1);color:#9ef5ec;border-color:rgba(55,230,212,.25)}
+  .tc.spec{background:rgba(255,255,255,.04);color:var(--dim)}
+  .tc.attr{background:rgba(255,200,87,.1);color:#ffe0a3;border-color:rgba(255,200,87,.25)}
+  .metrics{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .metric{flex:1;min-width:90px;border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--card)}
+  .metric .v{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .metric .l{font-size:11px;color:var(--mut);margin-top:2px}
+  .lvlswitch{display:inline-flex;background:#06080f;border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px;margin-bottom:14px}
+  .lvlswitch button{background:transparent;border:0;color:var(--mut);padding:6px 14px;border-radius:6px;font-family:"SF Mono",monospace;
+    font-weight:700;font-size:12px;cursor:pointer;transition:all .2s}
+  .lvlswitch button.on{background:var(--grad);color:#0a0a14}
 </style>
 </head>
 <body>
@@ -151,6 +202,7 @@
     <div class="nlinks">
       <a href="#problem">Problem</a>
       <a href="#results">Results</a>
+      <a href="#api">Live API</a>
       <a href="#discovery">Discovery</a>
       <a href="#use">Use Cases</a>
       <a href="#business">Business</a>
@@ -178,18 +230,18 @@
     </g>
   </svg>
   <div class="wrap" style="position:relative;z-index:1">
-    <span class="pill reveal"><span class="dot"></span> Adversarially verified research · v0.7</span>
+    <span class="pill reveal"><span class="dot"></span> v1.0 Private Alpha · Apache-2.0 · validated on 2,726 real icons</span>
     <h1 class="reveal">Teaching AI to<br><span class="grad">see geometry</span>, not text.</h1>
-    <p class="lead reveal">Today's language models read a vector graphic the way they'd read a paragraph — and shred every coordinate into meaningless digits. GeomTok is a geometry-native translation layer that lets AI reason over <b>shapes and space</b>, not scrambled characters.</p>
+    <p class="lead reveal">Today's language models read a vector graphic the way they'd read a paragraph — and shred every coordinate into meaningless digits. GeomTok is a geometry-native translation layer that lets AI reason over <b>shapes and space</b>, not scrambled characters. <b>v1.0 ships the tokenizer, the eval, and a managed API.</b></p>
     <div class="cta reveal">
-      <a class="btn p" href="#results">See the evidence ↓</a>
-      <a class="btn s" href="#business">Business case</a>
+      <a class="btn p" href="#api">Try the API ↓</a>
+      <a class="btn s" href="#results">See the evidence</a>
     </div>
     <div class="stats">
-      <div class="stat reveal"><div class="num grad" data-count="100" data-suffix="%">0%</div><div class="lbl">Parse + round-trip on 2,682 real-world icons</div></div>
-      <div class="stat reveal"><div class="num grad" data-count="3.54" data-suffix="×" data-dec="2">0×</div><div class="lbl">Compression vs a fair, same-vocab text tokenizer</div></div>
-      <div class="stat reveal"><div class="num grad" data-count="25" data-suffix="%">0%</div><div class="lbl">Better downstream modeling than char-BPE</div></div>
-      <div class="stat reveal"><div class="num grad" data-count="1.78" data-suffix="px" data-dec="2">0px</div><div class="lbl">Mean coordinate error on a 300px canvas</div></div>
+      <div class="stat reveal"><div class="num grad" data-count="100" data-suffix="%">0%</div><div class="lbl">Parse + round-trip on 2,726 real-world icons</div></div>
+      <div class="stat reveal"><div class="num grad" data-count="3.24" data-suffix="×" data-dec="2">0×</div><div class="lbl">Compression vs a fair, same-vocab text tokenizer</div></div>
+      <div class="stat reveal"><div class="num grad" data-count="100" data-suffix="%">0%</div><div class="lbl">FSA-guaranteed valid SVG · deterministic output</div></div>
+      <div class="stat reveal"><div class="num grad" data-count="1.79" data-suffix="px" data-dec="2">0px</div><div class="lbl">Mean coordinate error on a 300px canvas</div></div>
     </div>
   </div>
 </section>
@@ -231,6 +283,30 @@
       <div id="bars"></div>
       <p class="note" id="chartNote">Lower is better. char-BPE = a SentencePiece tokenizer trained on SVG text at vocab 5,561 — the fair comparison. GeomTok-L1 = geometric primitive tokens. +Learned-BPE = merges learned on top.</p>
     </div>
+  </div>
+</section>
+
+<!-- LIVE API -->
+<section id="api">
+  <div class="wrap">
+    <div class="eyebrow reveal">Try it — real output, not a mockup</div>
+    <h2 class="title reveal">The v1.0 API, on real icons.</h2>
+    <p class="sub reveal">Every byte below is the <b>actual</b> response from <span class="mono">geomtok 1.0.0</span> running the pipeline on these icons — tokenize, round-trip decode, and the render-based eval. Pick an icon and switch endpoints.</p>
+
+    <div class="console reveal">
+      <div class="bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span class="route" id="route">POST <b>/v1/tokenize</b></span>
+      </div>
+      <div class="iconpick" id="iconpick"></div>
+      <div class="tabs" id="tabs">
+        <button class="on" data-t="tokenize">/v1/tokenize</button>
+        <button data-t="detokenize">/v1/detokenize</button>
+        <button data-t="eval">/v1/eval</button>
+      </div>
+      <div class="panel" id="panel"></div>
+    </div>
+    <p class="note" id="apinote" style="margin-top:14px">Self-host the OSS core (<span class="mono">pip install geomtok</span>) or call the managed endpoint — both share the same immutable vocab, so results are bit-identical.</p>
   </div>
 </section>
 
@@ -344,7 +420,7 @@
   <div class="wrap">
     <div class="logo" style="justify-content:center;font-size:18px"><svg viewBox="0 0 32 32" fill="none"><circle cx="9" cy="9" r="5" stroke="url(#g1)" stroke-width="2"/><rect x="17" y="17" width="10" height="10" rx="2" stroke="url(#g1)" stroke-width="2"/><path d="M14 9h6M9 14v6" stroke="url(#g1)" stroke-width="2" stroke-linecap="round"/></svg> GeomTok</div>
     <p class="mut" style="margin-top:14px">Bridging AI and visual design through geometric understanding.</p>
-    <p class="disclaim">Research prototype, v0.7. All figures are from internal experiments on the public StarVector svg-icons benchmark and are reported post adversarial review — including retracted claims, shown above in the interest of integrity. Compression (3.54×) is measured against a domain-trained text tokenizer at matched 5,561 vocabulary; downstream figures use an identical 2.5M-parameter model under the NAACL'24 tokenizer-swap protocol. "GeomTok" (formerly "GPL Tokenizer", renamed to avoid the GPL-license collision).</p>
+    <p class="disclaim">v1.0 Private Alpha, Apache-2.0. The Live API panel shows <b>real, unedited output</b> from <span class="mono">geomtok 1.0.0</span> on the displayed icons. Aggregate figures are from the bundled validation gate over 2,726 real-world icons (Tabler, Feather, Heroicons, Lucide): 100% parse + round-trip, 100% FSA-valid, deterministic, mean coord error 1.79px / max within the 3.32px grid bound. Compression vs cl100k BPE on this corpus ≈ 3.2×; vs a domain-trained text tokenizer at matched 5,561 vocabulary ≈ 3.54×. Downstream "bits/icon" figures use an identical 2.5M-parameter model under the NAACL'24 tokenizer-swap protocol; generation remains an explicit non-goal for v1.0. "GeomTok" (formerly "GPL Tokenizer", renamed to avoid the GPL-license collision).</p>
   </div>
 </footer>
 
@@ -415,6 +491,144 @@ document.querySelectorAll('#metricToggle button').forEach(b=>{
 // floating hero shapes
 let t=0;const fl=document.querySelector('.hero-grid .float');
 function floatAnim(){t+=0.005;if(fl)fl.style.transform=`translateY(${Math.sin(t)*10}px)`;requestAnimationFrame(floatAnim)}floatAnim();
+</script>
+<script>
+const GEOMTOK_DEMO={"icons":[{"name":"circle","src":"feather","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-circle\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle></svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 274.2 152.3 C 274.2 218, 218 274.2, 152.3 274.2 C 82 274.2, 25.8 218, 25.8 152.3 C 25.8 82, 82 25.8, 152.3 25.8 C 218 25.8, 274.2 82, 274.2 152.3 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":6,"n_tokens":28,"n_tokens_L2":3,"compression_ratio":2.9286,"ids":[1,10,3571,14,4467,5223,5209,41,14,5194,4414,3518,33,41,14,2558,1802,1817,33,41,14,1831,2611,3571,33,41,17,2],"ids_total":28,"syms":["BOS","MOVE","C6:58,32","CUBIC","C6:58,46","C6:46,58","C6:32,58","CURV@1","CUBIC","C6:17,58","C6:5,46","C6:5,32","G2","CURV@1","CUBIC","C6:5,17","C6:17,5","C6:32,5","G2","CURV@1","CUBIC","C6:46,5","C6:58,17","C6:58,32","G2","CURV@1","CLOSE","EOS"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.939},{"name":"square","src":"feather","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-square\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect></svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 63.3 39.8 L 236.7 39.8 C 250.8 39.8, 264.8 49.2, 264.8 63.3 L 264.8 236.7 C 264.8 250.8, 250.8 264.8, 236.7 264.8 L 63.3 264.8 C 49.2 264.8, 39.8 250.8, 39.8 236.7 L 39.8 63.3 C 39.8 49.2, 49.2 39.8, 63.3 39.8 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":10,"n_tokens":40,"n_tokens_L2":3,"compression_ratio":2.35,"ids":[1,10,1990,11,2027,14,2030,2161,2353,33,45,11,4721,33,14,4913,5102,5099,33,45,11,5062,33,14,5059,4865,4673,33,45,11,2305,33,14,2113,1987,1990,33,45,17,2],"ids_total":40,"syms":["BOS","MOVE","C6:13,8","LINE","C6:50,8","CUBIC","C6:53,8","C6:56,10","C6:56,13","G2","CURV@5","LINE","C6:56,50","G2","CUBIC","C6:56,53","C6:53,56","C6:50,56","G2","CURV@5","LINE","C6:13,56","G2","CUBIC","C6:10,56","C6:8,53","C6:8,50","G2","CURV@5","LINE","C6:8,13","G2","CUBIC","C6:8,10","C6:10,8","C6:13,8","G2","CURV@5","CLOSE","EOS"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.824},{"name":"heart","src":"heroicons","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" data-slot=\"icon\">\n  <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z\"/>\n</svg>\n","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 264.8 105.5 C 264.8 72.7, 236.7 49.2, 203.9 49.2 C 180.5 49.2, 157 63.3, 152.3 82 C 143 63.3, 119.5 49.2, 96.1 49.2 C 63.3 49.2, 39.8 72.7, 39.8 105.5 C 39.8 194.5, 152.3 255.5, 152.3 255.5 C 152.3 255.5, 264.8 194.5, 264.8 105.5 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":8,"n_tokens":40,"n_tokens_L2":29,"compression_ratio":4.7,"ids":[1,10,2929,14,2481,2155,2148,43,14,2143,2330,2585,33,43,14,2327,2130,2125,31,43,14,2118,2433,2881,33,43,14,4097,4953,4953,33,42,14,4953,4145,2929,33,42,17,2],"ids_total":40,"syms":["BOS","MOVE","C6:56,22","CUBIC","C6:56,15","C6:50,10","C6:43,10","CURV@3","CUBIC","C6:38,10","C6:33,13","C6:32,17","G2","CURV@3","CUBIC","C6:30,13","C6:25,10","C6:20,10","G0","CURV@3","CUBIC","C6:13,10","C6:8,15","C6:8,22","G2","CURV@3","CUBIC","C6:8,41","C6:32,54","C6:32,54","G2","CURV@2","CUBIC","C6:32,54","C6:56,41","C6:56,22","G2","CURV@2","CLOSE","EOS"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.876},{"name":"star","src":"feather","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-star\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"></polygon></svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 152.3 25.8 L 189.8 105.5 L 274.2 114.8 L 213.3 175.8 L 227.3 264.8 L 152.3 222.7 L 72.7 264.8 L 86.7 175.8 L 25.8 114.8 L 110.2 105.5 L 152.3 25.8 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":12,"n_tokens":34,"n_tokens_L2":22,"compression_ratio":4.1765,"ids":[1,10,1817,11,2913,11,3059,31,11,3878,31,11,5097,31,11,4505,31,11,5064,31,11,3851,31,11,3006,31,11,2896,31,11,1817,31,17,2],"ids_total":34,"syms":["BOS","MOVE","C6:32,5","LINE","C6:40,22","LINE","C6:58,24","G0","LINE","C6:45,37","G0","LINE","C6:48,56","G0","LINE","C6:32,47","G0","LINE","C6:15,56","G0","LINE","C6:18,37","G0","LINE","C6:5,24","G0","LINE","C6:23,22","G0","LINE","C6:32,5","G0","CLOSE","EOS"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.938},{"name":"house","src":"lucide","svg_in":"<!-- @license lucide-static v1.17.0 - ISC -->\n<svg\n  class=\"lucide lucide-map-pin-house\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M15 22a1 1 0 0 1-1-1v-4a1 1 0 0 1 .445-.832l3-2a1 1 0 0 1 1.11 0l3 2A1 1 0 0 1 22 17v4a1 1 0 0 1-1 1z\" />\n  <path d=\"M18 10a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 .601.2\" />\n  <path d=\"M18 22v-3\" />\n  <circle cx=\"10\" cy=\"10\" r=\"3\" />\n</svg>\n","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 189.8 274.2 C 180.5 274.2, 175.8 269.5, 175.8 264.8 V 213.3 C 175.8 208.6, 175.8 203.9, 180.5 203.9 L 218 175.8 C 222.7 175.8, 227.3 175.8, 232 175.8 L 269.5 203.9 C 274.2 203.9, 274.2 208.6, 274.2 213.3 V 264.8 C 274.2 269.5, 269.5 274.2, 264.8 274.2 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 227.3 124.2 C 227.3 68, 180.5 25.8, 124.2 25.8 C 68 25.8, 25.8 68, 25.8 124.2 C 25.8 185.2, 96.1 250.8, 119.5 274.2 C 119.5 274.2, 124.2 274.2, 124.2 274.2\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 227.3 274.2 V 236.7\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 161.7 124.2 C 161.7 147.7, 147.7 161.7, 124.2 161.7 C 105.5 161.7, 86.7 147.7, 86.7 124.2 C 86.7 105.5, 105.5 86.7, 124.2 86.7 C 147.7 86.7, 161.7 105.5, 161.7 124.2 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":24,"n_tokens":104,"n_tokens_L2":72,"compression_ratio":2.7596,"ids":[1,10,5217,14,5215,5150,5086,47,13,4382,32,14,4318,4254,4255,32,47,11,3879,32,14,3880,3881,3882,32,47,11,4274,32,14,4275,4339,4403,32,47,13,5107,32,14,5171,5234,5233,32,47,17,3],"ids_total":104,"syms":["BOS","MOVE","C6:40,58","CUBIC","C6:38,58","C6:37,57","C6:37,56","CURV@7","VLINE","C6:37,45","G1","CUBIC","C6:37,44","C6:37,43","C6:38,43","G1","CURV@7","LINE","C6:46,37","G1","CUBIC","C6:47,37","C6:48,37","C6:49,37","G1","CURV@7","LINE","C6:57,43","G1","CUBIC","C6:58,43","C6:58,44","C6:58,45","G1","CURV@7","VLINE","C6:58,56","G1","CUBIC","C6:58,57","C6:57,58","C6:56,58","G1","CURV@7","CLOSE","SEP"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.917},{"name":"bell","src":"feather","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bell\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 227.3 100.8 C 227.3 58.6, 189.8 25.8, 152.3 25.8 C 110.2 25.8, 77.3 58.6, 77.3 100.8 C 77.3 189.8, 39.8 213.3, 39.8 213.3 H 264.8 C 264.8 213.3, 227.3 189.8, 227.3 100.8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 171.1 264.8 C 166.4 269.5, 157 274.2, 152.3 274.2 C 143 274.2, 133.6 269.5, 128.9 264.8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":9,"n_tokens":44,"n_tokens_L2":32,"compression_ratio":3.25,"ids":[1,10,2857,14,2281,1825,1817,42,14,1808,2249,2825,33,42,14,4041,4353,4353,33,47,12,4401,33,14,4401,4073,2857,33,47,3,10,5085,14,5148,5210,5209,45,14,5207,5141,5076,33,45,2],"ids_total":44,"syms":["BOS","MOVE","C6:48,21","CUBIC","C6:48,12","C6:40,5","C6:32,5","CURV@2","CUBIC","C6:23,5","C6:16,12","C6:16,21","G2","CURV@2","CUBIC","C6:16,40","C6:8,45","C6:8,45","G2","CURV@7","HLINE","C6:56,45","G2","CUBIC","C6:56,45","C6:48,40","C6:48,21","G2","CURV@7","SEP","MOVE","C6:36,56","CUBIC","C6:35,57","C6:33,58","C6:32,58","CURV@5","CUBIC","C6:30,58","C6:28,57","C6:27,56","G2","CURV@5","EOS"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.897},{"name":"bolt","src":"tabler","svg_in":"<svg\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n  class=\"icon icon-tabler icons-tabler-outline icon-tabler-calendar-bolt\"\n>\n  <path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\" />\n  <path d=\"M13.5 21h-7.5a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v5\" />\n  <path d=\"M16 3v4\" />\n  <path d=\"M8 3v4\" />\n  <path d=\"M4 11h16\" />\n  <path d=\"M19 16l-2 3h4l-2 3\" />\n</svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 2.3 2.3 H 297.7 V 297.7 H 2.3 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 171.1 264.8 H 77.3 C 63.3 264.8, 49.2 250.8, 49.2 236.7 V 86.7 C 49.2 72.7, 63.3 63.3, 77.3 63.3 H 227.3 C 236.7 63.3, 250.8 72.7, 250.8 86.7 V 152.3\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 199.2 39.8 V 86.7\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 100.8 39.8 V 86.7\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 49.2 138.3 H 250.8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 236.7 199.2 L 213.3 236.7 H 264.8 L 236.7 274.2\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":23,"n_tokens":71,"n_tokens_L2":16,"compression_ratio":3.4507,"ids":[1,10,1465,12,1528,13,5560,31,12,5497,31,17,3,10,5085,12,5065,14,5062,4867,4675,33,45,13,2627,33,14,2435,2310,2313,33,45,12,2345,33,14,2347,2478,2670,33,45,13,3566,33,3,10],"ids_total":71,"syms":["BOS","MOVE","C6:0,0","HLINE","C6:63,0","VLINE","C6:63,63","G0","HLINE","C6:0,63","G0","CLOSE","SEP","MOVE","C6:36,56","HLINE","C6:16,56","CUBIC","C6:13,56","C6:10,53","C6:10,50","G2","CURV@5","VLINE","C6:10,18","G2","CUBIC","C6:10,15","C6:13,13","C6:16,13","G2","CURV@5","HLINE","C6:48,13","G2","CUBIC","C6:50,13","C6:53,15","C6:53,18","G2","CURV@5","VLINE","C6:53,32","G2","SEP","MOVE"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.846},{"name":"camera","src":"feather","svg_in":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-camera\"><path d=\"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z\"></path><circle cx=\"12\" cy=\"13\" r=\"4\"></circle></svg>","svg_recon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"300\" viewBox=\"0 0 300 300\">\n  <path d=\"M 288.3 236.7 C 288.3 250.8, 274.2 264.8, 264.8 264.8 H 39.8 C 25.8 264.8, 11.7 250.8, 11.7 236.7 V 100.8 C 11.7 86.7, 25.8 77.3, 35.2 77.3 H 86.7 L 114.8 39.8 H 189.8 L 213.3 77.3 H 264.8 C 274.2 77.3, 288.3 86.7, 288.3 100.8 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n  <path d=\"M 199.2 161.7 C 199.2 189.8, 175.8 213.3, 152.3 213.3 C 124.2 213.3, 100.8 189.8, 100.8 161.7 C 100.8 133.6, 124.2 114.8, 152.3 114.8 C 175.8 114.8, 199.2 133.6, 199.2 161.7 Z\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n</svg>","tok":{"tokenizer_version":"geomtok-1.0.0","vocab_id":"geom-5561-v1","n_commands":19,"n_tokens":76,"n_tokens_L2":51,"compression_ratio":2.1974,"ids":[1,10,4726,14,4918,5107,5105,45,12,5057,33,14,5054,4859,4667,33,45,13,2811,33,14,2619,2494,2496,33,45,12,2507,33,11,2001,31,12,2017,31,11,2534,31,12,2545,31,14,2547,2678,2870,33],"ids_total":76,"syms":["BOS","MOVE","C6:61,50","CUBIC","C6:61,53","C6:58,56","C6:56,56","CURV@5","HLINE","C6:8,56","G2","CUBIC","C6:5,56","C6:2,53","C6:2,50","G2","CURV@5","VLINE","C6:2,21","G2","CUBIC","C6:2,18","C6:5,16","C6:7,16","G2","CURV@5","HLINE","C6:18,16","G2","LINE","C6:24,8","G0","HLINE","C6:40,8","G0","LINE","C6:45,16","G0","HLINE","C6:56,16","G0","CUBIC","C6:58,16","C6:61,18","C6:61,21","G2"],"normalization":{"viewBox_applied":true,"transforms_flattened":0},"warnings":[]},"detok":{"valid":true,"fidelity":{"coord_mean_px":1.7934,"coord_max_px":3.3146,"canvas":300.0}},"ssim":0.845}],"eval":{"scenes":120,"attr_mean_err":2.1014,"attr_max_err":3.3411,"count_acc":1.0,"render_ssim_mean":0.8955,"tokens":9294,"tokens_bpe":30232,"compression_vs_baseline":3.2529,"bits_per_icon":963.6,"bits_per_icon_bpe":4185.5},"report":{"corpus_size":2726,"gates":{"parse_rate":1.0,"roundtrip_rate":1.0,"fsa_valid_rate":1.0,"coord_within_bound_rate":0.9993,"coord_mean_px":2.2081,"coord_max_px":14.8643,"coord_p99_px":3.3146,"determinism_ok":true,"manifest_reload_stable":true,"unsupported_rejected":"4/4"},"l2":{"lossless_rate":1.0,"mean_l1_tokens":78.2,"mean_l2_tokens":42.83,"reduction_pct":45.23}}};
+/* ── Live API console — drives the #api section from real GEOMTOK_DEMO data ── */
+(function(){
+  if(typeof GEOMTOK_DEMO==='undefined') return;
+  const D=GEOMTOK_DEMO;
+  let sel=0, tab='tokenize', lvl='L1';
+  const panel=document.getElementById('panel');
+  const route=document.getElementById('route');
+  const ip=document.getElementById('iconpick');
+  if(!panel) return;
+
+  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function styleSvg(s,color){
+    return s.replace(/stroke="black"/g,'stroke="'+color+'"')
+            .replace(/stroke="currentColor"/g,'stroke="'+color+'"')
+            .replace(/<svg /,'<svg preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%" ');
+  }
+  // colored JSON serializer -> HTML
+  function J(v,ind){
+    ind=ind||0; const pad='  '.repeat(ind), pad1='  '.repeat(ind+1);
+    if(v===null) return '<span class="b">null</span>';
+    if(typeof v==='boolean') return '<span class="b">'+v+'</span>';
+    if(typeof v==='number') return '<span class="n">'+v+'</span>';
+    if(typeof v==='string') return '<span class="s">"'+esc(v)+'"</span>';
+    if(Array.isArray(v)){
+      if(v.length===0) return '[]';
+      const flat=v.every(x=>typeof x!=='object'||x===null);
+      if(flat){
+        return '['+v.map(x=>J(x,0)).join(', ')+']';
+      }
+      return '[\n'+v.map(x=>pad1+J(x,ind+1)).join(',\n')+'\n'+pad+']';
+    }
+    const ks=Object.keys(v);
+    if(ks.length===0) return '{}';
+    return '{\n'+ks.map(k=>pad1+'<span class="k">"'+esc(k)+'"</span>: '+J(v[k],ind+1)).join(',\n')+'\n'+pad+'}';
+  }
+  function chipClass(sym){
+    if(/^(BOS|EOS|SEP|PAD|UNK)$/.test(sym)) return 'spec';
+    if(/^C\d/.test(sym)) return 'coord';
+    if(/^(MOVE|LINE|HLINE|VLINE|CUBIC|QUAD|ARC|CLOSE)/.test(sym)) return 'cmd';
+    return 'attr';
+  }
+  function chips(ic){
+    const syms=ic.tok.syms, total=ic.tok.ids_total;
+    let h=syms.map(s=>'<span class="tc '+chipClass(s)+'">'+esc(s)+'</span>').join('');
+    if(total>syms.length) h+='<span class="tc spec">+'+(total-syms.length)+' more</span>';
+    return h;
+  }
+  function renderPair(ic){
+    return '<div class="render-pair">'+
+      '<div class="rbox"><span class="cap">input</span>'+styleSvg(ic.svg_in,'#9ef5ec')+'</div>'+
+      '<div class="arrow">→</div>'+
+      '<div class="rbox"><span class="cap">round-trip</span>'+styleSvg(ic.svg_recon,'#c3b4ff')+'</div></div>';
+  }
+
+  function renderTokenize(ic){
+    const t=ic.tok;
+    const n = lvl==='L2'? t.n_tokens_L2 : t.n_tokens;
+    const idsArr = t.ids.slice(0,28);
+    const idsLabel = idsArr.concat(t.ids_total>28?['…']:[]);
+    const req={svg: t._svg||(ic.svg_in.length>64?ic.svg_in.slice(0,61)+'…':ic.svg_in),
+               level:lvl, "return":["token_ids","tokens","metadata"]};
+    const resp={tokenizer_version:t.tokenizer_version, vocab_id:t.vocab_id, level:lvl,
+                n_commands:t.n_commands, n_tokens:n, compression_ratio:t.compression_ratio,
+                token_ids:idsLabel, normalization:t.normalization, warnings:t.warnings};
+    const merged = lvl==='L2'? '<div class="metric"><div class="v grad">'+t.n_tokens+'→'+t.n_tokens_L2+'</div><div class="l">L1 → L2 (learned BPE merges)</div></div>':'';
+    panel.innerHTML=
+      '<div class="side"><div class="plabel">Request</div><div class="codeblk">'+J(req)+'</div>'+
+        '<div class="plabel" style="margin-top:16px">Response · 200</div><div class="codeblk">'+J(resp)+'</div></div>'+
+      '<div class="side">'+
+        '<div class="lvlswitch" id="lvlsw"><button data-l="L1"'+(lvl==='L1'?' class="on"':'')+'>L1 · primitives</button><button data-l="L2"'+(lvl==='L2'?' class="on"':'')+'>L2 · merged</button></div>'+
+        '<div class="plabel">Geometric token stream</div><div class="tokchips">'+chips(ic)+'</div>'+
+        '<div class="metrics"><div class="metric"><div class="v grad">'+n+'</div><div class="l">tokens · '+t.n_commands+' commands</div></div>'+
+        '<div class="metric"><div class="v" style="color:var(--cyan)">'+t.compression_ratio.toFixed(2)+'×</div><div class="l">vs cl100k BPE</div></div>'+merged+'</div></div>';
+    bindLvl();
+  }
+
+  function renderDetokenize(ic){
+    const t=ic.tok, f=ic.detok.fidelity;
+    const req={token_ids:t.ids.slice(0,22).concat(t.ids_total>22?['…']:[]),
+               tokenizer_version:t.tokenizer_version, vocab_id:t.vocab_id};
+    const resp={valid:ic.detok.valid, n_tokens:t.n_tokens,
+                fidelity:{coord_mean_px:f.coord_mean_px, coord_max_px:f.coord_max_px, canvas:f.canvas}};
+    panel.innerHTML=
+      '<div class="side"><div class="plabel">Request</div><div class="codeblk">'+J(req)+'</div>'+
+        '<div class="plabel" style="margin-top:16px">Response · 200</div><div class="codeblk">'+J(resp)+'</div></div>'+
+      '<div class="side"><div class="plabel">Round-trip render</div>'+renderPair(ic)+
+        '<div class="metrics"><div class="metric"><div class="v" style="color:var(--green)">'+(ic.detok.valid?'valid':'—')+'</div><div class="l">FSA-guaranteed SVG</div></div>'+
+        '<div class="metric"><div class="v grad">'+f.coord_mean_px.toFixed(2)+'px</div><div class="l">mean coord error</div></div>'+
+        '<div class="metric"><div class="v" style="color:var(--cyan)">'+f.coord_max_px.toFixed(2)+'px</div><div class="l">max (≤ grid bound)</div></div></div></div>';
+  }
+
+  function renderEval(ic){
+    const s=D.eval, t=ic.tok;
+    const req={scenes:[{name:ic.name, svg:ic.svg_in.length>52?ic.svg_in.slice(0,49)+'…':ic.svg_in}],
+               tokenizer:{builtin:true}};
+    const resp={protocol:"GeomTok-Eval/1.0", summary:{
+        scenes:s.scenes, attr_mean_err:s.attr_mean_err, attr_max_err:s.attr_max_err,
+        count_acc:s.count_acc, render_ssim_mean:s.render_ssim_mean,
+        compression_vs_baseline:s.compression_vs_baseline, bits_per_icon:s.bits_per_icon}};
+    panel.innerHTML=
+      '<div class="side"><div class="plabel">Request · generator-separated</div><div class="codeblk">'+J(req)+'</div>'+
+        '<div class="plabel" style="margin-top:16px">Response · aggregate over '+s.scenes+' icons</div><div class="codeblk">'+J(resp)+'</div></div>'+
+      '<div class="side"><div class="plabel">This icon · render SSIM '+ic.ssim+'</div>'+renderPair(ic)+
+        '<div class="metrics"><div class="metric"><div class="v grad">'+s.render_ssim_mean.toFixed(3)+'</div><div class="l">mean render SSIM</div></div>'+
+        '<div class="metric"><div class="v" style="color:var(--green)">'+(s.count_acc*100).toFixed(0)+'%</div><div class="l">element-count accuracy</div></div>'+
+        '<div class="metric"><div class="v" style="color:var(--cyan)">'+s.compression_vs_baseline.toFixed(2)+'×</div><div class="l">token economy</div></div></div>'+
+        '<p class="note" style="margin-top:14px">Game-resistant: a random tokenizer can\'t score here — fidelity is measured by re-rendering the decode, not by self-report.</p></div>';
+  }
+
+  function bindLvl(){
+    const sw=document.getElementById('lvlsw'); if(!sw) return;
+    sw.querySelectorAll('button').forEach(b=>b.onclick=()=>{lvl=b.dataset.l;render();});
+  }
+  function render(){
+    route.innerHTML='POST <b>/v1/'+tab+'</b>';
+    const ic=D.icons[sel];
+    if(tab==='tokenize') renderTokenize(ic);
+    else if(tab==='detokenize') renderDetokenize(ic);
+    else renderEval(ic);
+  }
+
+  // build icon picker
+  D.icons.forEach((ic,i)=>{
+    const b=document.createElement('button');
+    b.innerHTML=styleSvg(ic.svg_in,'currentColor'); b.title=ic.name;
+    if(i===0) b.classList.add('on');
+    b.onclick=()=>{sel=i;lvl='L1';[...ip.children].forEach((x,j)=>x.classList.toggle('on',j===i));render();};
+    ip.appendChild(b);
+  });
+  document.querySelectorAll('#tabs button').forEach(b=>{
+    b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));render();};
+  });
+  render();
+})();
+
 </script>
 </body>
 </html>
