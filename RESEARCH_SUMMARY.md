@@ -1,4 +1,4 @@
-# GPL Tokenizer — Research Summary
+# GeomTok — Research Summary (formerly GPL Tokenizer)
 
 **Geometric Primitive Language: A geometry-aware tokenization system for SVG vector graphics**
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-GPL Tokenizer is a complete research pipeline that transforms how AI models understand and generate vector graphics. Instead of treating SVG code as plain text (character-by-character), GPL preserves the geometric structure of shapes, paths, and spatial relationships through specialized tokenization — then connects this representation to neural networks for generation.
+GeomTok is a complete research pipeline that transforms how AI models understand and generate vector graphics. Instead of treating SVG code as plain text (character-by-character), GPL preserves the geometric structure of shapes, paths, and spatial relationships through specialized tokenization — then connects this representation to neural networks for generation.
 
 The project spans five development milestones (v0.1–v0.5), progressing from basic parsing to a fully functional AI training pipeline.
 
@@ -70,9 +70,11 @@ PyTorch embedding module combining four components: HMN-initialized token embedd
 
 **Key result:** HMN initialization encodes geometric structure into initial weights — adjacent coordinates have 0.52 cosine similarity vs 0.00 for random initialization. 736K parameters.
 
+> **Footnote (v0.7 correction).** The geometric *structure* (0.52 cosine) is real, but the claim that it *accelerates training* is **retracted**. A matched-norm control (random vectors rescaled to unit row-norm, zero geometric structure) closes the entire val-loss gap: random (default norm ~11.3) val 4.51 → random-unit-norm val **3.40** → HMN val 3.47. The improvement was a weight-tying embedding-norm artifact, not geometry. HMN provides no measured training or modeling benefit beyond norm-matching. See `.research/results_f4_norm_confound.txt`.
+
 ### v0.5 — AI Training Pipeline (42 tests)
 
-Complete end-to-end pipeline: synthetic dataset generator (7 shape/pattern types), decoder-only GPLTransformer (1.79M params with weight tying), trainer (cosine LR, gradient clipping, checkpoints), autoregressive SVG generator (unconditional/conditional/completion modes), and quality evaluator (5 metrics).
+Complete end-to-end pipeline: synthetic dataset generator (7 shape/pattern types), decoder-only GPLTransformer (1.53M params with weight tying — v0.7 removed ~264K dead cross-attention weights), trainer (cosine LR, gradient clipping, checkpoints), autoregressive SVG generator (unconditional/conditional/completion modes), and quality evaluator (5 metrics).
 
 **Key result:** 200 training samples, 10 epochs, 8.5 seconds → loss 7.81→2.91, accuracy 5.6%→35.6%, 53.3% valid SVG generation rate, 0.88 structural score, 0.99 geometric score.
 
@@ -147,4 +149,4 @@ The remaining milestone targets production deployment:
 
 ---
 
-*GPL Tokenizer — bridging AI and visual design through geometric understanding.*
+*GeomTok — bridging AI and visual design through geometric understanding.*

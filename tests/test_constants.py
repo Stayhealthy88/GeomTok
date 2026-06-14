@@ -8,12 +8,12 @@ import os
 import sys
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gpl_tokenizer.utils.constants import GeometricConstants, DEFAULT_CONSTANTS
-from gpl_tokenizer.utils.math_utils import BezierMath
-from gpl_tokenizer.analyzer.continuity import ContinuityAnalyzer
-from gpl_tokenizer.analyzer.curvature import CurvatureInfo
+from geomtok.utils.constants import GeometricConstants, DEFAULT_CONSTANTS
+from geomtok.utils.math_utils import BezierMath
+from geomtok.analyzer.continuity import ContinuityAnalyzer
+from geomtok.analyzer.curvature import CurvatureInfo
 
 
 passed = failed = 0
@@ -92,7 +92,7 @@ rel_mode = GeometricConstants(use_relative_g2=True, g2_relative_tolerance=0.2)
 
 # 매우 작은 곡률(κ≈0.001)에서 큰 상대 차이는 상대 모드에서 G2 실패
 # 절대 차 0.02 (|0.001-0.021|) — 절대 기준(0.05)은 통과, 상대 기준(|Δκ|/max(|κ|)=0.02/0.021≈0.95>0.2) 은 실패
-from gpl_tokenizer.parser.path_parser import PathCommand, CommandType
+from geomtok.parser.path_parser import PathCommand, CommandType
 
 curv_a = CurvatureInfo(
     command_index=0, command_type=CommandType.CUBIC,
@@ -131,7 +131,7 @@ ana_rel = ContinuityAnalyzer(constants=rel_mode)
 result_rel = ana_rel._analyze_junction(0, cmd_a, curv_a, 1, cmd_b, curv_b)
 
 # 절대 모드에서는 G2 성립 (|Δκ|=0.02 < 0.05)
-from gpl_tokenizer.analyzer.continuity import ContinuityLevel
+from geomtok.analyzer.continuity import ContinuityLevel
 check(result_abs.level == ContinuityLevel.G2,
       f"절대 모드: Δκ=0.02 < 0.05 → G2 (실제: {result_abs.level.name})")
 # 상대 모드에서는 G1 으로 강등 (상대 차이 95% > 20%)

@@ -1,0 +1,10 @@
+  self.enc = nn.TransformerEncoder(layer, nl)
+train 1045, test 213 아이콘
+arm         vocab  tok/icon  heldout bits/icon
+char_bpe     5561     159.0                773
+  self.enc = nn.TransformerEncoder(layer, nl)
+l1           5561     103.7                577
+l1_bpe       7000      58.8                667
+
+해석: held-out bits/icon이 낮을수록 그 토큰화가 실데이터 분포를 더 잘 모델링.
+동일 바닐라 모델·동일 실데이터 — 차이는 순수 토크나이저 효과(NAACL'24).

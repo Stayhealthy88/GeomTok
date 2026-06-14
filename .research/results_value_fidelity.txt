@@ -1,0 +1,9 @@
+scene         max_err mean_err  count  tok  bpe
+circle_r20      2.340    1.560     OK    5   27
+circles_5       2.340    1.055     OK   11   79
+circles_7       2.340    0.935     OK   12  105
+rect_80x40     12.500    6.250     OK    6   31
+ellipse         2.340    1.175     OK    6   31
+mixed          17.500    7.208     OK   16   78
+
+GeomTok-Eval 요약: attr_max_err=17.500px mean=3.030px count_acc=100% 압축 6.27x (BPE 351 → GPL 56)

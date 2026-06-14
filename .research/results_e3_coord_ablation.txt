@@ -1,0 +1,7 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+아이콘 400개, BPE 평균 2021 tok/icon, GPL-L1 평균 264 tok/icon → 압축 7.65x
+
+scheme      vocab   used mean_err  max_err  util%  eff=1/(used·μerr)
+arcs         5461   2342    1.784     3.31  42.9%              2.39
+uniform      4096   2342    1.784     3.31  57.2%              2.39
+omni        40000  10947    0.571     1.06  27.4%              1.60

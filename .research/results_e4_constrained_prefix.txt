@@ -1,0 +1,12 @@
+s0 constrained=False: valid=70% render=100% non_degen=66% ink=0.017 div=0.059
+s0 constrained=True: valid=58% render=100% non_degen=57% ink=0.018 div=0.060
+s1 constrained=False: valid=67% render=100% non_degen=63% ink=0.015 div=0.049
+s1 constrained=True: valid=53% render=100% non_degen=53% ink=0.016 div=0.054
+s2 constrained=False: valid=72% render=100% non_degen=72% ink=0.019 div=0.065
+s2 constrained=True: valid=64% render=100% non_degen=63% ink=0.019 div=0.063
+constrained=False grammar_valid: 0.697±0.025
+constrained=False non_degenerate: 0.670±0.046
+constrained=False diversity: 0.058±0.008
+constrained=True grammar_valid: 0.583±0.055
+constrained=True non_degenerate: 0.577±0.050
+constrained=True diversity: 0.059±0.005

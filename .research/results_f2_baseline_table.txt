@@ -1,0 +1,7 @@
+n=400  좌표 충실도(GPL-L1): mean 1.78px  max 3.37px
+
+scheme        tok/icon  bits/icon    압축vs charBPE
+cl100k          2021.3      33580           0.46x (참고)
+charBPE          935.3      11636           1.00x
+gpl_l1           264.2       3287           3.54x
+gpl_l1_bpe       150.7       1925           6.21x

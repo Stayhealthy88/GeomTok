@@ -1,0 +1,8 @@
+train 789, test 181 아이콘
+head          mean px↓  median px↓   <2px %
+discrete         35.71       29.65       1%
+continuous       43.33       38.89       0%
+
+해석: discrete 평균 px ≤ continuous 면 '이산 좌표 토큰이 연속 회귀에 밀리지 않음'(CNM 응수).
+  이산은 격자 양자화 바닥(평균~1.78px) 존재; 연속은 바닥 없으나 소데이터서 회귀가 더 어려울 수 있음.
+  discrete 35.71 vs continuous 43.33 px

@@ -1,0 +1,5 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+L1: SSIM 0.9293±0.0355  inkIoU 0.6548±0.0771  (n=150)
+L2: SSIM 0.9293±0.0355  inkIoU 0.6548±0.0771  (n=150)
+
+해석: L1 SSIM 0.929 = 3.54x 압축의 정직한 충실도 비용. 실데이터에서 L2는 도형 미발화로 L1과 동일(압축·충실도 둘 다 무변화) — 수작업 도형 토큰은 실세계 아이콘에 무용.

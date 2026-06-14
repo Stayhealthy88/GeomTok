@@ -1,0 +1,8 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+코퍼스: 2682개
+
+파싱 성공: 2682/2682 = 100.0%  (목표 95%)
+토큰화 성공: 2682/2682 = 100.0%
+왕복(비어있지 않은 SVG): 2682/2682 = 100.0%
+평균 명령 수: 70.3, 평균 토큰 수: 256.3
+오류 상위: []

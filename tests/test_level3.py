@@ -16,16 +16,16 @@ import math
 
 sys.path.insert(0, '..')
 
-from gpl_tokenizer.parser.path_parser import PathParser, PathCommand, CommandType
-from gpl_tokenizer.analyzer.spatial_analyzer import (
+from geomtok.parser.path_parser import PathParser, PathCommand, CommandType
+from geomtok.analyzer.spatial_analyzer import (
     SpatialAnalyzer, ElementInfo, SpatialRelation, RelationType
 )
-from gpl_tokenizer.tokenizer.spatial_tokenizer import SpatialTokenizer, Level3Result
-from gpl_tokenizer.tokenizer.composite_tokenizer import CompositeTokenizer
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary, SpatialToken
-from gpl_tokenizer.tokenizer.arcs import ARCS
+from geomtok.tokenizer.spatial_tokenizer import SpatialTokenizer, Level3Result
+from geomtok.tokenizer.composite_tokenizer import CompositeTokenizer
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
+from geomtok.tokenizer.vocabulary import GPLVocabulary, SpatialToken
+from geomtok.tokenizer.arcs import ARCS
 
 
 # ===================== 헬퍼 =====================

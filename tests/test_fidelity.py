@@ -19,11 +19,11 @@ import random
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gpl_tokenizer.tokenizer.arcs import ARCS, QuantizedCoord
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
+from geomtok.tokenizer.arcs import ARCS, QuantizedCoord
+from geomtok.tokenizer.vocabulary import GPLVocabulary
+from geomtok.tokenizer.detokenizer import Detokenizer
 
 
 passed = failed = 0
@@ -152,7 +152,7 @@ check(fid_ad["max_error"] < fidelity["max_error"],
 print("\n[4] 비좌표 토큰은 추출에서 제외")
 
 # [BOS, MOVE, coord, coord, LINE, coord, coord, EOS] — coord 4개만 추출되어야
-from gpl_tokenizer.tokenizer.vocabulary import SpecialToken, CommandToken
+from geomtok.tokenizer.vocabulary import SpecialToken, CommandToken
 tok_mixed = [
     int(SpecialToken.BOS),
     int(CommandToken.MOVE),

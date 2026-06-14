@@ -18,9 +18,9 @@ sys.path.insert(0, '..')
 import torch
 import torch.nn.functional as F
 
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary, SpecialToken, CommandToken
-from gpl_tokenizer.embedding.gpl_embedding import GPLEmbedding, _token_type_id, N_TOKEN_TYPES
-from gpl_tokenizer.embedding.hmn_init import HMNInitializer
+from geomtok.tokenizer.vocabulary import GPLVocabulary, SpecialToken, CommandToken
+from geomtok.embedding.gpl_embedding import GPLEmbedding, _token_type_id, N_TOKEN_TYPES
+from geomtok.embedding.hmn_init import HMNInitializer
 
 
 # ===================== 설정 =====================

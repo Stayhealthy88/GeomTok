@@ -1,4 +1,4 @@
-# GPL Tokenizer
+# GeomTok &mdash; geometry-native tokenization for vector graphics
 
 **Teaching AI to truly understand shapes and drawings.**
 
@@ -20,7 +20,7 @@ Why? Because current AI systems read graphics code the same way they read Englis
 
 ## Our Solution
 
-GPL Tokenizer is a **geometry-aware translation layer** that sits between vector graphics and AI models. Instead of letting AI read raw code character by character, we first translate graphics into a language designed for geometric understanding.
+GeomTok (formerly “GPL Tokenizer”) is a **geometry-aware translation layer** that sits between vector graphics and AI models. Instead of letting AI read raw code character by character, we first translate graphics into a language designed for geometric understanding.
 
 A circle isn't 28 text fragments anymore — it's a single "circle" token with a center point and radius. A row of five identical buttons isn't 167 text fragments — it's one button definition plus "repeat 4 times, evenly spaced." The AI sees shapes, positions, and spatial relationships — not scrambled digits.
 
@@ -86,7 +86,7 @@ Full rationale, diffs, and math: see [RESEARCH_SUMMARY.md](./RESEARCH_SUMMARY.md
 
 Vector graphics are everywhere — app icons, logos, UI components, illustrations, data visualizations, maps. The global design tools market is valued at $13B+ and growing. Yet AI still can't reliably create or edit vector content.
 
-GPL Tokenizer solves the foundational bottleneck: giving AI models a native understanding of 2D geometry. This unlocks capabilities like AI-powered design generation, automated icon creation, intelligent SVG editing, and design-to-code workflows that actually produce correct output.
+GeomTok solves the foundational bottleneck: giving AI models a native understanding of 2D geometry. This unlocks capabilities like AI-powered design generation, automated icon creation, intelligent SVG editing, and design-to-code workflows that actually produce correct output.
 
 ## Technical Foundation
 
@@ -103,4 +103,4 @@ This project is proprietary. All rights reserved.
 
 ---
 
-*Building the bridge between AI and visual design.*
+*GeomTok — building the bridge between AI and visual design.*

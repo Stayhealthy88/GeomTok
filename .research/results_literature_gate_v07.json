@@ -1,0 +1,292 @@
+{
+  "summary": "Check if the new \"learned-BPE-over-geometric-tokens\" headline is preempted or needs additions before F3",
+  "agentCount": 5,
+  "logs": [
+    "Sweep: 4/4 angles, 29 findings, 0 flagged as preempting",
+    "Verify: 0/0 confirmed preempting"
+  ],
+  "result": {
+    "decision": "I have all the grounding I need. The roadmap state, the literature sweep, and the actual measured results are consistent. Synthesizing the go/no-go now.\n\n# GPL Tokenizer v0.7 — Go / No-Go 판정\n\n> 종합 근거: 문헌 스윕 2건(HiVG·GeoBPE 등 8+ 출처) + 선점 판정 0건 + 실측(F2: 935/264/151 tok·3.54x·6.21x·좌표 1.78px, F3: L1 SSIM 0.929/inkIoU 0.655, L2 발화율 0.0%·L3 14.5%). **종합 판정: 조건부 GO** — 헤드라인을 재구성하고 F5를 즉시 실행하라.\n\n---\n\n## 1. 신규성 판정 — **needs-reframing (재구성 시 novel, 현 헤드라인 그대로는 preempted)**\n\n현 헤드라인 \"기하 프리미티브 토큰화 = 학습 BPE의 6.2배 더 나은 기질\"은 **그대로 내면 선점된다.** 핵심 메커니즘과 그 직관이 이미 출판됐다.\n\n| 헤드라인 구성요소 | 상태 | 선점자 |\n|---|---|---|\n| 기하 프리미티브 위 BPE-스타일 머지 (SVG) | **선점** | HiVG (2604.05072, 2026): 빈도 기반 segment pair 머지, 균일 정수 양자화, 렌더 평가, ~2.7x |\n| \"Geometric BPE\" 명칭 + 학습 머지로 프리미티브 어휘 | **선점** | GeoBPE (2511.11758, 2025): 명칭·\"structured beats VQ/raw\" 논거 (단백질) |\n| 이미 이산화된 기질 위 BPE 머지 | **선점** | Multidim-BPE (2411.10281) |\n| 경계 완화 cross-boundary 머지 | **선점** | SuperBPE / BoundlessBPE (2025, 텍스트) |\n| **char-BPE vs 학습-프리미티브-BPE vs 수작업 매크로 3원 비교** | **미선점** | 어떤 SVG 논문도 수작업 매크로 베이스라인 미실행 |\n| **생성기와 분리된 렌더 기반 내재 평가 프로토콜 (GeomTok-Eval)** | **미선점** | HiVG·InternSVG·LottieGPT 전부 생성 경유 평가 |\n| **64×64 균일격자 + 스칼라 고정소수점 기질, CPU/소형 체급** | **미선점(약함)** | 파라미터 선택, 개념적 해자 아님 |\n\n방어 가능한 신규성 3종:\n- **(a) 학습 프리미티브-BPE가 수작업 도형/공간 매크로를 이긴다는 직접 비교** — 가장 강함. 단, F3가 이미 \"L2 발화율 0.0%\"를 보였으므로 이건 \"BPE가 더 낫다\"가 아니라 **\"수작업 매크로는 실세계에서 아예 안 터진다(0%)\"**라는 더 날카로운 부정 결과로 프레이밍해야 한다.\n- **(b) GeomTok-Eval — 생성기 분리형 렌더 기반 내재 토크나이저 프로토콜** (명칭 zero-hit, 독립 산물).\n- **(c) HiVG가 누락한 char-BPE-vs-프리미티브-BPE ablation을 통제 충원** (3.54x / 6.21x).\n\n> **금지(선점 인용 확정)**: \"기하 프리미티브 위 BPE 머지 최초\", \"프리-구조화가 raw보다 BPE 압축에 유리\"는 HiVG·GeoBPE에 정면 선점. **6.21x 숫자 자체는 미출판이라 사용 가능하되, \"새 현상\"이 아니라 \"HiVG가 빠뜨린 ablation 충원\"으로 프레임.**\n> **미검증 잔여 리스크**: 'GPL'·'GeomTok-Eval' 색인 0건이나, post-indexing(2026-05~06 cs.CV/cs.CL) 프리프린트는 배제 불가 → 제출 전 최종 arXiv 리스팅 확인 1회 필수.\n\n---\n\n## 2. 빠진 실험 — 문헌이 요구하나 F1–F6에 없는 항목 (전부 CPU 규모)\n\n| # | 추가 실험 | 누구 때문에 | 근거 |\n|---|---|---|---|\n| **A. HiVG 규칙기반 L1 머지 vs GPL 학습 BPE 머지 (동일 기질 ablation)** | HiVG | 현 F2는 char-BPE↔L1↔L1+BPE만. 정작 **가장 가까운 경쟁자 HiVG의 메커니즘(규칙 기반 segment grouping)을 동일 코퍼스에서 재현해 학습 머지가 그것을 이기는지**를 보여야 함. 이게 없으면 \"학습이 규칙보다 낫다\"는 진짜 주장이 미입증. **F2/F5 arm에 `hivg_rule_l1` 추가** | \n| **B. char-BPE 머지 수(N) 스윕** | NAACL'24 방법론·ACL'24 | 6.21x는 L1+BPE 1.5k 머지 단일점. char-BPE에도 동일 머지 예산을 줘야 공정 — **머지 수를 X축으로 char-BPE vs L1-BPE 압축곡선**. 단일점 비교는 리뷰어가 \"예산 불공정\" 공격 |\n| **C. CNM(연속 회귀 헤드) 응수 베이스라인** | CNM 2602.02820 | 정반대 진영(좌표 토큰 폐기). 토크나이저-스왑 표(F5)에 **연속 좌표 헤드 arm**을 최소 1개 넣지 않으면 \"왜 이산화하나\"에 무응답. CPU 소형 회귀 헤드로 충분 |\n| **D. 좌표 충실도 분포(꼬리)·human-visible 임계** | ACL'24(압축단독 불인정) | F2 충실도가 mean 1.78 / max 3.37px **단일 요약**. SSIM/inkIoU의 **per-icon 분포 + 인지 가능 오차(>2px) 비율**을 보고해야 \"3.54x의 충실도 비용\"이 정직 |\n| **E. StrokeNUWA 14x VQ 숫자 명시적 응수 표** | StrokeNUWA | 리뷰어가 6.2x를 14x VQ와 혼동. **압축-왕복충실도 산점도에 VQ 상한선 점을 찍어** \"VQ는 손실, GPL은 무손실 기질\"을 시각적으로 분리 |\n| **F. 어휘 크기 통제 명시** | GeoBPE·HiVG | 모든 arm이 동일 5,561 어휘인지 표에 **명시 컬럼**. char-BPE 5,561 = L1+BPE 어휘인지 확인 안 되면 압축 비교 무효화 |\n\n가장 시급: **A(HiVG 규칙 머지 재현)** — 이게 없으면 \"학습이 핵심\"이라는 논문 전체 논지가 미입증이고, HiVG가 1번 리뷰어다.\n\n---\n\n## 3. F3 진행 가부 — **F3는 이미 완료. 다음은 F4가 아니라 새 실험 A(HiVG 규칙-머지 ablation)를 F5보다 먼저 삽입하라**\n\n**명확한 권고 1개:**\n\n> F3는 NEXT_RESEARCH.md 기준 **이미 완료**(2026-06-11, L1 SSIM 0.929 / inkIoU 0.655, L2 발화율 0.0%로 L1과 동일). 따라서 \"F3를 다음에 돌릴지\"는 무효 질문 — **다음 실행은 신규 실험 A(HiVG 규칙 기반 L1 머지를 동일 svg-icons 코퍼스에서 재현해 GPL 학습 BPE와 head-to-head)를 F4·F5보다 먼저 삽입**하라.\n\n이유:\n1. **F3가 이미 \"L2 0.0% 발화\"를 확정** → 수작업 매크로 vs 학습 BPE 비교의 절반(매크로는 안 터짐)은 끝났다. 남은 논지는 \"학습 머지 > **규칙** 머지(HiVG)\"인데 이게 미실험 = 논문 최대 구멍.\n2. **A는 CPU 규모·반나절**(HiVG L1은 규칙 그루핑이라 신경망 불필요), F5(수일·실데이터 학습)보다 싸고, F5의 arm 정의를 바꾼다 → A를 먼저 해야 F5를 한 번에 올바른 arm으로 돌린다(F5 재실행 방지).\n3. F4(HMN 정직 재실험)는 살아남은 핵심 논지(\"기질\" 헤드라인)와 무관 — 이미 절반 철회된 부수 주장이라 **A·F5 뒤로 강등**. F4는 어차피 \"잔여 효과 없으면 각주 강등\"이 결론이라 critical path 아님.\n\n**순서 권고:** A(HiVG 규칙 머지) → B(머지 예산 스윕, A에 끼워서) → F5(C·D·E·F 반영한 다운스트림 핵심표) → F4 → F6 → E6.\n\n**Kill 재확인:** F5에서 L1+BPE ≈ hivg_rule_l1(실험 A) 다운스트림이면 \"학습이 핵심\" 논지 사망 → GeomTok-Eval 프로토콜 + uniform-vs-adaptive 부정결과 + 파싱 100% 자산만으로 분석/벤치마크 논문 선회(여전히 출판 가능).\n\n---\n\n**한 줄 결론: 조건부 GO.** 헤드라인을 \"(i) 학습 프리미티브-BPE가 HiVG식 규칙 머지를 이긴다 + (ii) 수작업 매크로는 실세계서 0% 발화한다는 부정결과 + (iii) 생성기 분리형 GeomTok-Eval 프로토콜\"로 재구성하고, HiVG를 주 베이스라인으로 인용·격파. \"프리미티브 BPE 최초\"·\"프리구조화 우위\"는 폐기. 다음 실행은 실험 A.",
+    "sweeps": [
+      {
+        "findings": [
+          {
+            "title": "Hierarchical SVG Tokenization (HiVG): Learning Compact Visual Programs for Scalable Vector Graphics Modeling",
+            "year": "2026",
+            "venue": "arXiv 2604.05072",
+            "url": "https://arxiv.org/abs/2604.05072",
+            "relevance": "CLOSEST PRECEDENT — directly threatens the GPL headline. HiVG decomposes raw SVG into atomic tokens, then performs explicit frequency-based BPE-style iterative pair merging over geometric SEGMENT/PRIMITIVE tokens (command+coordinate groups): 'the most frequent adjacent segment pair is selected ... and replaced with a new composite segment token if its frequency exceeds f_min', M=500 merge iterations over 50k-1.5M SVGs. Uses uniform integer coordinate quantization (canvas [0,784]), reports sequence-length compression 62.7-63.8% (2.68-2.76x) vs generic LLM tokenization, and a render-success-rate + SSIM/LPIPS render-based eval. It even states the GPL intuition explicitly: relative coordinates 'increase the frequency of repeated command-coordinate groups ... facilitating discovery of reusable geometric primitives during segment learning' — i.e. pre-structuring helps learned merges. DIFFERENCES from GPL: (a) NO char-BPE/raw-vs-structured ablation reported (no explicit byte-level BPE baseline); (b) NO hand-crafted shape/spatial macro baseline — the GPL 'beats hand-crafted macros' headline is NOT tested; (c) grid is 784x784, not 64x64; (d) ratio is ~2.7x, not 6.2x; (e) 3B model (Qwen2.5-VL), not CPU-scale; (f) no named GeomTok-Eval intrinsic protocol. So it anticipates the CORE mechanism and SVG domain but not the specific comparative headline.",
+            "preempts": false
+          },
+          {
+            "title": "Protein Structure Tokenization via Geometric Byte Pair Encoding (GeoBPE)",
+            "year": "2025",
+            "venue": "arXiv 2511.11758 (Zitnik Lab, Harvard)",
+            "url": "https://arxiv.org/html/2511.11758",
+            "relevance": "Independently coins 'Geometric Byte Pair Encoding' and builds a hierarchical vocabulary of 'geometric primitives' via a BPE loop (iteratively pop most-frequent Geo-Pair, merge, k-medoids prototype quantization). Argues structured/geometry-grounded merges beat learned VQ-VAE on compression-distortion (negligible OOD degradation vs up to 6.4x test RMSD for VQ-VAE), measured in Bits-Per-Residue. This pre-empts the NAMING and the general 'BPE over geometric primitives' framing, and the 'structured beats raw/VQ' argument — but in protein backbone structure, NOT vector graphics/SVG/CAD, and uses prototype clustering rather than exact discrete merges. Does not touch char-BPE-vs-primitive or hand-crafted macros for SVG.",
+            "preempts": false
+          },
+          {
+            "title": "Multidimensional Byte Pair Encoding: Shortened Sequences for Improved Visual Data Generation",
+            "year": "2024",
+            "venue": "arXiv 2411.10281",
+            "url": "https://arxiv.org/abs/2411.10281",
+            "relevance": "The 'BPE over an already-discrete substrate' idea: runs BPE-style merges over quantized VQ-VAE/VQGAN codebook tokens (not raw pixels) to shorten visual sequences and improve FID; extends to 3D voxel/SDF geometry. Reports 54-89% sequence reductions. Supports the substrate-merging concept and even 'Applications in Geometry', but operates on raster/voxel grids, NOT vector primitives, and does NOT argue that pre-structuring into geometric primitives makes BPE compress better than raw — it argues multidimensionality helps. Adjacent, not the GPL claim.",
+            "preempts": false
+          },
+          {
+            "title": "SuperBPE: Space Travel for Language Models",
+            "year": "2025",
+            "venue": "arXiv 2503.13423 (COLM 2025)",
+            "url": "https://arxiv.org/abs/2503.13423",
+            "relevance": "Named in the prompt. Confirmed to apply BPE merges to RAW natural-language text only (relaxes the whitespace pretoken boundary to form cross-word 'superwords', up to 33% fewer tokens). No geometric/primitive/structured non-text substrate, no SVG/CAD/mesh, no claim about pre-structured substrates. Establishes the boundary-relaxation precedent that GPL's L1 merges echo, but is not in the GPL domain.",
+            "preempts": false
+          },
+          {
+            "title": "BoundlessBPE",
+            "year": "2025",
+            "venue": "COLM 2025",
+            "url": "https://arxiv.org/abs/2503.13423",
+            "relevance": "Companion line to SuperBPE (surfaced as a co-cited result): relaxes the pretokenization boundary constraint entirely, allowing merges across word boundaries, up to ~15% bytes/token improvement. Raw-text only; reinforces that the 'merge across imposed boundaries' idea is established in NLP but unapplied to geometric primitives. Not a domain or claim match.",
+            "preempts": false
+          },
+          {
+            "title": "CAD-Tokenizer: Towards Text-based CAD Prototyping via Modality-Specific Tokenization",
+            "year": "2025",
+            "venue": "arXiv / OpenReview (ICLR submission)",
+            "url": "https://openreview.net/pdf/b3e0b0a98d05b327329d8b4415ed971e081cb403.pdf",
+            "relevance": "Closest CAD-domain analog, but uses a sequence VQ-VAE with primitive-level pooling — NOT frequency-based BPE merges. Argues primitive-preserving tokenization beats fragmenting generic BPE, but reports no compression ratio, no char-BPE ablation, no hand-crafted macro baseline. Shows the 'primitive-aware beats generic' intuition exists in CAD via a different (neural-VQ) mechanism, leaving the BPE-merge route open.",
+            "preempts": false
+          },
+          {
+            "title": "BPT / Scaling Mesh Generation via Compressive Tokenization (and EdgeRunner, DeepMesh)",
+            "year": "2024",
+            "venue": "arXiv 2411.07025 et al.",
+            "url": "https://arxiv.org/html/2411.07025v1",
+            "relevance": "Mesh tokenizers that aggregate faces into patches over a quantized coordinate grid (block-based, ~0.26 compression, 40,960-token vocab). This is hand-crafted/block aggregation, NOT learned BPE merges, and does not compare learned-vs-handcrafted or raw-vs-structured BPE. Confirms the mesh-primitive tokenization field uses fixed schemes rather than the GPL learned-merge approach — supports a gap on the BPE-merge angle for primitives.",
+            "preempts": false
+          },
+          {
+            "title": "LottieGPT / Render-in-the-Loop / InternSVG (vector-graphics tokenization & render-feedback cluster)",
+            "year": "2026",
+            "venue": "arXiv 2604.11792 / 2604.20730 / 2510.11341",
+            "url": "https://arxiv.org/html/2604.11792v1",
+            "relevance": "Surrounding 2026 vector-graphics work: learned semantic/segment tokens for vector animation, render-based visual self-feedback for SVG generation. Establishes that render-based evaluation and learned vector tokenization are active in 2026, but none isolates the GPL intrinsic claim (learned primitive-BPE vs char-BPE vs hand-crafted macros under a render-based intrinsic protocol). Context, not precedent.",
+            "preempts": false
+          }
+        ],
+        "verdict": "GAP CONFIRMED on the exact headline, but it is NARROW and partially anticipated — the GPL claim is novel only in its specific comparative framing, not in its core mechanism. No paper publishes GPL's full claim as a unit: 'learned BPE merges over geometric-primitive SVG tokens compress real SVG 6.2x vs domain char-BPE, beating hand-crafted shape/spatial macros, on a uniform 64x64 grid with a render-based intrinsic protocol (GeomTok-Eval), at CPU/small-model scale.' HOWEVER, the central mechanism and the headline's load-bearing intuition are strongly pre-empted: (1) HiVG (arXiv 2604.05072, 2026) ALREADY does frequency-based BPE-style merging over SVG geometric primitive/segment tokens with uniform integer coordinate quantization and render-based metrics, reports ~2.7x compression, and explicitly argues that structuring (relative coordinates -> repeated primitive groups) facilitates merge discovery — essentially the 'pre-structuring helps learned BPE' thesis in the SAME domain. (2) GeoBPE (arXiv 2511.11758, 2025) independently coins 'Geometric BPE', builds a vocabulary of 'geometric primitives' via a BPE loop, and argues structured/geometry-grounded merges beat learned VQ — pre-empting the name and the structured-beats-raw argument, in protein structure. (3) Multidimensional BPE (2411.10281) establishes BPE over an already-discrete substrate for visual/voxel data. What remains genuinely UNCLAIMED and defensible as GPL's contribution: (a) the DIRECT three-way intrinsic comparison char-BPE vs learned-primitive-BPE vs hand-crafted shape/spatial macros — NO source tests the hand-crafted-macro baseline; (b) the specific 6.2x number and the 64x64 uniform grid + scalar fixed-point coordinate substrate; (c) a formalized, named render-based intrinsic tokenizer-eval protocol (GeomTok-Eval) decoupled from a generation model; (d) the CPU-scale / small-model regime. RECOMMENDATION: Do NOT headline 'first to learn BPE merges over geometric primitives' or 'pre-structuring makes BPE compress better than raw' — HiVG and GeoBPE will be cited as preempting both. Re-headline around what is actually novel and untested: (i) the head-to-head that learned primitive-BPE BEATS hand-crafted shape/spatial macros (no prior work runs this baseline), (ii) the render-based INTRINSIC tokenizer-evaluation protocol as a standalone artifact (GeomTok-Eval), and (iii) the controlled 64x64 fixed-point substrate at CPU/small-model scale. Cite HiVG as concurrent/prior and explicitly position GPL as the controlled intrinsic ablation HiVG did not run. The 6.2x vs char-BPE is credible and unclaimed as a specific number, but frame it as 'we provide the char-BPE-vs-primitive-BPE ablation absent from HiVG', not as a wholly new phenomenon.",
+        "gaps": [
+          "No paper runs the hand-crafted shape/spatial MACRO baseline against learned primitive-BPE — this comparison (GPL's 'beats hand-crafted macros' claim) is genuinely untested in the SVG/vector-graphics literature; it is the strongest defensible novelty.",
+          "No source isolates a render-based INTRINSIC tokenizer-evaluation protocol decoupled from a downstream generation model (HiVG/InternSVG/LottieGPT evaluate via generation; GeomTok-Eval as a standalone intrinsic protocol appears unpublished).",
+          "No prior work uses the specific 64x64 uniform grid + scalar fixed-point coordinate substrate; HiVG uses 784x784, mesh work uses 128/512 blocks. The exact substrate is unclaimed but is a parameter choice, not a conceptual moat.",
+          "CPU-scale / small-model regime for primitive-BPE SVG tokenization is unaddressed — all close precedents (HiVG 3B, GeoBPE, mesh models) are GPU-scale; the resource-efficiency angle is open.",
+          "The specific 6.2x compression-vs-char-BPE figure is unpublished, but the underlying char-BPE-vs-primitive-BPE comparison should be FRAMED as filling HiVG's missing ablation, since HiVG omitted an explicit char/byte-BPE baseline rather than as a brand-new finding.",
+          "UNVERIFIED / could not confirm: no paper named 'GPL' or 'GeomTok-Eval' is indexed (likely the user's own in-progress work). Could not rule out a very recent (post-indexing) arXiv preprint with the exact framing — recommend a final targeted arXiv listing check on cs.CV/cs.CL May-June 2026 before claiming first-mover."
+        ]
+      },
+      {
+        "findings": [
+          {
+            "title": "HiVG Hierarchical SVG Tokenization",
+            "year": "2026",
+            "venue": "arXiv 2604.05072",
+            "url": "https://arxiv.org/abs/2604.05072",
+            "relevance": "Reference and nearest neighbor and biggest overlap risk. Uses L0 atomic plus L1 segment tokens with coordinates uniformly quantized into integer bins which overlaps the GPL grid plus fixed point idea. But L1 merges are rule based geometry constrained groupings of a command plus its parameters not a learned corpus trained BPE merge table which is the GPL novelty. Reports about 2.7x not 6.2x. No comparison against hand crafted shape or spatial macros. Evaluated end to end via render success rate and token counts with no standalone render based intrinsic tokenizer protocol. Overlaps framing but does not publish the GPL claim.",
+            "preempts": false
+          },
+          {
+            "title": "GeoBPE Protein Geometric Byte Pair Encoding",
+            "year": "2026",
+            "venue": "ICLR 2026 arXiv 2511.11758",
+            "url": "https://arxiv.org/abs/2511.11758",
+            "relevance": "The only paper doing genuinely learned geometric BPE via iterative geo pair merging plus differentiable inverse kinematics. Strongest methodological analog to the GPL learned merge story and the likely geometric BPE already exists objection. But the domain is protein 3D backbones only with no SVG no 2D grid no scalar fixed point SVG coordinates no render eval and no char BPE compression claim. Related but disjoint domain. Strengthens novelty of porting learned geometric BPE to SVG rather than preempting it.",
+            "preempts": false
+          },
+          {
+            "title": "CNM Continuous Number Modeling for SVG",
+            "year": "2026",
+            "venue": "arXiv 2602.02820",
+            "url": "https://arxiv.org/abs/2602.02820",
+            "relevance": "Recent and SVG specific but on the opposite design axis. Models numeric parameters as first class continuous values to avoid discretization. GPL is discrete scalar fixed point plus learned discrete merges so this is a competing philosophy not a preemption. Useful as a contrast and baseline. No grid no BPE no macro comparison.",
+            "preempts": false
+          },
+          {
+            "title": "LottieGPT Tokenizing Vector Animation",
+            "year": "2026",
+            "venue": "CVPR 2026 arXiv 2604.11792",
+            "url": "https://arxiv.org/abs/2604.11792",
+            "relevance": "Closest brand new tokenizer at a top venue in the post April window. Uses schema special tokens plus property specific numeric quantization plus keyframe compression and is explicitly not learned BPE since it contrasts itself with text BPE. Domain is Lottie vector animation not static SVG. Compression measured as token count versus OmniSVG and QwenVL and render validated only. Its hand crafted token design is exactly the hand crafted macro strawman GPL claims to beat.",
+            "preempts": false
+          },
+          {
+            "title": "OmniSVG StrokeNUWA InternSVG and the SVG eval cluster",
+            "year": "2024 to 2026",
+            "venue": "arXiv 2504.06263 and 2401.17093 and 2510.11341 and 2506.03139",
+            "url": "https://arxiv.org/abs/2504.06263",
+            "relevance": "OmniSVG is the dominant prior art discrete SVG tokenizer parameterizing commands and coordinates and is the standard baseline GPL must beat. StrokeNUWA reports about 14x via a learned neural VQ VAE stroke codebook which is a number a reviewer may conflate with the GPL 6.2x but the mechanism is a learned neural codebook not symbolic grid plus fixed point plus learned BPE over primitives so cite it to pre empt compression already solved by VQ. InternSVG uses subword based embedding initialization only not a learned geometric merge table. The eval cluster of SVGenius and SVGauge and VectorGym defines byte size compression ratios and human aligned generation metrics but none is a tokenizer intrinsic render based reconstruction protocol decoupled from a generator which confirms the GeomTok Eval niche is unoccupied and GeomTok returns zero hits.",
+            "preempts": false
+          }
+        ],
+        "verdict": "SVG tokenizer space is still open for the GPL claim and nothing found preempts it. Cross checked 8 plus sources across arXiv and the HuggingFace papers MCP and the CVPR ICCV ICLR 2026 listings covering February to April 2026 SVG work and the post HiVG window. HiVG at 2604.05072 is the nearest neighbor and already owns the hierarchical geometric tokens plus uniform quantization framing so GPL must position sharply against HiVG but HiVG uses rule based L1 merges and reports only about 2.7x and is evaluated end to end and never benchmarks hand crafted macros. The GPL four part headline is collectively unclaimed. First a learned BPE merge table trained over geometric primitive L1 tokens where the closest analog GeoBPE is protein only. Second a uniform 64 by 64 grid plus scalar fixed point coordinates as the substrate. Third a 6.2x versus domain char BPE result that explicitly beats hand crafted shape and spatial macros where no SVG paper runs that exact comparison. Fourth a standalone render based intrinsic protocol named GeomTok Eval decoupled from any generator where the eval cluster is all generation side and the name returns zero hits. The main risk is novelty framing and reviewer conflation not preemption so cite and explicitly distinguish GeoBPE and the StrokeNUWA neural VQ number near 6.2x and the CNM continuous number counter philosophy and make HiVG the primary baseline you beat on both compression and an intrinsic protocol it lacks.",
+        "gaps": [
+          "Could not read the HiVG full pdf methods sections so the exact L1 merge wording and any number beyond about 2.7x come from the abstract and search snippets. Confirm the learned versus rule based distinction directly before claiming it.",
+          "The April to June 2026 window is thinly indexed and no concrete 2605 or 2606 SVG tokenizer arxiv ids surfaced so a very recent May or June 2026 preprint with the exact claim cannot be fully ruled out due to indexing lag. Re run a targeted arxiv listing query near submission.",
+          "GeomTok Eval returns zero external hits which is consistent with it being the GPL own name but absence of an equivalently scoped intrinsic render based tokenizer protocol under a different name is not fully provable.",
+          "Did not exhaustively verify whether any 2026 SVG paper uses a literal uniform 64 by 64 grid since most use per axis bin counts or canvas normalization. The specific 64 by 64 resolution appears unclaimed but was not fully searched.",
+          "The GPL 6.2x is not verified to use the same corpus and definition as the StrokeNUWA number and the HiVG number since compression ratios are defined inconsistently across these papers as byte size versus token count versus sequence length so a normalized apples to apples definition is needed to survive review."
+        ]
+      },
+      {
+        "findings": [
+          {
+            "title": "Beyond Text Compression: Evaluating Tokenizers Across Scales",
+            "year": "2025",
+            "venue": "ACL 2025 Long Papers / arXiv:2506.03101 (Apple)",
+            "url": "https://arxiv.org/abs/2506.03101",
+            "relevance": "THE successor protocol the user named. Establishes the accepted intrinsic-eval methodology GPL/GeomTok-Eval must follow: train FIXED SMALL PROXY MODELS (350M) with the tokenizer swapped, shown to reliably predict 2.7B behavior at ~85% less compute. Shows COMPRESSION ALONE is a poor proxy (negligible English effect despite compression deltas) and adds distribution-shape metrics (cardinality, rank-frequency AUC, Zipf slope, power-law MAE). Mandate for GPL: a 6.2x compression headline is NOT sufficient on its own; you must run a fixed small-model swap and report a downstream/render-fidelity signal. Text protocol, not geometric.",
+            "preempts": false
+          },
+          {
+            "title": "Tokenizer Choice for LLM Training: Negligible or Crucial?",
+            "year": "2024",
+            "venue": "Findings of NAACL 2024 / arXiv:2310.08754 (Ali et al.)",
+            "url": "https://aclanthology.org/2024.findings-naacl.247/",
+            "relevance": "The NAACL 2024 methodology referenced. Trains 24 LLMs at a FIXED 2.6B scale ablating only the tokenizer, showing fertility and parity are NOT reliably predictive of downstream performance. Origin of the tokenizer-swap-on-fixed-model protocol and the warning against trusting intrinsic metrics alone. GPL must adopt the fixed-model-swap design and cannot rest on fertility/compression as its validity argument; it needs the render-fidelity downstream check GeomTok-Eval supplies. Text-only, no geometry.",
+            "preempts": false
+          },
+          {
+            "title": "Hierarchical SVG Tokenization (HiVG): Learning Compact Visual Programs for Scalable Vector Graphics Modeling",
+            "year": "2026",
+            "venue": "arXiv:2604.05072 (Apr 10 2026; Xing et al.)",
+            "url": "https://arxiv.org/abs/2604.05072",
+            "relevance": "HIGHEST novelty-overlap risk. HiVG does BPE-STYLE frequency merges over geometry-constrained 'segment' tokens (command-parameter units) AND uses uniform-grid scalar fixed-point coordinate quantization, overlapping GPL's L1-primitives + grid + learned-merges core. BUT does NOT preempt the headline: (a) compression is 2.68-2.76x vs GENERIC LLM tokenizers (Qwen), NOT 6.2x vs DOMAIN char-BPE; (b) NO ablation pitting learned merges vs hand-crafted shape/spatial macros - exactly GPL's headline; (c) runs on 3B-8B VLMs (Qwen2.5-VL-3B), NOT CPU-scale; (d) eval is generation-quality (SSIM/LPIPS/CLIP/render-success/human pref), not a NAMED intrinsic render-based tokenizer protocol. Cite as concurrent work; differentiate on macro-comparison + CPU-scale intrinsic protocol.",
+            "preempts": false
+          },
+          {
+            "title": "StrokeNUWA: Tokenizing Strokes for Vector Graphic Synthesis (VQ-Stroke)",
+            "year": "2024",
+            "venue": "arXiv:2401.17093 (Microsoft; ICML 2024)",
+            "url": "https://arxiv.org/abs/2401.17093",
+            "relevance": "The 'up to 6.9x compression' here is the closest competitor to GPL's 6.2x and must be addressed head-on. But the mechanism is a LEARNED VQ-VAE codebook with residual vector quantization, NOT learned BPE merges over discrete geometric-primitive tokens, and compression is vs raw SVG command count, NOT a domain char-BPE baseline. No hand-crafted-macro comparison, no render-based intrinsic tokenizer protocol. GPL's claim (BPE merges beating char-BPE AND hand-crafted macros) is mechanistically and methodologically distinct; use this to motivate why GPL's char-BPE-relative framing is the fair baseline.",
+            "preempts": false
+          },
+          {
+            "title": "From Tokens to Numbers: Continuous Number Modeling for SVG Generation",
+            "year": "2026",
+            "venue": "arXiv:2602.02820 (Feb 2026)",
+            "url": "https://hf.co/papers/2602.02820",
+            "relevance": "Directly relevant to GPL's scalar-fixed-point coordinate design: argues for modeling SVG coordinates as CONTINUOUS values to avoid discretization artifacts of token-based encoding - a competing philosophy to GPL's uniform-64x64-grid fixed-point quantization. Reviewers will ask GPL to justify discrete grid quantization against it. Does not do learned BPE merges or a macro comparison, so no preemption, but GPL should cite it to defend the fixed-point-grid choice.",
+            "preempts": false
+          },
+          {
+            "title": "InternSVG: Towards Unified SVG Tasks with Multimodal LLMs",
+            "year": "2025",
+            "venue": "arXiv:2510.11341",
+            "url": "https://arxiv.org/abs/2510.11341",
+            "relevance": "Large unified SVG modeling/benchmark effort (InternSVG-8B). Prior art for SVG tokenization pipelines and evaluation but at large-model scale and as a generation/understanding benchmark, not an intrinsic render-based tokenizer benchmark. Confirms the space lacks a CPU-scale intrinsic geometric-tokenizer protocol, supporting GeomTok-Eval's novelty. Does not test learned-vs-macro merges. No preemption.",
+            "preempts": false
+          },
+          {
+            "title": "VTBench: Evaluating Visual Tokenizers for Autoregressive Image Generation",
+            "year": "2025",
+            "venue": "arXiv:2505.13439",
+            "url": "https://arxiv.org/html/2505.13439v1",
+            "relevance": "Canonical recent intrinsic VISUAL-tokenizer benchmark - but RASTER/pixel-only (VQ/LFQ/BSQ-VAE), reconstruction metrics (PSNR/SSIM/LPIPS/FID, OCR CER/WER). Explicitly NO vector/SVG/geometric tokenizers and no compression-fidelity tradeoff curves. Strongest evidence that a GEOMETRIC (vector) intrinsic tokenizer benchmark has NOT been published; GeomTok-Eval would be the vector-domain analogue and should mirror its reconstruction/render-fidelity template.",
+            "preempts": false
+          },
+          {
+            "title": "Protein Structure Tokenization via Geometric Byte Pair Encoding (GeoBPE)",
+            "year": "2025",
+            "venue": "arXiv:2511.11758",
+            "url": "https://arxiv.org/html/2511.11758v1",
+            "relevance": "Proves the GENERAL recipe 'BPE merges over geometric primitives + reconstruction-fidelity eval' already exists in an adjacent domain (3D protein backbones): 0.27-0.36x bits-per-residue vs ProToken with RMSD/LDDT metrics. Weakens GPL's claim to the abstract IDEA of geometric BPE (cite as conceptual antecedent), but it is protein 3D structure with k-medoids motif clustering and NO rendering/SVG, so it does NOT preempt GPL's SVG-specific, render-based, char-BPE-and-macro-beating claim. Cite defensively.",
+            "preempts": false
+          },
+          {
+            "title": "VectorGym / SVGenius / SGP-Bench / VGBench (SVG generation benchmarks)",
+            "year": "2025-2026",
+            "venue": "arXiv:2603.29852 / 2506.03139 (and SGP-Bench, VGBench)",
+            "url": "https://arxiv.org/html/2506.03139v1",
+            "relevance": "Cluster of SVG benchmarks GPL must distinguish from. All evaluate END-TO-END generation/editing/understanding with a model in the loop (VLM-as-judge, render-then-score), NOT the tokenizer intrinsically and NOT at CPU-scale. They confirm no existing benchmark isolates SVG tokenizer quality via a model-light render-based protocol - the exact gap GeomTok-Eval fills. None test learned-vs-hand-crafted-macro merges. No preemption.",
+            "preempts": false
+          },
+          {
+            "title": "Unpacking Tokenization: Evaluating Text Compression and its Correlation with Model Performance",
+            "year": "2024",
+            "venue": "arXiv:2403.06265 (Goldman et al.)",
+            "url": "https://arxiv.org/pdf/2403.06265",
+            "relevance": "Counterpoint within the accepted protocol: argues compression IS a meaningful intrinsic predictor of model performance (the more optimistic view that Beyond-Text-Compression and NAACL'24 temper). GPL should cite both sides - it justifies leading with a compression number while still requiring the render-fidelity downstream check. Pure text, no geometric content, no preemption.",
+            "preempts": false
+          }
+        ],
+        "verdict": "A GEOMETRIC (vector/SVG) intrinsic TOKENIZER benchmark has NOT been published, and no paper publishes GPL's specific headline. The gap GeomTok-Eval fills is real: VTBench/VTC-Bench are raster-only; all SVG benchmarks (SVGenius, VectorGym, SGP-Bench, VGBench, InternSVG) score end-to-end generation with a model in the loop, not the tokenizer intrinsically at CPU scale. ACCEPTED PROTOCOL GPL MUST FOLLOW (NAACL 2024 'Tokenizer Choice... Negligible or Crucial?' arXiv:2310.08754 and successor 'Beyond Text Compression' arXiv:2506.03101): (1) fixed small PROXY models with ONLY the tokenizer swapped, shown to predict larger-model behavior; (2) report compression/fertility/vocab-utilization BUT treat them as necessary-not-sufficient - both papers show fertility/parity and even compression are unreliable sole proxies, so the 6.2x number alone will not satisfy reviewers; (3) pair the intrinsic metric with a downstream signal - for GPL that is the render-based reconstruction fidelity of GeomTok-Eval (mirror VTBench's reconstruction-metric template: render-success + SSIM/LPIPS-style fidelity, plus a compression-fidelity tradeoff CURVE, not a single point). NOVELTY RISK: the headline survives but is crowded. The mechanism (learned BPE merges over geometry-constrained primitive tokens + uniform-grid fixed-point quantization) is NOT new in the abstract - HiVG (arXiv:2604.05072, Apr 2026) does almost exactly this for SVG, and GeoBPE (arXiv:2511.11758) does it for proteins. What remains genuinely unclaimed and defensible is the CONJUNCTION: (a) the explicit head-to-head showing learned merges BEAT hand-crafted shape/spatial macros (no paper runs this ablation - HiVG omits it), (b) the 6.2x measured against a DOMAIN char-BPE baseline specifically (StrokeNUWA's 6.9x is VQ-VAE vs raw commands; HiVG's 2.68-2.76x is vs generic LLM tokenizers), and (c) a NAMED CPU-scale render-based INTRINSIC tokenizer protocol. Frame the contribution around (a)+(b)+(c), cite HiVG and StrokeNUWA as concurrent/closest work and GeoBPE as the conceptual antecedent, and do NOT claim novelty for 'geometric BPE' or 'grid quantization' in the abstract.",
+        "gaps": [
+          "Could not retrieve HiVG's (2604.05072) FULL ablation table to 100% confirm it never compares learned merges vs hand-crafted macros - two fetches confirmed ablations focus on corpus scale/HMN-init/curriculum, but a human should skim the ablation section before GPL asserts 'no prior work runs the macro comparison.'",
+          "StrokeNUWA's exact 6.9x baseline (vs raw SVG command count vs char tokens) was inferred from secondary sources; the primary PDF fetch returned binary. Verify whether their compression denominator overlaps GPL's char-BPE baseline before claiming GPL's 6.2x is a fairer/different comparison.",
+          "Did not exhaustively verify SGP-Bench and VGBench primary papers (only via the SVG-LLM review survey). Low risk they contain an intrinsic tokenizer track, but confirm before claiming 'no SVG benchmark isolates the tokenizer.'",
+          "'GeomTok-Eval' as a named protocol returned zero hits - it appears unpublished/your coinage. Confirm no stealth/under-review paper uses the same name (arXiv full-text + OpenReview) closer to submission.",
+          "No accepted vector-domain standard exists for the render-based intrinsic metric or the tradeoff-curve axes; GPL must justify its render-fidelity metric from first principles (borrow VTBench reconstruction metrics + SVG render-success), since there is no prior vector-tokenizer protocol to cite."
+        ]
+      },
+      {
+        "findings": [
+          {
+            "title": "Exposing flaws of generative model evaluation metrics",
+            "year": "2023",
+            "venue": "NeurIPS 2023",
+            "url": "https://arxiv.org/abs/2306.04675",
+            "relevance": "DINOv2 ranks better than Inception; no metric isolates memorization.",
+            "preempts": false
+          },
+          {
+            "title": "Density and Coverage",
+            "year": "2020",
+            "venue": "ICML 2020",
+            "url": "https://arxiv.org/abs/2002.09797",
+            "relevance": "Coverage detects mode collapse.",
+            "preempts": false
+          },
+          {
+            "title": "Improved Precision and Recall Metric",
+            "year": "2019",
+            "venue": "NeurIPS 2019",
+            "url": "https://arxiv.org/abs/1904.06991",
+            "relevance": "Precision is fidelity, Recall is diversity.",
+            "preempts": false
+          },
+          {
+            "title": "Feature Likelihood Divergence",
+            "year": "2023",
+            "venue": "NeurIPS 2023",
+            "url": "https://arxiv.org/abs/2302.04440",
+            "relevance": "FLD scores fidelity, diversity, novelty; fld lib on CPU.",
+            "preempts": false
+          },
+          {
+            "title": "Demystifying Randomly Initialized Networks",
+            "year": "2023",
+            "venue": "AAAI 2023",
+            "url": "https://arxiv.org/abs/2208.09218",
+            "relevance": "GPU-free render-FID via random CNN features.",
+            "preempts": false
+          },
+          {
+            "title": "IconShop and HiVG",
+            "year": "2023",
+            "venue": "ACM TOG; HiVG 2604.05072",
+            "url": "https://arxiv.org/abs/2304.14400",
+            "relevance": "IconShop SVG Uniqueness/Novelty precedent; HiVG closest competitor, no 6.2x figure, no preempt.",
+            "preempts": false
+          }
+        ],
+        "verdict": "No source preempts GPL. Suite: render-FID/KID in DINOv2 not Inception for fidelity; Density/Coverage for mode collapse; Vendi for diversity; AuthPct plus FLD for memorization, gated on renderability; via the fld library on CPU.",
+        "gaps": [
+          "No paper applies Density/Coverage + FLD + AuthPct to tiny CPU-scale SVG generators.",
+          "No validated render-FID backbone for icons; no geometry-native distributional SVG metric exists."
+        ]
+      }
+    ],
+    "verdicts": []
+  }
+}

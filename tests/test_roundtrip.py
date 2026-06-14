@@ -9,17 +9,17 @@ import os
 import numpy as np
 
 # 프로젝트 루트를 path에 추가
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gpl_tokenizer.parser.svg_parser import SVGParser
-from gpl_tokenizer.parser.path_parser import PathParser, CommandType
-from gpl_tokenizer.analyzer.curvature import CurvatureAnalyzer
-from gpl_tokenizer.analyzer.continuity import ContinuityAnalyzer, ContinuityLevel
-from gpl_tokenizer.tokenizer.primitive_tokenizer import PrimitiveTokenizer
-from gpl_tokenizer.tokenizer.detokenizer import Detokenizer
-from gpl_tokenizer.tokenizer.vocabulary import GPLVocabulary
-from gpl_tokenizer.tokenizer.arcs import ARCS
-from gpl_tokenizer.utils.math_utils import BezierMath
+from geomtok.parser.svg_parser import SVGParser
+from geomtok.parser.path_parser import PathParser, CommandType
+from geomtok.analyzer.curvature import CurvatureAnalyzer
+from geomtok.analyzer.continuity import ContinuityAnalyzer, ContinuityLevel
+from geomtok.tokenizer.primitive_tokenizer import PrimitiveTokenizer
+from geomtok.tokenizer.detokenizer import Detokenizer
+from geomtok.tokenizer.vocabulary import GPLVocabulary
+from geomtok.tokenizer.arcs import ARCS
+from geomtok.utils.math_utils import BezierMath
 
 
 # ====================================================================

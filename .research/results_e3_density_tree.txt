@@ -1,0 +1,9 @@
+코퍼스 좌표 27,414개
+
+tree                      thr  leaves   used mean_err  max_err
+density L8                      40    2299   2247    1.918    13.09
+density L8                      80    1141   1100    2.710    13.09
+density L8                     160     493    452    4.201    13.18
+density L7                      40    3580   3487    1.577    13.01
+density L7                      80    1351   1308    2.465    13.09
+uniform 64x64               -    4096   2342    1.784     3.31

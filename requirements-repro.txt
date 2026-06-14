@@ -1,0 +1,15 @@
+# GeomTok — pinned environment for reproducing PAPER.md experiments.
+# Python 3.14.5; hardware: Apple M4 (10 cores), CPU-only (DEV="cpu").
+# Install: python -m venv .venv && .venv/bin/pip install -r requirements-repro.txt && .venv/bin/pip install -e .
+numpy==2.4.6
+pandas==3.0.3
+pyarrow==24.0.0
+torch==2.12.0
+sentencepiece==0.2.1
+tiktoken==0.13.0
+huggingface-hub==1.18.0
+# render metrics depend on the rasterizer — pin both:
+resvg-py==0.3.2
+pillow==12.2.0
+scikit-image==0.26.0
+pytest==9.0.3

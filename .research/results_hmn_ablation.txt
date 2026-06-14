@@ -1,0 +1,9 @@
+HMN=True seed=0: val_loss=3.7791 val_acc=0.394 train_loss=2.5248 valid_SVG=60% (12s)
+HMN=True seed=1: val_loss=3.8035 val_acc=0.390 train_loss=2.5353 valid_SVG=80% (11s)
+HMN=True seed=2: val_loss=3.7323 val_acc=0.391 train_loss=2.4990 valid_SVG=63% (11s)
+HMN=False seed=0: val_loss=5.0254 val_acc=0.356 train_loss=5.3391 valid_SVG=77% (11s)
+HMN=False seed=1: val_loss=4.8127 val_acc=0.366 train_loss=5.2664 valid_SVG=90% (12s)
+HMN=False seed=2: val_loss=4.8868 val_acc=0.352 train_loss=5.3204 valid_SVG=80% (12s)
+
+HMN=True: val_loss 3.7716±0.0362 | valid_SVG 67.8%±10.7%
+HMN=False: val_loss 4.9083±0.1079 | valid_SVG 82.2%±6.9%
