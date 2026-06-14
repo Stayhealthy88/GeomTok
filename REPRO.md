@@ -38,7 +38,7 @@ A tokenizer-agnostic vanilla decoder-only transformer (`.research/f5_run.py::Van
 | norm | Pre-LN, GELU |
 | LM head | tied to embedding |
 | optimizer | AdamW, lr 3e-4, grad-clip 1.0 |
-| epochs | 25 (E1/E3/F5), 15 (E2), 12 (E4) |
+| epochs | 25 (F5 main), 22 (E1, E3), 15 (E2), 12 (E4) |
 | seeds | {0,1,2} F5/E3; {0,1} E1/E2/E4 |
 | total params | 2,502,464 (default); E2 sweeps 0.9M–9.3M (d∈{96,160,256,384}) |
 
@@ -59,6 +59,7 @@ Seeds are set with `torch.manual_seed(seed); np.random.seed(seed)` before each m
 | §6 adaptive vs uniform | `exp_e3_adaptive_vs_uniform.py` | `results_e3_adaptive_vs_uniform.txt` |
 | §6 density tree | `exp_e3_density_tree.py` | `results_e3_density_tree.txt` |
 | §7 E4 continuous arm | `exp_E4_continuous.py` | `results_E4_continuous.txt` |
+| §5.1 aux-marker ablation (E5) | `ablate_curv_cont.py` | `results_ablate_curv_cont.txt` |
 | Fig 1 | `fig1_pipeline.py` | `assets/fig1_pipeline.svg` |
 | Fig 2 | `fig2_compression_modelability.py` | `assets/fig2_compression_modelability.svg` |
 | Fig 3 | `fig_assets.py` + `fig3_render_panel.py` | `assets/fig3_render_panel.svg` |

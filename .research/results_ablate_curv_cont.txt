@@ -1,0 +1,17 @@
+train 980, test 205 icons
+arm         vocab  tok/icon    heldout bits/icon (3 seed)
+l1           5561     120.8         687.2 +/- 2.0   
+l1_strip     5561      91.6         602.4 +/- 2.7   
+
+L1-full 687.2 vs L1-strip 602.4  (delta -84.8 bits/icon)
+If L1-strip <= L1-full within noise: curvature+continuity are UNJUSTIFIED overhead for modelability.
+If L1-full clearly lower: the tokens earn their cost.
+
+--- round-trip fidelity check (do stripped markers change reconstruction?) ---
+checked=57  identical_reconstruction=57  differ=0
+=> curvature/continuity tokens are PURE OVERHEAD: detokenizer parses but never uses
+   them (_segment_to_path_str uses only command+coords). Stripping is byte-identical.
+CONCLUSION: 24.2% of L1 tokens (continuity 18.6% + curvature 5.6%) are derivable
+   annotations that (a) do not affect round-trip and (b) RAISE held-out NLL by 84.8
+   bits/icon (687.2 -> 602.4, ~12%, 3 seeds, beyond +/-2-3 noise). It is WHAT you
+   compress (remove zero-information tokens) not HOW MUCH that helps modelability.

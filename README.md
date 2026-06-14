@@ -37,7 +37,7 @@ Under a controlled tokenizer-swap on an identical small transformer (the only va
 | GeomTok-L1 + learned BPE *(most compressed)* | 59 | 666 ± 2 |
 | **GeomTok-L1** | 104 | **576 ± 4** |
 
-The gap **holds and grows** with model capacity (0.9M → 9.3M params) and **replicates** on a second corpus. Full study, figures, and honest negative results: **[PAPER.md](PAPER.md)**.
+The gap **holds and does not shrink** with model capacity (0.9M → 9.3M params; it widens then plateaus) and **replicates** on a second corpus. Full study, figures, and honest negative results: **[PAPER.md](PAPER.md)**.
 
 ## Round-trip fidelity is real, not lossless
 
