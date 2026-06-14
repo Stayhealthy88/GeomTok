@@ -18,6 +18,7 @@ PRD §7 의 단건 인터페이스를 구현하는 단일 진입점. 로컬 SDK 
 
 from __future__ import annotations
 
+import re as _re
 from typing import Dict, List, Optional, Tuple
 
 from .errors import (
@@ -61,12 +62,25 @@ def detect_unsupported(svg_text: str) -> Optional[str]:
 
     path 중심 모노크롬 아이콘 도메인(PRD §3.2)에 한정하기 위해, 렌더 의도가
     있으나 토큰화 불가한 요소(필터·그라디언트·래스터·텍스트·use·애니메이션)를
-    명시 거부한다. defs/clipPath/mask 같은 컨테이너는 거부하지 않고 무시한다."""
-    low = svg_text.lower()
+    명시 거부한다. defs/clipPath/mask 같은 컨테이너는 거부하지 않고 무시한다.
+
+    주석/desc/title/metadata 안의 언급(예: `<!-- <text> placeholder -->`)을
+    실제 요소로 오인하지 않도록, 매칭 전 비렌더 텍스트를 제거한다."""
+    low = _strip_nonrender_text(svg_text).lower()
     for marker, reason in _UNSUPPORTED_MARKERS.items():
         if marker in low:
             return reason
     return None
+
+
+_NONRENDER_RE = _re.compile(
+    r"<!--.*?-->|<(desc|title|metadata)\b[^>]*>.*?</\1>",
+    _re.DOTALL | _re.IGNORECASE)
+
+
+def _strip_nonrender_text(svg_text: str) -> str:
+    """주석·desc·title·metadata 블록 제거 (오거부 방지)."""
+    return _NONRENDER_RE.sub("", svg_text)
 
 
 class GeomTokenizer:
@@ -101,6 +115,9 @@ class GeomTokenizer:
         self.arcs = self._tok.arcs
         self._detok = Detokenizer(self.vocab, self.arcs)
         self._parser = SVGParser(normalize_canvas=self.canvas_size)
+        # FSA 문법 검증기 — 좌표-id 집합 재구축 비용을 1회로 (호출당 X)
+        from .tokenizer.grammar import GrammarFSA
+        self._fsa = GrammarFSA(self.vocab)
 
         self.manifest = manifest or VocabManifest.build(
             vocab_id=vocab_id, canvas_size=self.canvas_size,
@@ -177,8 +194,9 @@ class GeomTokenizer:
             # viewBox 밖 좌표는 클램핑됨 — 정직한 신호로 카운트
             for cmd in cmds:
                 for (px, py) in self._cmd_points(cmd):
-                    if px < -0.5 or px > self.canvas_size + 0.5 \
-                            or py < -0.5 or py > self.canvas_size + 0.5:
+                    # arcs.quantize 가 [0, canvas) 로 clamp 하므로 동일 경계로 집계
+                    if px < 0 or px > self.canvas_size \
+                            or py < 0 or py > self.canvas_size:
                         n_clamped += 1
             res = self._tok.tokenize(cmds)
             # primitive tokenizer 가 부여한 BOS/EOS 제거 → 가운데 토큰만
@@ -210,6 +228,8 @@ class GeomTokenizer:
                 warnings.append("L2 merges unavailable; falling back to L1")
         elif level.upper() == "L3":
             warnings.append("L3 spatial is experimental; emitting L1 substrate")
+        elif level.upper() != "L1":
+            warnings.append(f"unknown level '{level}'; emitting L1")
 
         # BPE 압축비 (동일 어휘 SVG-학습 BPE 기준은 Eval 에서 계산; 여기선
         # 참조 cl100k 대비 비를 best-effort 로 채운다)
@@ -274,9 +294,22 @@ class GeomTokenizer:
             raise VocabMismatch(f"token id {bad} out of range [0,{upper})",
                                 max_id=upper)
 
+        # L2 머지 역적용 — level 인자에 의존하지 않고 merge-range id 자동 감지.
+        # tokenize() 응답은 디코드 시 level="L2"를 되돌려 넘기라고 안내하지 않으므로,
+        # 기본 level="L1" 호출에 L2 id가 와도 무음 손실 없이 정확히 복원한다.
         ids = list(token_ids)
-        if level.upper() == "L2" and self._merge_codec is not None:
+        mb = self.manifest.merge_base_id
+        if self._merge_codec is not None and mb is not None and \
+                any(isinstance(t, int) and t >= mb for t in ids):
             ids = self._merge_codec.decode(ids)
+
+        # FSA 문법 검증 — "항상 well-formed" 보증을 실제로 실행 (PRD G3).
+        # 위반 시 repair 로 디코드 가능한 스트림으로 안전 절단.
+        valid = self._fsa.is_valid(ids)
+        repaired = False
+        if not valid:
+            ids = self._fsa.repair(ids)
+            repaired = True
 
         svg = self._detok.to_svg_document(
             ids, width=self.canvas_size, height=self.canvas_size)
@@ -285,7 +318,8 @@ class GeomTokenizer:
             "vocab_id": self.vocab_id,
             "svg": svg,
             "n_tokens": len(token_ids),
-            "valid": True,
+            "valid": valid,
+            "repaired": repaired,
         }
         if measure:
             out["fidelity"] = self._expected_fidelity(ids)
@@ -424,9 +458,10 @@ class GeomTokenizer:
         return f"?{tid}"
 
     def _compression_vs_bpe(self, svg: str, n_tokens: int) -> float:
-        try:
-            import tiktoken
-            n_bpe = len(tiktoken.get_encoding("cl100k_base").encode(svg))
-            return round(n_bpe / n_tokens, 4) if n_tokens else 0.0
-        except Exception:  # noqa: BLE001
+        """결정적·의존성 없는 압축비: 원본 SVG 문자 수 / 토큰 수 (= 토큰당
+        대체한 소스 문자 수). cl100k 비교(논문 §6에서 strawman 으로 철회)와
+        tiktoken 유무에 따른 비결정성(3.2 vs 0.0)을 제거한다. 도메인-BPE 대비
+        정직한 압축비(3.54×)는 코퍼스 단위로 /v1/eval 에서 보고한다."""
+        if not n_tokens:
             return 0.0
+        return round(len(svg) / n_tokens, 4)

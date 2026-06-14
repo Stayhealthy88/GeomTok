@@ -158,6 +158,10 @@ class MergeCodec:
             best_rank = None
             best_pos = -1
             for i in range(len(seq) - 1):
+                # 보호 토큰(BOS/EOS/SEP)을 가로지르는 머지는 금지 — 수기/외부
+                # 머지 테이블이 와도 요소·스트림 경계를 보존 (learn_merges 가드 미러)
+                if seq[i] in _PROTECTED or seq[i + 1] in _PROTECTED:
+                    continue
                 r = self._rank.get((seq[i], seq[i + 1]))
                 if r is not None and (best_rank is None or r < best_rank):
                     best_rank = r

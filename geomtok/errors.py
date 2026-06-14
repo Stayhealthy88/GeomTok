@@ -44,3 +44,12 @@ class VocabMismatch(GeomTokError):
 
 class VersionRequired(GeomTokError):
     code = "VERSION_REQUIRED"
+
+
+class InvalidRequest(GeomTokError):
+    code = "INVALID_REQUEST"
+
+
+class JobNotFound(GeomTokError):
+    code = "JOB_NOT_FOUND"
+    http_status = 404
