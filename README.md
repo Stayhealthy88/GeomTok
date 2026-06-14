@@ -120,8 +120,12 @@ Run the managed API locally:
 
 ```bash
 geomtok-serve --port 8000
-# POST /v1/tokenize · /v1/detokenize · /v1/eval · /v1/batch · GET /v1/vocab/{id}
+# POST /v1/tokenize · /v1/detokenize · /v1/eval · /v1/batch · /v1/stream (NDJSON)
+# POST /v1/batch/jobs · GET /v1/batch/jobs/{id} · GET /v1/vocab/{id} · /v1/healthz
 ```
+
+See [API_STATUS.md](API_STATUS.md) for endpoint conformance against the PRD and
+what is production-ready vs an in-process stub.
 
 Reproduce the validation gate:
 
@@ -139,7 +143,7 @@ python scripts/validate_corpus.py --corpus corpus/icons
 | FSA grammar-constrained decoding (torch-free) — valid SVG guaranteed | ✅ OSS core |
 | Immutable vocab manifest — bit-identical, offline encode/decode | ✅ OSS core |
 | GeomTok-Eval/1.0 — render-SSIM, attr/coord error, count, token economy | ✅ OSS core |
-| Managed API (FastAPI): tokenize/detokenize/eval/batch/vocab | ✅ `[server]` |
+| Managed API (FastAPI): 8 endpoints incl. async jobs + NDJSON stream | ✅ `[server]` (jobs/stream as in-process stubs) |
 
 Generation is an explicit **non-goal** for v1.0 (current model is toy-scale 2.5M
 params, CPU, monochrome path only). The tokenizer + evaluation are the production
