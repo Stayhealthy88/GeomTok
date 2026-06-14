@@ -29,6 +29,9 @@ Thumbs.db
 
 # Data (large files)
 data/
+# ...but the bundled vocab manifest (L2 merges, offline determinism) must ship
+!geomtok/data/
+!geomtok/data/**
 *.svg.gz
 *.tar.gz
 
@@ -45,3 +48,5 @@ wandb/
 runs/
 .venv/
 .research/exp_*.pyc
+corpus/validate.log
+.console.js

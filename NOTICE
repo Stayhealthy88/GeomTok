@@ -1,0 +1,12 @@
+GeomTok — geometry-native tokenization for vector graphics
+Copyright 2026 Byun and the GeomTok contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This product bundles a validation corpus of icons sampled from third-party
+open-source icon sets (Tabler, Feather, Heroicons, Lucide) under their
+respective MIT/ISC licenses. See corpus/ATTRIBUTION.md for details.

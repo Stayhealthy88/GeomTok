@@ -80,7 +80,9 @@ Full rationale, diffs, and math: see [RESEARCH_SUMMARY.md](./RESEARCH_SUMMARY.md
 - [x] **v0.4** — AI embedding layer: connect tokens to neural networks (PyTorch)
 - [x] **v0.5** — AI training pipeline: fine-tune language models for SVG generation
 - [x] **v0.5.1** — Robustness: unified thresholds, pixel-level fidelity metrics, stricter validation
-- [ ] **v1.0** — Product: API service + Figma design tool plugin
+- [x] **v1.0** — Product: torch-free OSS core (FSA decode, vocab manifest, BPE-on-L1 L2), GeomTok-Eval render protocol, managed FastAPI service. **Validated on 2,726 real icons: 100% parse + round-trip, FSA-valid, deterministic.**
+- [ ] **Phase 2** — Generation (currently toy-scale 2.5M params; explicit non-goal for v1.0)
+- [ ] **Phase 3** — Figma/Canva plugins
 
 ## Why This Matters
 
@@ -97,9 +99,63 @@ Built on peer-reviewed research in geometric tokenization:
 - **LLM4SVG** (Xing et al.) — Empowering language models for SVG
 - **VectorGym** (Rodriguez et al.) — SVG multitask benchmarking
 
+## v1.0 Quickstart
+
+```bash
+pip install geomtok                 # core (numpy only)
+pip install 'geomtok[eval,server]'  # + render eval + managed API
+```
+
+```python
+import geomtok
+
+out = geomtok.tokenize("<svg viewBox='0 0 24 24'><path d='M4 4 L20 20'/></svg>")
+print(out["n_tokens"], out["tokenizer_version"], out["vocab_id"])
+
+back = geomtok.detokenize(out["token_ids"])   # deterministic round-trip
+print(back["valid"], back["fidelity"])        # -> True {'coord_mean_px': 1.79, ...}
+```
+
+Run the managed API locally:
+
+```bash
+geomtok-serve --port 8000
+# POST /v1/tokenize · /v1/detokenize · /v1/eval · /v1/batch · /v1/stream (NDJSON)
+# POST /v1/batch/jobs · GET /v1/batch/jobs/{id} · GET /v1/vocab/{id} · /v1/healthz
+```
+
+See [API_STATUS.md](API_STATUS.md) for endpoint conformance against the PRD and
+what is production-ready vs an in-process stub.
+
+Reproduce the validation gate:
+
+```bash
+python scripts/validate_corpus.py --corpus corpus/icons
+```
+
+### What v1.0 ships
+
+| Capability | Status |
+|---|---|
+| Parser · transform-flatten · viewBox-normalize · arc-flatten | ✅ OSS core |
+| L1 geometric tokens + scalar fixed-point coord codec | ✅ OSS core |
+| **L2 = learned BPE-on-L1 merges** (hand-crafted macros retired) | ✅ OSS core |
+| FSA grammar-constrained decoding (torch-free) — valid SVG guaranteed | ✅ OSS core |
+| Immutable vocab manifest — bit-identical, offline encode/decode | ✅ OSS core |
+| GeomTok-Eval/1.0 — render-SSIM, attr/coord error, count, token economy | ✅ OSS core |
+| Managed API (FastAPI): 9 routes incl. real async jobs (worker+cancel+webhook) + NDJSON stream | ✅ `[server]` |
+
+Generation is an explicit **non-goal** for v1.0 (current model is toy-scale 2.5M
+params, CPU, monochrome path only). The tokenizer + evaluation are the production
+deliverables; generation is Phase 2.
+
 ## License
 
-This project is proprietary. All rights reserved.
+Apache-2.0. The OSS core is complete and uncrippled — parser, normalization,
+L1/L2 tokenization, scalar codec, FSA grammar-constrained decoding, GeomTok-Eval,
+and the vocab manifest all ship under Apache-2.0. Paid value is operational
+(SLA round-trip, scale, drift monitoring), not algorithmic. See [LICENSE](./LICENSE)
+and [NOTICE](./NOTICE).
 
 ---
 

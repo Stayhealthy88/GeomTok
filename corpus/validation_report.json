@@ -1,0 +1,38 @@
+{
+  "corpus_size": 2726,
+  "tokenizer_version": "geomtok-1.0.0",
+  "vocab_id": "geom-5561-v1",
+  "manifest_hash": "052b0b6a19de2fab",
+  "gates": {
+    "parse_rate": 1.0,
+    "roundtrip_rate": 1.0,
+    "fsa_valid_rate": 1.0,
+    "coord_within_bound_rate": 0.9993,
+    "coord_mean_px": 2.2081,
+    "coord_max_px": 14.8643,
+    "coord_p99_px": 3.3146,
+    "determinism_ok": true,
+    "manifest_reload_stable": true,
+    "unsupported_rejected": "4/4"
+  },
+  "l2": {
+    "lossless_rate": 1.0,
+    "mean_l1_tokens": 78.2,
+    "mean_l2_tokens": 42.83,
+    "reduction_pct": 45.23
+  },
+  "eval_sample": {
+    "scenes": 150,
+    "attr_mean_err": 2.2355,
+    "attr_max_err": 3.368,
+    "count_acc": 1.0,
+    "render_ssim_mean": 0.8893,
+    "tokens": 12030,
+    "tokens_bpe": 38594,
+    "compression_vs_baseline": 3.2081,
+    "bits_per_icon": 997.8,
+    "bits_per_icon_bpe": 4274.5
+  },
+  "failures": [],
+  "elapsed_s": 21.3
+}

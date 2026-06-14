@@ -168,9 +168,14 @@ class Detokenizer:
         """토큰 시퀀스를 완전한 SVG 문서로 변환 (Level 2 복합 토큰 지원)."""
         elements = self._to_svg_elements(token_ids)
         inner = "\n  ".join(elements)
+
+        def _dim(v):
+            return str(int(v)) if float(v).is_integer() else f"{v}"
+
+        w, h = _dim(width), _dim(height)
         return (f'<svg xmlns="http://www.w3.org/2000/svg" '
-                f'width="{width}" height="{height}" '
-                f'viewBox="0 0 {width} {height}">\n'
+                f'width="{w}" height="{h}" '
+                f'viewBox="0 0 {w} {h}">\n'
                 f'  {inner}\n'
                 f'</svg>')
 
