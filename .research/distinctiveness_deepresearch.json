@@ -1,0 +1,325 @@
+{
+  "summary": "Deep research harness — fan-out web searches, fetch sources, adversarially verify claims, synthesize a cited report.",
+  "agentCount": 102,
+  "logs": [
+    "Q: GeomTok(기하 인지형 SVG 토크나이저) 연구의 독보성/신규성을 2026년 6월 현재 SVG 토큰화·벡터그래픽스 생성 분야의 최신 논문·실…",
+    "Decomposed into 6 angles: primary/prior-art (compression≠modelability), academic/controlled-comparison (geometric tokens vs BPE), benchmarks/evaluation-protocol (tokenizer-intrinsic eval), implementation/coordinate-codec, recent/Q2-2026 threats + name availability, contrarian/primary-source verification (named works)",
+    "primary/prior-art (compression≠modelability): 6 results",
+    "recent/Q2-2026 threats + name availability: 6 results",
+    "recent/Q2-2026 threats + name availability: 5 novel (1 filtered)",
+    "implementation/coordinate-codec: 6 results",
+    "implementation/coordinate-codec: 4 novel (2 filtered)",
+    "academic/controlled-comparison (geometric tokens vs BPE): 6 results",
+    "academic/controlled-comparison (geometric tokens vs BPE): 1 novel (5 filtered)",
+    "benchmarks/evaluation-protocol (tokenizer-intrinsic eval): 6 results",
+    "benchmarks/evaluation-protocol (tokenizer-intrinsic eval): 3 novel (3 filtered)",
+    "contrarian/primary-source verification (named works): 6 results",
+    "contrarian/primary-source verification (named works): 0 novel (6 filtered)",
+    "Fetched 19 sources → 89 claims → verifying top 25",
+    "\"This paper demonstrates the compression-vs-modelab…\": 3-0 ✓",
+    "\"The paper establishes a NON-MONOTONIC / capacity-d…\": 3-0 ✓",
+    "\"PathPiece (Schmidt et al., EMNLP 2024) is a text-d…\": 3-0 ✓",
+    "\"The work is classified under cs.CV / cs.LG, was su…\": 3-0 ✓",
+    "\"The compression-vs-performance result is demonstra…\": 3-0 ✓",
+    "\"The source contains no mention of vector graphics …\": 2-1 ✓",
+    "\"HiVG encodes coordinates on a 784x784 fixed canvas…\": 3-0 ✓",
+    "\"HiVG uses geometry-constrained segment merges wher…\": 3-0 ✓",
+    "\"Lotz et al. (ACL 2025) establish in the TEXT domai…\": 3-0 ✓",
+    "\"HiVG does NOT perform a controlled tokenizer-only …\": 3-0 ✓",
+    "\"The paper's domain is exclusively text/NLP (Englis…\": 2-1 ✓",
+    "\"InternSVG's evaluation is a generation/understandi…\": 3-0 ✓",
+    "\"GeoBPE applies byte-pair-encoding-style merging to…\": 3-0 ✓",
+    "\"Lotz et al. (ACL 2025) establish in the text/natur…\": 3-0 ✓",
+    "\"InternSVG's tokenization contribution is limited t…\": 3-0 ✓",
+    "\"GeoBPE's merges are STRUCTURE-CONSTRAINED, not unc…\": 0-3 ✗",
+    "\"The LOO paper (arXiv:2604.08809) evaluates SVG GEN…\": 3-0 ✓",
+    "[v1:VectorGym evaluates end-to-end vision-la] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:The paper's evaluation is conducted on n] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v2:VectorGym evaluates end-to-end vision-la] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v0:VectorGym's metrics are generator-output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:VectorGym's metrics are generator-output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v0:VectorGym evaluates end-to-end vision-la] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"VectorGym evaluates end-to-end vision-language mod…\": 0-0 (3 abstain) ✗",
+    "[v0:SVGenius is a generator-coupled benchmar] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v2:The LOO paper does not propose parsing r] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v2:SVGenius is a generator-coupled benchmar] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:SVGenius is a generator-coupled benchmar] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"SVGenius is a generator-coupled benchmark that eva…\": 0-0 (3 abstain) ✗",
+    "[v0:SVGenius's metrics are generation/output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:SVGenius's metrics are generation/output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v2:SVGenius's metrics are generation/output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"SVGenius's metrics are generation/output-quality m…\": 0-0 (3 abstain) ✗",
+    "[v2:VectorGym's metrics are generator-output] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"VectorGym's metrics are generator-output / visual-…\": 0-0 (3 abstain) ✗",
+    "[v0:OmniSVG uses a 200x200 viewbox canvas an] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v2:OmniSVG uses a 200x200 viewbox canvas an] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:OmniSVG uses a 200x200 viewbox canvas an] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"OmniSVG uses a 200x200 viewbox canvas and merges e…\": 0-0 (3 abstain) ✗",
+    "\"The paper's evaluation is conducted on natural-lan…\": 2-0 (1 abstain) ✓",
+    "[v1:The LOO paper proposes four structural m] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"The LOO paper proposes four structural metrics — p…\": 2-0 (1 abstain) ✓",
+    "[v0:The LOO paper does not propose parsing r] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "[v1:The LOO paper does not propose parsing r] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)",
+    "\"The LOO paper does not propose parsing rate, bits/…\": 0-0 (3 abstain) ✗",
+    "Verify done: 25 claims → 18 confirmed, 7 killed",
+    "[synthesize] failed: You've hit your session limit · resets 9:20pm (Asia/Seoul)"
+  ],
+  "result": {
+    "question": "GeomTok(기하 인지형 SVG 토크나이저) 연구의 독보성/신규성을 2026년 6월 현재 SVG 토큰화·벡터그래픽스 생성 분야의 최신 논문·실사례에 대조해 검증한다. 우리의 5가지 핵심 주장 각각이 (a) 이미 발표됐는가 (b) 우리가 정직하게 차별화 가능한가를 1차 출처(arXiv·학회 proceedings·HuggingFace·GitHub)로 확인할 것:\n\n1. \"압축 ≠ 모델가능성\" 반례를 벡터그래픽스 도메인에서 통제 실험으로 보인 것 — 텍스트 도메인은 PathPiece(Schmidt et al., EMNLP 2024)·Lotz et al.(ACL 2025)가 선행. SVG/벡터그래픽스에서 이 비단조 관계를 토크나이저-스왑으로 보인 논문이 2024-2026에 존재하는가?\n\n2. \"기하 프리미티브 토큰이 텍스트 BPE보다 다운스트림 모델링에 더 나은 기질(substrate)\" — held-out NLL 26% 우위, 2코퍼스 재현, 용량(0.9M-9.3M)에 강건. HiVG(arXiv:2604.05072)·OmniSVG(2504.06263)·LLM4SVG(CVPR2025)·StrokeNUWA(ICML2024)·InternSVG(2510.11341) 중 동일한 통제 비교(동일 백본, 토크나이저만 스왑)를 한 작업이 있는가?\n\n3. GeomTok-Eval = 생성기 분리(generator-decoupled) 렌더 기반 토크나이저 평가 프로토콜(파싱률·bits/icon·값수준 좌표충실도·렌더 SSIM/inkIoU) — VGBench·SVGEditBench·SVGenius·VectorGym·LOO 구조평가(2604.08809) 등 기존 SVG 벤치마크와 무엇이 다른가, 토크나이저 자체(생성기 아님)를 평가하는 공개 프로토콜이 존재하는가?\n\n4. \"학습된 비제약 BPE 머지가 HiVG식 구조-제약 세그먼트 머지를 이긴다\"(172 vs 236 tok/icon, 동일 예산) — 이 직접 비교가 발표됐는가? HiVG·GeoBPE(2511.11758)와 정확히 어디서 갈리는가?\n\n5. 균일 64×64 격자 + 스칼라 고정소수점 좌표 코덱(어휘 추가 0, 0.04px) — OmniSVG(200×200 조인트)·HiVG(균일 정수)·CNM(2602.02820, 연속 좌표 폐기) 대비 정직한 차별점은? 2026년 4-6월 신규 논문이 이를 선점했는가?\n\n추가: 2026년 2분기(4-6월) arXiv cs.CV/cs.CL의 SVG 토큰화·벡터그래픽스 생성 신규 논문 중 우리 헤드라인을 위협하는 것이 있는지, 그리고 \"GeomTok\"/\"GeomTok-Eval\" 명칭이 여전히 미선점인지 확인. 결론으로 우리 연구가 어느 부분에서 진짜 독보적이고 어느 부분은 정직하게 \"기존 라인 보강/도메인 최초\"로 프레이밍해야 하는지 판정.",
+    "summary": "Synthesis step was skipped or failed — returning 18 verified claims unmerged.",
+    "findings": [],
+    "confirmed": [
+      {
+        "claim": "This paper demonstrates the compression-vs-modelability (compression ≠ modelability) trade-off in the continuous VISUAL/IMAGE tokenization domain (VQ-VAE style discrete autoregressive image generation), NOT in vector graphics/SVG; it shows that more aggressive stage-1 compression can help the stage-2 generative model even when reconstruction worsens.",
+        "source": "https://arxiv.org/abs/2412.16326",
+        "quote": "We study this problem in the context of discrete, auto-regressive image generation... we show that smaller stage 2 models can benefit from more compressed stage 1 latents even if reconstruction performance worsens, demonstrating that generation modeling capacity plays a role in this trade-off.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The paper establishes a NON-MONOTONIC / capacity-dependent relationship between compression and downstream generation performance, where the benefit of compression depends on the generative model's (stage-2) capacity — this is the same conceptual point GeomTok makes, but here demonstrated for raster-image latents rather than via tokenizer-swap in SVG.",
+        "source": "https://arxiv.org/abs/2412.16326",
+        "quote": "smaller stage 2 models can benefit from more compressed stage 1 latents even if reconstruction performance worsens, demonstrating that generation modeling capacity plays a role in this trade-off",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The work is classified under cs.CV / cs.LG, was submitted Dec 20 2024 (v2 Dec 11 2025), and is a NeurIPS 2025 Spotlight; it contains NO mention of SVG, vector graphics, or geometric primitives, so it does not preempt GeomTok's claim of being the first to show this trade-off in the vector-graphics domain.",
+        "source": "https://arxiv.org/abs/2412.16326",
+        "quote": "Spotlight at NeurIPS 2025 ... Subjects: Computer Vision and Pattern Recognition (cs.CV); Machine Learning (cs.LG)",
+        "vote": "3-0"
+      },
+      {
+        "claim": "PathPiece (Schmidt et al., EMNLP 2024) is a text-domain tokenizer that segments documents into the minimum number of tokens for a given vocabulary, and through controlled experiments the authors find that fewer tokens (greater compression) do NOT lead to better downstream LM performance — establishing the compression≠modelability counterexample in the TEXT domain, not vector graphics.",
+        "source": "https://aclanthology.org/2024.emnlp-main.40/",
+        "quote": "We test the hypothesis that fewer tokens lead to better downstream performance by introducing PathPiece, a new tokenizer that segments a document's text into the minimum number of tokens for a given vocabulary. Through extensive experimentation we find this hypothesis not to be the case, casting doubt on the understanding of the reasons for effective tokenization.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The compression-vs-performance result is demonstrated by training 64 language models from 350M to 2.4B parameters with varying tokenization — a tokenizer-swap controlled experiment entirely on natural-language text, with no application to SVG or vector graphics.",
+        "source": "https://aclanthology.org/2024.emnlp-main.40/",
+        "quote": "We train 64 language models with varying tokenization, ranging in size from 350M to 2.4B parameters, all of which are made publicly available.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The source contains no mention of vector graphics or SVG, confirming that the compression≠modelability non-monotone relationship was NOT shown in the SVG/vector-graphics domain by this prior work — leaving GeomTok's domain-specific demonstration as a legitimate 'domain-first' contribution rather than a duplication.",
+        "source": "https://aclanthology.org/2024.emnlp-main.40/",
+        "quote": "No mention of vector graphics or SVG in the provided content.",
+        "vote": "2-1"
+      },
+      {
+        "claim": "HiVG uses geometry-constrained segment merges where merging is restricted to SVG segment boundaries (a command token plus its coordinate parameters) and constrained by SVG command arity, NOT learned freely like unconstrained BPE — this is exactly the 'structure-constrained segment merge' baseline that GeomTok claim #4 asserts unconstrained BPE merges beat.",
+        "source": "https://arxiv.org/pdf/2604.05072",
+        "quote": "merging is restricted to segment boundaries, while structure and attribute tokens remain unchanged ... all learned tokens correspond to renderable segment groups, ensuring syntactic validity and geometric coherence",
+        "vote": "3-0"
+      },
+      {
+        "claim": "HiVG encodes coordinates on a 784x784 fixed canvas via uniform integer quantization and ADDS 2,384 coordinate tokens to the vocabulary (795 absolute + 1,589 relative offset tokens), which directly contrasts GeomTok claim #5's differentiation (uniform 64x64 grid + scalar fixed-point coordinate codec with zero added vocabulary, 0.04px). HiVG does not match OmniSVG's 200x200 either; the grid and vocab-addition strategy are distinct.",
+        "source": "https://arxiv.org/pdf/2604.05072",
+        "quote": "a fixed canvas resolution of 784×784 ... normalized to the canvas range and uniformly quantized into discrete integer bins, each mapped to a coordinate token ... 2,384 coordinate tokens [consisting of] 795 absolute position tokens (P_0∼P_794) and 1,589 relative offset tokens (d_-794∼d_794)",
+        "vote": "3-0"
+      },
+      {
+        "claim": "HiVG does NOT perform a controlled tokenizer-only swap on a held-constant backbone and does NOT report held-out NLL or perplexity; its comparisons are end-to-end (full system vs. raw-string baseline). This supports the novelty of GeomTok claim #2 (same-backbone, tokenizer-only swap with held-out NLL) — HiVG is not a precedent for that controlled comparison.",
+        "source": "https://arxiv.org/pdf/2604.05072",
+        "quote": "Table 2 compares the full HiVG system against an autoregressive baseline trained on raw SVG string but this is an end-to-end comparison, not a controlled swap isolating tokenizer changes while holding the backbone constant ... The paper does not report perplexity or negative log-likelihood on held-out data.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Lotz et al. (ACL 2025) establish in the TEXT domain that text compression is not a reliable monotonic predictor of downstream model performance: their new Zipf-law-inspired intrinsic metrics correlate more strongly with downstream performance than compression when modeling unseen languages, and they observe that beyond a compression threshold further reductions yield diminishing returns. This is direct prior art for GeomTok's 'compression =/= modelability' claim, but only in text/multilingual NLP, NOT in vector graphics/SVG.",
+        "source": "https://aclanthology.org/2025.acl-long.1546.pdf",
+        "quote": "We propose new intrinsic tokenizer metrics inspired by Zipf's law that correlate more strongly with downstream performance than text compression when modeling unseen languages. ... once compression surpasses a certain threshold, further reductions yield diminishing returns and other factors become more decisive.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The paper's domain is exclusively text/NLP (English-centric and multilingual tokenizers, machine translation, summarization). It contains zero treatment of SVG, vector graphics, or geometric primitives, so GeomTok can honestly claim domain-firstness for demonstrating the non-monotonic compression-modelability relationship in vector graphics via tokenizer-swap.",
+        "source": "https://aclanthology.org/2025.acl-long.1546.pdf",
+        "quote": "By systematically evaluating both English-centric and multilingual tokenizers, we find that tokenizer choice has negligible effects on tasks in English but results in consistent performance differences in multilingual settings.",
+        "vote": "2-1"
+      },
+      {
+        "claim": "InternSVG's tokenization contribution is limited to adding 'SVG-specific special tokens' plus 'subword-based embedding initialization' on top of an MLLM; it does not introduce a geometric-primitive tokenizer, a coordinate-grid/fixed-point coordinate codec, or learned BPE merges over path data, and it reports no tokenizer-swap experiment on a fixed backbone measuring held-out NLL. This means InternSVG does not preempt GeomTok claims #2 (primitive tokens as a better modeling substrate, measured by tokenizer swap on a shared backbone) or #5 (uniform-grid + scalar fixed-point coordinate codec).",
+        "source": "https://arxiv.org/pdf/2510.11341",
+        "quote": "we propose InternSVG, a unified MLLM for SVG understanding, editing, and generation with SVG-specific special tokens, subword-based embedding initialization, and a two-stage training strategy that progresses from short static SVGs to long-sequence illustrations and complex animations.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "InternSVG's evaluation is a generation/understanding/editing task benchmark (SArena) with 'standardized evaluation' aligned to its dataset domains, not a generator-decoupled tokenizer-evaluation protocol (parsing rate, bits/icon, value-level coordinate fidelity, render SSIM/inkIoU). This supports GeomTok claim #3 that no public protocol evaluates the tokenizer itself rather than a generator; InternSVG/SArena evaluates the generator.",
+        "source": "https://arxiv.org/pdf/2510.11341",
+        "quote": "we introduce SArena, a companion benchmark with comprehensive task definitions and standardized evaluation that aligns with the domains and difficulty spectrum covered by SAgoge.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "GeoBPE applies byte-pair-encoding-style merging to 3D protein backbone structure, not 2D vector graphics or SVG — the source contains no mention of SVG, vector graphics, or 2D geometric primitives, leaving the SVG/vector-graphics domain open for GeomTok.",
+        "source": "https://arxiv.org/abs/2511.11758",
+        "quote": "We introduce GeoBPE, a geometry-grounded PST that transforms continuous, noisy, multi-scale backbone conformations into discrete `sentences' of geometry while enforcing global constraints. Analogous to byte-pair encoding, GeoBPE generates a hierarchical vocabulary of geometric primitives",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Lotz et al. (ACL 2025) establish in the text/natural-language domain that text compression is NOT the best predictor of downstream language model performance, proposing intrinsic tokenizer metrics (Zipf's-law-inspired) that correlate more strongly with downstream performance than compression for unseen languages. This confirms the 'compression ≠ modelability' line is already published prior art in the TEXT domain, so GeomTok cannot claim the underlying insight as novel — only its transfer to SVG/vector graphics.",
+        "source": "https://aclanthology.org/2025.acl-long.1546/",
+        "quote": "We propose new intrinsic tokenizer metrics inspired by Zipf's law that correlate more strongly with downstream performance than text compression when modeling unseen languages.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The paper's evaluation is conducted on natural-language text tokenizers (English-centric and multilingual), not on vector graphics, SVG, or geometric primitives — leaving the SVG/vector-graphics domain open for a controlled tokenizer-swap demonstration of the non-monotone compression-vs-modelability relationship.",
+        "source": "https://aclanthology.org/2025.acl-long.1546/",
+        "quote": "By systematically evaluating both English-centric and multilingual tokenizers, we find that tokenizer choice has negligible effects on tasks in English but results in consistent performance differences in multilingual settings.",
+        "vote": "2-0"
+      },
+      {
+        "claim": "The LOO paper (arXiv:2604.08809) evaluates SVG GENERATORS, not tokenizers — it operates at the generation-output level by comparing structural properties of generated SVGs across 5 generation systems, not at the tokenizer-intrinsic level.",
+        "source": "https://arxiv.org/abs/2604.08809",
+        "quote": "SVG generation is typically evaluated by comparing rendered outputs to reference images. ... validated on over 19,000 edits (5 types) across 5 generation systems.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "The LOO paper proposes four structural metrics — purity, coverage, compactness, and locality — that quantify SVG modularity, which is a different metric family from GeomTok-Eval's proposed parsing-rate / bits-per-icon / value-level coordinate fidelity / render SSIM-inkIoU set.",
+        "source": "https://arxiv.org/abs/2604.08809",
+        "quote": "purity, coverage, compactness, and locality, which quantify SVG modularity from complementary angles.",
+        "vote": "2-0"
+      }
+    ],
+    "refuted": [
+      {
+        "claim": "GeoBPE's merges are STRUCTURE-CONSTRAINED, not unconstrained: it enforces geometric validity via differentiable inverse kinematics under an SE(3) end-frame loss when forming primitives — placing it on the HiVG-style 'structure-constrained merge' side of GeomTok's claim 4 comparison rather than the learned-unconstrained-BPE side.",
+        "vote": "0-3",
+        "source": "https://arxiv.org/abs/2511.11758"
+      },
+      {
+        "claim": "The LOO paper does not propose parsing rate, bits/icon, or coordinate-fidelity metrics, and does not use SSIM or inkIoU render metrics — meaning GeomTok-Eval's render-based, value-level tokenizer-fidelity protocol does not overlap with this paper's metric set.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/abs/2604.08809"
+      },
+      {
+        "claim": "VectorGym evaluates end-to-end vision-language models (VLMs) on SVG tasks, not tokenizers intrinsically; it has no generator-decoupled tokenizer evaluation protocol.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/html/2603.29852"
+      },
+      {
+        "claim": "VectorGym's metrics are generator-output / visual-and-semantic metrics (Pixel MSE, LPIPS, DINO, VLM-as-Judge, CLIP, ROUGE-L, BGE-M3), and it does NOT use tokenizer-intrinsic metrics such as parsing rate, bits/icon, coordinate fidelity, or render SSIM/inkIoU.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/html/2603.29852"
+      },
+      {
+        "claim": "SVGenius is a generator-coupled benchmark that evaluates LLMs/MLLMs on SVG tasks (understanding, editing, generation), NOT a tokenizer-intrinsic evaluation. It assesses 22 mainstream generator models across 8 task categories and 18 metrics, with no protocol for evaluating a tokenizer in isolation (no tokenizer-swap, fixed-backbone comparison). This confirms SVGenius does not occupy GeomTok-Eval's generator-decoupled tokenizer-evaluation niche.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/pdf/2506.03139"
+      },
+      {
+        "claim": "SVGenius's metrics are generation/output-quality metrics (MSE, HPS, PSS, SSIM, LPIPS, DINO for render similarity; global IoU and path-wise IoU for structural correspondence; code compression ratio for the optimization task). It shares render-SSIM and IoU-style metrics with GeomTok-Eval but uses them to score model outputs, not to score a tokenizer's parsing rate, bits/icon, or value-level coordinate fidelity.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/pdf/2506.03139"
+      },
+      {
+        "claim": "OmniSVG uses a 200x200 viewbox canvas and merges each (x,y) coordinate pair into a single joint token via the mapping x*w+y, which directly differs from GeomTok's uniform 64x64 grid with a scalar fixed-point coordinate codec (zero added vocabulary). This confirms GeomTok claim 5's honest contrast: OmniSVG is the '200x200 joint' baseline.",
+        "vote": "0-0",
+        "source": "https://arxiv.org/html/2504.06263v1"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://arxiv.org/abs/2412.16326",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://aclanthology.org/2024.emnlp-main.40/",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/pdf/2604.05072",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://aclanthology.org/2025.acl-long.1546.pdf",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/pdf/2510.11341",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/abs/2511.11758",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://aclanthology.org/2025.acl-long.1546/",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/abs/2604.08809",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/html/2603.29852",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/pdf/2506.03139",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/html/2504.06263v1",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/html/2604.05072v1",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/abs/2602.02820",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/abs/2605.24398",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/abs/2604.05072",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/abs/2510.11341",
+        "quality": "primary",
+        "claimCount": 4
+      },
+      {
+        "url": "https://arxiv.org/html/2504.06263v3",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/html/2506.03139v1",
+        "quality": "primary",
+        "claimCount": 5
+      },
+      {
+        "url": "https://arxiv.org/html/2402.18376v1",
+        "quality": "primary",
+        "claimCount": 5
+      }
+    ],
+    "stats": {
+      "angles": 6,
+      "sources": 19,
+      "claims": 89,
+      "verified": 25,
+      "confirmed": 18,
+      "killed": 7,
+      "afterSynthesis": 0
+    }
+  }
+}

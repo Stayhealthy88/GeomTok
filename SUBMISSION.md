@@ -53,3 +53,17 @@
 
 - [x] §2 avoids HiVG's exact 2.7×/3B numbers (no precise unverified claim) — kept generic
 - [x] verified: 7.6× appears only in §1 disclosure + §6 retraction; no σ-multipliers / 'nobody has run' anywhere
+
+## Distinctiveness verdict — deep-research (2026-06-14, 18 claims at 3-0/2-1)
+
+Each of the 5 core claims checked against primary sources. **Net: the headline survives; one honest reframe + one new must-cite.**
+
+| Claim | Verdict | Evidence |
+|---|---|---|
+| 1. compression≠modelability in vector graphics | **domain-first, NOT absolute-first** | text: PathPiece (EMNLP'24), Lotz (ACL'25); **raster images: arXiv:2412.16326 (NeurIPS'25 Spotlight)** — capacity-dependent, VQ-latents, no SVG. No SVG/tokenizer-swap instance exists → ours is first in vector graphics. |
+| 2. geometric substrate via held-constant-backbone tokenizer-swap + held-out NLL | **genuinely distinctive** | HiVG does end-to-end comparison only, **no controlled swap, no perplexity/NLL**; InternSVG adds special tokens, no swap. No SVG precedent. |
+| 3. GeomTok-Eval = generator-decoupled tokenizer protocol | **distinctive** | LOO (2604.08809) scores *generators*' output structure (purity/coverage/...); InternSVG SArena is generation-coupled. No public tokenizer-decoupled protocol with parse/bits-per-icon/value-fidelity/render set. |
+| 4. learned unconstrained merges beat HiVG structure-constrained | **distinctive comparison** | HiVG confirmed to use geometry-constrained segment merges (segment boundaries + command arity); the direct head-to-head is unpublished — we run it. |
+| 5. uniform 64×64 + scalar fixed-point codec, **zero added vocab** | **distinctive engineering** | HiVG adds 2,384 coord tokens (784×784); OmniSVG ~40k (200×200); CNM drops coords. Zero-added-vocab scalar codec is unmatched. GeoBPE = 3D protein, not SVG. |
+
+**Action taken:** added arXiv:2412.16326 to §2 as the raster-image precedent (the one prior visual-domain compression-vs-generation result), with the honest contrast that our SVG result runs the opposite direction (more compression never reliably helps). **Name check:** no 2026-Q2 SVG paper preempting the headline surfaced; GeomTok/GeomTok-Eval still appear unclaimed in the SVG domain (re-confirm arXiv listing at submission). **Framing rule:** claim 1 = "first in vector graphics" (never "first ever"); claims 2–5 = genuinely distinctive.

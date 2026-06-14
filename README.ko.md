@@ -1,106 +1,119 @@
-# GeomTok &mdash; geometry-native tokenization for vector graphics
-
-**AI에게 도형과 그림을 진짜로 이해시키는 기술.**
+<p align="center">
+  <img src="assets/hero_banner.svg" alt="GeomTok — 벡터 그래픽을 위한 기하 네이티브 토큰화" width="100%"/>
+</p>
 
 <p align="center">
-  <a href="./README.md">English</a>
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache_2.0-8b6cff.svg"></a>
+  <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-37e6d4.svg">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-251_passing-54e08a.svg">
+  <img alt="Core deps" src="https://img.shields.io/badge/core-numpy_only-ff5d9e.svg">
+  <a href="PAPER.md"><img alt="Paper" src="https://img.shields.io/badge/paper-PAPER.md-ffc857.svg"></a>
+  <a href="README.md"><img alt="English" src="https://img.shields.io/badge/lang-English-aeb6d6.svg"></a>
 </p>
 
 ---
 
-## 문제
+## 왜 GeomTok인가
 
-오늘날의 AI 모델(ChatGPT, Claude 등)은 텍스트를 이해하고 생성하는 데 놀라운 성능을 보여줍니다. 하지만 벡터 그래픽 — 모든 앱, 웹사이트, 디자인 도구에서 사용하는 선명하고 확대 가능한 이미지 — 을 다루면 일관되게 실패합니다. 원은 찌그러지고, 사각형은 닫히지 않고, 좌표는 그냥... 틀립니다.
+언어 모델은 벡터 그래픽(SVG)을 산문처럼 토큰화합니다 — `150.5` 같은 좌표를 `1`, `50`, `.`, `5`로 잘게 쪼개버려, *공간 속 한 점*이라는 의미가 사라집니다. **GeomTok**은 SVG를 기하 프리미티브 토큰(명령·도형·어휘 추가 0의 고정소수점 좌표 코덱)으로 매핑하는 기하 네이티브 토크나이저로, 모델이 기하를 기하로 읽게 합니다.
 
-왜일까요? 현재 AI는 그래픽 코드를 영어 텍스트와 똑같은 방식으로 읽기 때문입니다 — 한 글자씩 잘라서. `150.5`라는 좌표는 `"1"`, `"50"`, `"."`, `"5"` 같은 의미 없는 조각으로 쪼개집니다. AI는 이 조각들이 *공간 위의 한 점*을 나타낸다는 것을 전혀 알지 못합니다. 지도의 글자를 한 자씩 읽으면서 길을 찾으려는 것과 같습니다.
-
-<p align="center">
-  <img src="assets/hero_concept.svg" alt="문제와 해결책" width="800"/>
-</p>
-
-## 해결책
-
-GeomTok(이전 명칭 “GPL Tokenizer”)는 벡터 그래픽과 AI 모델 사이에 놓이는 **기하학 인식 번역 레이어**입니다. AI가 원시 코드를 글자 단위로 읽는 대신, 먼저 그래픽을 기하학적 이해에 최적화된 언어로 번역합니다.
-
-원은 더 이상 28개의 텍스트 조각이 아닙니다 — 중심점과 반지름을 가진 하나의 "원" 토큰입니다. 동일한 버튼 5개가 나란히 있다면 167개의 텍스트 조각이 아닌, 버튼 하나 정의와 "등간격으로 4번 반복"입니다. AI는 흩어진 숫자가 아니라 도형, 위치, 공간 관계를 봅니다.
+**torch 없이 `numpy`만으로 동작하는 OSS 코어** + 매니지드 FastAPI 서비스 + 생성기가 아닌 **토크나이저 자체를 평가하는** 렌더 기반 프로토콜 **GeomTok-Eval**로 구성됩니다.
 
 <p align="center">
-  <img src="assets/how_it_works.svg" alt="GPL Tokenizer 작동 방식" width="800"/>
+  <img src="assets/fig1_pipeline.svg" alt="GeomTok 파이프라인" width="90%"/>
 </p>
 
-## 핵심 성과
+## 핵심 발견: 압축 ≠ 모델가능성
 
-3단계 압축을 구축했으며, 각 단계가 새로운 기하학적 지능을 추가합니다:
-
-**Level 1 — 기본 기하학.** 각 그리기 명령(선, 곡선, 호)이 수학적 속성(위치, 곡률, 매끄러움)을 보존하는 구조화된 토큰으로 변환됩니다. 이것만으로도 표준 텍스트 토큰화 대비 2-3배 효율적입니다.
-
-**Level 2 — 도형 인식.** 시스템이 자동으로 원, 사각형, 타원 같은 일반적인 도형을 감지하여 단일 토큰으로 압축합니다. Level 1에서 28개 토큰이 필요했던 원이 단 5개 토큰이 됩니다. 정보 손실 없이 **5.6배 압축**.
-
-**Level 3 — 공간 지능.** 여러 요소가 패턴을 공유할 때(일렬 정렬, 등간격, 대칭) 이 관계를 포착합니다. 동일한 원 5개가 나란히? 각각 따로 기술하는 대신(21 토큰) "원 하나, 이 간격으로 4번 반복"이라고 합니다(11 토큰). 표준 AI 대비 **최대 15배 적은 토큰**.
+동일한 소형 트랜스포머에서 토크나이저만 바꾸는 통제 실험 결과, 기하 프리미티브 토큰이 도메인 학습 텍스트 BPE보다 held-out 모델링에서 **26% 우수**하고, 반직관적으로 **더 압축된 학습-머지 변형보다도 우수**합니다. 더 많이 압축한다고 다운스트림 모델링이 좋아지는 게 아닙니다.
 
 <p align="center">
-  <img src="assets/compression_results.svg" alt="효율성 향상" width="800"/>
+  <img src="assets/fig2_compression_modelability.svg" alt="압축 vs 모델가능성" width="78%"/>
 </p>
 
-AI가 처리해야 할 토큰이 적을수록 더 빠르게 실행되고, 비용이 줄고, 더 정확하게 그립니다. 이것은 단순한 최적화가 아닙니다 — AI가 시각적 콘텐츠를 이해하는 방식의 근본적인 전환입니다.
+| 토크나이저 (동일 2.5M 모델, 실세계 아이콘) | tokens/icon | held-out NLL bits/icon ↓ |
+|---|---|---|
+| 도메인 char-BPE | 159 | 775 ± 6 |
+| GeomTok-L1 + 학습 BPE *(최고 압축)* | 59 | 666 ± 2 |
+| **GeomTok-L1** | 104 | **576 ± 4** |
 
-## 기술 구조
+이 격차는 모델 용량(0.9M → 9.3M)에 따라 **유지·확대**되고, 2번째 코퍼스에서 **재현**됩니다. 전체 연구: **[PAPER.md](PAPER.md)**.
 
-토크나이저 파이프라인은 네 가지 주요 단계로 구성됩니다:
+## 왕복 충실도는 진짜다 — 무손실이 아니라 정직하다
 
-**파싱(Parsing)** — 모든 SVG 파일을 읽고 구조화된 기하 명령으로 분해합니다 — 직선, 곡선, 호의 차이를 이해합니다.
+GeomTok의 좌표 코덱은 경계-한정 오차(평균 **1.78px**, 최대 3.37px / 300px 캔버스), 렌더 **SSIM 0.929** — 3.54× 압축의 정직한 비용입니다. 시도했던 곡률 적응 격자는 *직선을 뒤틀어* 폐기하고 균일 격자를 채택했습니다:
 
-**분석(Analysis)** — 각 조각을 검사합니다: 이 세그먼트의 곡률은? 다음 세그먼트와 매끄럽게 연결되는가? 이것은 사실 4개의 곡선으로 그려진 원인가? 이 도형들은 정렬되어 있거나 대칭인가?
+<p align="center">
+  <img src="assets/fig3_render_panel.svg" alt="원본 vs 균일격자 vs 적응 쿼드트리 왕복" width="62%"/>
+</p>
 
-**토큰화(Tokenization)** — 모든 것을 3단계에 걸쳐 간결하고 의미 있는 토큰으로 변환합니다 — 개별 명령(L1)에서 인식된 도형(L2), 공간 패턴(L3)까지.
+## 빠른 시작
 
-**복원(Reconstruction)** — 과정을 완벽하게 역전합니다: 토큰이 다시 유효한 SVG 그래픽이 됩니다. 왕복 충실도는 8개 파일 180개 단언(assertion)으로 이루어진 자동화 테스트 스위트로 검증되며, v0.5.1부터는 단순 위상(topology)이 아닌 **픽셀 단위 정량 오차**로 측정됩니다.
+```bash
+pip install geomtok                 # 코어 (numpy만)
+pip install 'geomtok[eval,server]'  # + 렌더 평가 + 매니지드 API
+```
 
-## v0.5.1 — 신뢰성 강화 및 정량 측정 (Robustness & Measurement)
+```python
+import geomtok
 
-v0.5 로드맵이 완료된 후, 대규모·적대적 입력에서만 드러나는 틈새를 메우기 위한 집중 강화 릴리스를 진행했습니다.
+out = geomtok.tokenize("<svg viewBox='0 0 24 24'><path d='M4 4 L20 4 L20 20 Z'/></svg>")
+print(out["n_tokens"], out["tokenizer_version"], out["vocab_id"])
 
-- **기하 임계값 중앙화**: G0/G1/G2 연속성 임계값 전체를 `utils/constants.py` 의 단일 `GeometricConstants` 데이터클래스로 통합. 이전에는 `continuity.py` 와 `math_utils.py` 가 서로 다른 G1 컷오프(0.1 vs 0.05) 를 사용하던 불일치를 해결.
-- **왕복 충실도 정량화**: 신규 API (`ARCS.theoretical_max_error`, `ARCS.roundtrip_fidelity`, `Detokenizer.measure_fidelity`) 로 양자화 오차를 픽셀 단위로 측정. 분석적 상한은 `(cell_size / 2) · √2`. 실측 결과, adaptive 쿼드트리를 활성화하면 최대 좌표 오차가 기본값(`min_level=2`) 기준 ~49 px → ~2.6 px 로 감소 — **19배 개선**.
-- **생성기 검증 강화**: `Generator._validate_svg` 가 실제 `PathParser` 로 파싱하고 최소 1개의 렌더링 가능 명령(MOVE/CLOSE 제외) 을 요구하도록 변경. 과거의 "M 로 시작 + 숫자 포함" 약한 휴리스틱은 `"M"` 하나만으로도 통과하던 문제가 있었음.
-- **문서화 정합성**: "인접 좌표 토큰 코사인 유사도 ≈ 0.52" 주장은 이제 `embedding/hmn_init.py` 에서 사인파 인코딩 공식으로부터 단계별 유도됨. `GPLVocabulary` 에는 5개의 예약 ID 영역(5-9, 18-19, 24-29, 34-39, 56-59, 71-99) 과 확장 시 동기화해야 할 파일 목록이 명시됨.
-- **42개의 신규 자동화 테스트 단언** (`test_constants.py`, `test_fidelity.py`, `test_generator_validation.py`).
+svg = geomtok.detokenize(out["token_ids"],
+                         tokenizer_version=out["tokenizer_version"],
+                         vocab_id=out["vocab_id"])["svg"]   # FSA 유효 SVG 보장
+```
 
-상세 근거와 수식은 [RESEARCH_SUMMARY.md](./RESEARCH_SUMMARY.md) 및 `feat/v0.5.1-robustness` 브랜치 참고.
+매니지드 API 로컬 실행:
+
+```bash
+geomtok-serve --port 8000
+```
+
+| 라우트 | 기능 |
+|---|---|
+| `POST /v1/tokenize` · `/v1/detokenize` | 단건 SVG ↔ 토큰; 결정적·FSA 검증 |
+| `POST /v1/eval` | GeomTok-Eval 렌더 기반 프로토콜 (내장 또는 원격 토크나이저) |
+| `POST /v1/batch` · `/v1/stream` | 동기 배치(≤1000, ≤32MB) · NDJSON 스트리밍 |
+| `POST /v1/batch/jobs` · `GET`/`DELETE /v1/batch/jobs/{id}` | **진짜 비동기** 잡 — 워커·실시간 진행률·취소·웹훅 |
+| `GET /v1/vocab/{id}` · `/v1/healthz` | 불변 매니페스트 · 헬스체크 |
+
+엔드포인트별 적합성·프로덕션 여부: **[API_STATUS.md](API_STATUS.md)**.
+
+## v1.0 제공 범위
+
+| 능력 | 상태 |
+|---|---|
+| 파서 · transform 평탄화 · viewBox 정규화 · 호 평탄화 | ✅ OSS 코어 |
+| L1 기하 토큰 + **어휘 추가 0 스칼라 고정소수점 좌표 코덱** (0.04px) | ✅ OSS 코어 |
+| **L2 = 학습 BPE-on-L1 머지** (수작업 매크로 폐기 — 실데이터 0% 발화) | ✅ OSS 코어 |
+| FSA 문법 제약 디코딩 (torch-free) — **유효 SVG 보장** | ✅ OSS 코어 |
+| 불변 vocab 매니페스트 — 비트-동일·오프라인 인코드/디코드 | ✅ OSS 코어 |
+| GeomTok-Eval/1.0 — 렌더 SSIM·값수준 좌표오차·파싱률·토큰 경제 | ✅ OSS 코어 |
+| 매니지드 API (FastAPI): 진짜 비동기 잡 + NDJSON 스트림 포함 9 라우트 | ✅ `[server]` |
+
+> **생성은 v1.0의 명시적 비목표입니다.** 현 모델은 토이 규모(2.5M·CPU·단색 path 아이콘). 토크나이저+평가가 프로덕션 산출물이고, 생성은 Phase 2(펀딩 게이트)입니다.
+
+## 무엇이 독보적인가
+
+2024–2026 SVG 토큰화 문헌(HiVG·OmniSVG·LLM4SVG·StrokeNUWA·InternSVG·CNM·GeoBPE)에 대조 검증:
+
+- **SVG에서 held-out NLL 기반 통제 토크나이저-스왑** — 동일 백본에 토크나이저만 분리한 선행 SVG 연구 없음.
+- **GeomTok-Eval: 생성기 분리 토크나이저 프로토콜** — 기존 SVG 벤치마크(VGBench·SVGenius·VectorGym·LOO)는 *생성기*를 평가.
+- **학습 비제약 머지가 HiVG식 구조-제약 머지를 이김** (동일 예산 172 vs 236 tokens/icon) — 미발표 직접 비교.
+- **어휘 추가 0 스칼라 고정소수점 코덱** — HiVG는 좌표 토큰 2,384개·OmniSVG ~40k 추가; GeomTok은 0개.
+
+"압축 ≠ 모델가능성"은 텍스트(PathPiece, EMNLP'24)·래스터 이미지(arXiv:2412.16326, NeurIPS'25)에 선례가 있으나, GeomTok은 **벡터그래픽스 최초**이며 반대 방향(압축이 신뢰성 있게 도움 안 됨)을 보입니다.
 
 ## 로드맵
 
-<p align="center">
-  <img src="assets/roadmap_visual.svg" alt="개발 로드맵" width="800"/>
-</p>
-
-- [x] **v0.1** — 코어 엔진: 파서, 기하 분석기, 토크나이저, 복원
-- [x] **v0.2** — 도형 인식: 원, 사각형을 단일 토큰으로 압축
-- [x] **v0.3** — 공간 지능: 정렬, 대칭, 간격 패턴 인식
-- [x] **v0.4** — AI 임베딩 레이어: 토큰을 신경망에 연결 (PyTorch)
-- [x] **v0.5** — AI 학습 파이프라인: SVG 생성을 위한 언어 모델 파인튜닝
-- [x] **v0.5.1** — 신뢰성 강화: 임계값 통합, 픽셀 단위 충실도 측정, 생성기 검증 강화
-- [ ] **v1.0** — 제품 출시: API 서비스 + Figma 디자인 도구 플러그인
-
-## 왜 중요한가
-
-벡터 그래픽은 어디에나 있습니다 — 앱 아이콘, 로고, UI 컴포넌트, 일러스트, 데이터 시각화, 지도. 글로벌 디자인 도구 시장은 130억 달러 이상으로 성장 중입니다. 그런데 AI는 아직 벡터 콘텐츠를 안정적으로 생성하거나 편집하지 못합니다.
-
-GeomTok은 근본적인 병목을 해결합니다: AI 모델에게 2D 기하학의 네이티브 이해력을 부여하는 것. 이를 통해 AI 기반 디자인 생성, 자동 아이콘 생성, 지능형 SVG 편집, 그리고 실제로 정확한 결과를 내는 디자인-코드 워크플로가 가능해집니다.
-
-## 기술 기반
-
-기하학적 토큰화 분야의 학술 연구에 기반:
-
-- **HiVG** (Xing et al.) — 계층적 SVG 토큰화
-- **StrokeNUWA** (Tang et al.) — 벡터 합성을 위한 스트로크 토큰화
-- **LLM4SVG** (Xing et al.) — SVG를 위한 언어 모델 강화
-- **VectorGym** (Rodriguez et al.) — SVG 멀티태스크 벤치마크
+- [x] **v1.0** — torch-free OSS 코어·GeomTok-Eval·매니지드 FastAPI. *실세계 아이콘 검증: 파싱+왕복 100%, FSA 유효, 결정적.*
+- [ ] **Phase 2** — 대규모 생성 (현재 토이 규모; v1.0 비목표)
+- [ ] **Phase 3** — Figma / Canva 플러그인
 
 ## 라이선스
 
-이 프로젝트는 독점 소프트웨어입니다. 모든 권리 보유.
+**Apache-2.0** — 코어·평가 프로토콜·vocab 매니페스트 전부 오픈(크리플링 없음). 수익은 알고리즘 비공개가 아니라 매니지드 호스팅·SLA·지원에서. [LICENSE](LICENSE)·[NOTICE](NOTICE) 참조.
 
----
-
-*AI와 비주얼 디자인 사이의 다리를 만듭니다.*
+<p align="center"><sub>GeomTok — 모델에게 기하를 기하로 보는 법을 가르친다.</sub></p>
