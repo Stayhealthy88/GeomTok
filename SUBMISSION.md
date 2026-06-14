@@ -28,10 +28,11 @@
 ## Experiments for main-short (CPU-feasible) — todo
 
 - [x] **E1. Merge-budget sweep, downstream** — DONE. budget 0→2000: tokens 105→65, NLL 608→680 (monotonic). Pure L1 is downstream-optimal. `results_E1_budget_sweep.txt`.
-- [x] **E2. Capacity trend** — DONE. 0.9M→9.3M params: L1 wins at every size, gap grows 35→62. NOT a small-model artifact. `results_E2_capacity.txt`.
+- [x] **E2. Capacity trend** — DONE. 0.9M→9.3M params: L1 wins at every size, gap widens then plateaus 35→47→62→62 (single seed/size; trend, not precision). NOT a small-model artifact. `results_E2_capacity.txt`.
 - [x] **E3. Second corpus (svg-emoji)** — DONE. Substrate claim replicates (L1/L1+BPE 1117/1086 ≪ char 1356); compression direction is corpus-dependent (tied on emoji) — reported honestly. `results_E3_second_corpus.txt`.
 - [x] **E4. Continuous-regression arm** — DONE. discrete coord-token head 18% more accurate than continuous regression (35.7 vs 43.3px mean) on same backbone; CNM does not help in this regime. `results_E4_continuous.txt`.
-- [ ] **E5. (optional)** κ/continuity token ablation; coord-error >2px tail; StrokeNUWA VQ scatter point; n≈20 human forced-choice.
+- [x] **E5. κ/continuity token ablation** — DONE (3 seed). Markers = 24.2% of L1, derivable (57/57 byte-identical round-trip), yet stripping *improves* held-out NLL 687.2→602.4 (−84.8, ~12%) and shortens 120.8→91.6 tok/icon. Lean L1 recommended; full L1 kept as conservative as-shipped config. `results_ablate_curv_cont.txt`.
+- [ ] **E6. (optional)** coord-error >2px tail; StrokeNUWA VQ scatter point; n≈20 human forced-choice.
 
 ## Figures to produce — todo
 
