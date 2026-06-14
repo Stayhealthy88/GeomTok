@@ -1,105 +1,53 @@
-# GeomTok &mdash; geometry-native tokenization for vector graphics
-
-**Teaching AI to truly understand shapes and drawings.**
+<p align="center">
+  <img src="assets/hero_banner.svg" alt="GeomTok — geometry-native tokenization for vector graphics" width="100%"/>
+</p>
 
 <p align="center">
-  <a href="./README.ko.md">한국어</a>
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache_2.0-8b6cff.svg"></a>
+  <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-37e6d4.svg">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-251_passing-54e08a.svg">
+  <img alt="Core deps" src="https://img.shields.io/badge/core-numpy_only-ff5d9e.svg">
+  <a href="PAPER.md"><img alt="Paper" src="https://img.shields.io/badge/paper-PAPER.md-ffc857.svg"></a>
+  <a href="README.ko.md"><img alt="한국어" src="https://img.shields.io/badge/lang-한국어-aeb6d6.svg"></a>
 </p>
 
 ---
 
-## The Problem
+## Why GeomTok
 
-Today's AI models (like ChatGPT and Claude) are remarkably good at understanding and generating text. But when it comes to vector graphics — the crisp, scalable images used in every app, website, and design tool — they consistently fail. Circles come out wobbly. Rectangles don't close. Coordinates are just... wrong.
+Language models tokenize vector graphics (SVG) the way they tokenize prose — they shred a coordinate like `150.5` into `1`, `50`, `.`, `5`, fragments that carry no notion of *a point in space*. **GeomTok** is a geometry-native tokenizer that maps SVG to a small vocabulary of primitive tokens (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), so a model reads geometry as geometry.
 
-Why? Because current AI systems read graphics code the same way they read English — one text fragment at a time. A coordinate like `150.5` gets chopped into meaningless pieces like `"1"`, `"50"`, `"."`, `"5"`. The AI never sees that these fragments represent a *point in space*. It's like trying to navigate a city by reading a map one letter at a time.
-
-<p align="center">
-  <img src="assets/hero_concept.svg" alt="The Problem and Our Solution" width="800"/>
-</p>
-
-## Our Solution
-
-GeomTok (formerly “GPL Tokenizer”) is a **geometry-aware translation layer** that sits between vector graphics and AI models. Instead of letting AI read raw code character by character, we first translate graphics into a language designed for geometric understanding.
-
-A circle isn't 28 text fragments anymore — it's a single "circle" token with a center point and radius. A row of five identical buttons isn't 167 text fragments — it's one button definition plus "repeat 4 times, evenly spaced." The AI sees shapes, positions, and spatial relationships — not scrambled digits.
+It ships as a **torch-free, `numpy`-only OSS core** plus a managed FastAPI service, and a render-based evaluation protocol — **GeomTok-Eval** — that scores tokenizers, not generators.
 
 <p align="center">
-  <img src="assets/how_it_works.svg" alt="How GPL Tokenizer Works" width="800"/>
+  <img src="assets/fig1_pipeline.svg" alt="GeomTok pipeline: parse → quantize → tokenize → decode" width="90%"/>
 </p>
 
-## Key Results
+## The headline finding: compression ≠ modelability
 
-We've built three levels of compression, each adding a new layer of geometric intelligence:
-
-**Level 1 — Basic Geometry.** Each drawing command (lines, curves, arcs) becomes a structured token that preserves its mathematical properties: position, curvature, and smoothness. This alone is 2-3x more efficient than standard text tokenization.
-
-**Level 2 — Shape Recognition.** The system automatically detects common shapes — circles, rectangles, ellipses — and compresses them into single tokens. A circle that required 28 tokens at Level 1 becomes just 5 tokens. That's a **5.6x compression** with zero information loss.
-
-**Level 3 — Spatial Intelligence.** When multiple elements share a pattern (aligned in a row, evenly spaced, symmetric), the system captures these relationships. Five identical circles in a row? Instead of describing each one separately (21 tokens), it says "one circle, repeat 4 times with this spacing" (11 tokens). **Up to 15x fewer tokens** compared to standard AI.
+Under a controlled tokenizer-swap on an identical small transformer (the only variable is the tokenizer), geometric primitive tokens model held-out icons **26% better** than a domain-trained text BPE — and, counter-intuitively, **better than the more-compressed learned-merge variant**. More compression does not reliably mean better downstream modeling.
 
 <p align="center">
-  <img src="assets/compression_results.svg" alt="Efficiency Gains" width="800"/>
+  <img src="assets/fig2_compression_modelability.svg" alt="Compression vs modelability: the most-compressed tokenizer is not the best to learn from" width="78%"/>
 </p>
 
-The fewer tokens AI needs to process, the faster it runs, the less it costs, and the more accurately it draws. This isn't just an optimization — it's a fundamental shift in how AI understands visual content.
+| Tokenizer (same 2.5M model, real icons) | tokens/icon | held-out NLL bits/icon ↓ |
+|---|---|---|
+| domain char-BPE | 159 | 775 ± 6 |
+| GeomTok-L1 + learned BPE *(most compressed)* | 59 | 666 ± 2 |
+| **GeomTok-L1** | 104 | **576 ± 4** |
 
-## How It's Built
+The gap **holds and grows** with model capacity (0.9M → 9.3M params) and **replicates** on a second corpus. Full study, figures, and honest negative results: **[PAPER.md](PAPER.md)**.
 
-The tokenizer pipeline has four main stages:
+## Round-trip fidelity is real, not lossless
 
-**Parsing** reads any SVG file and breaks it into structured geometric commands — understanding the difference between straight lines, curves, and arcs.
-
-**Analysis** examines each piece: How curved is this segment? Does it connect smoothly to the next one? Is this actually a circle drawn as four curves? Are these shapes aligned or symmetric?
-
-**Tokenization** converts everything into compact, meaningful tokens at three levels — from individual commands (L1) to recognized shapes (L2) to spatial patterns (L3).
-
-**Reconstruction** reverses the process perfectly: tokens become valid SVG graphics again. Round-trip fidelity is verified by an automated test suite (180 assertions across 8 test files) and — as of v0.5.1 — quantitatively measured in pixel units rather than just topologically.
-
-## v0.5.1 — Robustness & Measurement
-
-After the v0.5 roadmap was complete, we shipped a focused hardening release to close gaps that only surface under adversarial or large-scale inputs:
-
-- **Unified geometric thresholds.** All G0/G1/G2 continuity thresholds are now centralized in a single `GeometricConstants` dataclass (`utils/constants.py`), resolving prior inconsistencies where `continuity.py` and `math_utils.py` used different G1 cutoffs (0.1 vs 0.05).
-- **Quantitative round-trip fidelity.** New APIs (`ARCS.theoretical_max_error`, `ARCS.roundtrip_fidelity`, `Detokenizer.measure_fidelity`) measure quantization error in pixel units with an analytic upper bound of `(cell_size / 2) · √2`. Empirically, enabling adaptive quadtree refinement cuts max coordinate error from ~49 px (default `min_level=2`) to ~2.6 px — a **19× improvement** over the naive setting.
-- **Stronger generator validation.** `Generator._validate_svg` now uses the real `PathParser` and requires at least one renderable (non-MOVE, non-CLOSE) command, replacing the previous weak "starts with M + contains digits" heuristic that accepted `"M"` alone as valid.
-- **Documentation rigor.** The claim that adjacent coordinate tokens have cosine similarity ≈ 0.52 is now derived step-by-step from the sinusoidal encoding formula in `embedding/hmn_init.py`, and `GPLVocabulary` documents its 5 reserved ID ranges (5-9, 18-19, 24-29, 34-39, 56-59, 71-99) for safe future extension.
-- **42 new automated test assertions** across `test_constants.py`, `test_fidelity.py`, and `test_generator_validation.py`.
-
-Full rationale, diffs, and math: see [RESEARCH_SUMMARY.md](./RESEARCH_SUMMARY.md) and the `feat/v0.5.1-robustness` branch.
-
-## What's Next
+GeomTok's coordinate codec is bounded-error (mean **1.78px**, max 3.37px on a 300px canvas), render **SSIM 0.929** — the honest cost of 3.54× compression. A curvature-adaptive grid we tried *warps straight content* and was retracted in favor of a plain uniform grid:
 
 <p align="center">
-  <img src="assets/roadmap_visual.svg" alt="Development Roadmap" width="800"/>
+  <img src="assets/fig3_render_panel.svg" alt="Original vs uniform-grid vs adaptive-quadtree round-trip" width="62%"/>
 </p>
 
-- [x] **v0.1** — Core engine: parser, geometric analyzer, tokenizer, reconstruction
-- [x] **v0.2** — Shape recognition: circles, rectangles compressed to single tokens
-- [x] **v0.3** — Spatial intelligence: alignment, symmetry, spacing patterns
-- [x] **v0.4** — AI embedding layer: connect tokens to neural networks (PyTorch)
-- [x] **v0.5** — AI training pipeline: fine-tune language models for SVG generation
-- [x] **v0.5.1** — Robustness: unified thresholds, pixel-level fidelity metrics, stricter validation
-- [x] **v1.0** — Product: torch-free OSS core (FSA decode, vocab manifest, BPE-on-L1 L2), GeomTok-Eval render protocol, managed FastAPI service. **Validated on 2,726 real icons: 100% parse + round-trip, FSA-valid, deterministic.**
-- [ ] **Phase 2** — Generation (currently toy-scale 2.5M params; explicit non-goal for v1.0)
-- [ ] **Phase 3** — Figma/Canva plugins
-
-## Why This Matters
-
-Vector graphics are everywhere — app icons, logos, UI components, illustrations, data visualizations, maps. The global design tools market is valued at $13B+ and growing. Yet AI still can't reliably create or edit vector content.
-
-GeomTok solves the foundational bottleneck: giving AI models a native understanding of 2D geometry. This unlocks capabilities like AI-powered design generation, automated icon creation, intelligent SVG editing, and design-to-code workflows that actually produce correct output.
-
-## Technical Foundation
-
-Built on peer-reviewed research in geometric tokenization:
-
-- **HiVG** (Xing et al.) — Hierarchical SVG tokenization
-- **StrokeNUWA** (Tang et al.) — Stroke-level tokenization for vector synthesis
-- **LLM4SVG** (Xing et al.) — Empowering language models for SVG
-- **VectorGym** (Rodriguez et al.) — SVG multitask benchmarking
-
-## v1.0 Quickstart
+## Quickstart
 
 ```bash
 pip install geomtok                 # core (numpy only)
@@ -109,54 +57,73 @@ pip install 'geomtok[eval,server]'  # + render eval + managed API
 ```python
 import geomtok
 
-out = geomtok.tokenize("<svg viewBox='0 0 24 24'><path d='M4 4 L20 20'/></svg>")
+out = geomtok.tokenize("<svg viewBox='0 0 24 24'><path d='M4 4 L20 4 L20 20 Z'/></svg>")
 print(out["n_tokens"], out["tokenizer_version"], out["vocab_id"])
 
-back = geomtok.detokenize(out["token_ids"])   # deterministic round-trip
-print(back["valid"], back["fidelity"])        # -> True {'coord_mean_px': 1.79, ...}
+svg = geomtok.detokenize(out["token_ids"],
+                         tokenizer_version=out["tokenizer_version"],
+                         vocab_id=out["vocab_id"])["svg"]   # FSA-valid SVG, guaranteed
 ```
 
 Run the managed API locally:
 
 ```bash
 geomtok-serve --port 8000
-# POST /v1/tokenize · /v1/detokenize · /v1/eval · /v1/batch · /v1/stream (NDJSON)
-# POST /v1/batch/jobs · GET /v1/batch/jobs/{id} · GET /v1/vocab/{id} · /v1/healthz
 ```
 
-See [API_STATUS.md](API_STATUS.md) for endpoint conformance against the PRD and
-what is production-ready vs an in-process stub.
+| Route | What it does |
+|---|---|
+| `POST /v1/tokenize` · `/v1/detokenize` | single SVG ↔ tokens; deterministic, FSA-validated |
+| `POST /v1/eval` | GeomTok-Eval render-based protocol (builtin or your remote tokenizer) |
+| `POST /v1/batch` · `/v1/stream` | sync batch (≤1000, ≤32MB) · NDJSON streaming |
+| `POST /v1/batch/jobs` · `GET`/`DELETE /v1/batch/jobs/{id}` | **real async** jobs — worker, live progress, cancel, webhooks |
+| `GET /v1/vocab/{id}` · `/v1/healthz` | immutable manifest · health |
 
-Reproduce the validation gate:
+Endpoint-by-endpoint conformance and what is production vs single-node: **[API_STATUS.md](API_STATUS.md)**.
 
-```bash
-python scripts/validate_corpus.py --corpus corpus/icons
-```
-
-### What v1.0 ships
+## What ships in v1.0
 
 | Capability | Status |
 |---|---|
 | Parser · transform-flatten · viewBox-normalize · arc-flatten | ✅ OSS core |
-| L1 geometric tokens + scalar fixed-point coord codec | ✅ OSS core |
-| **L2 = learned BPE-on-L1 merges** (hand-crafted macros retired) | ✅ OSS core |
-| FSA grammar-constrained decoding (torch-free) — valid SVG guaranteed | ✅ OSS core |
+| L1 geometric tokens + **zero-vocab scalar fixed-point coord codec** (0.04px) | ✅ OSS core |
+| **L2 = learned BPE-on-L1 merges** (hand-crafted macros retired — 0% fire on real data) | ✅ OSS core |
+| FSA grammar-constrained decoding (torch-free) — **valid SVG guaranteed** | ✅ OSS core |
 | Immutable vocab manifest — bit-identical, offline encode/decode | ✅ OSS core |
-| GeomTok-Eval/1.0 — render-SSIM, attr/coord error, count, token economy | ✅ OSS core |
-| Managed API (FastAPI): 9 routes incl. real async jobs (worker+cancel+webhook) + NDJSON stream | ✅ `[server]` |
+| GeomTok-Eval/1.0 — render-SSIM, value-level coord error, parse rate, token economy | ✅ OSS core |
+| Managed API (FastAPI): 9 routes incl. real async jobs + NDJSON stream | ✅ `[server]` |
 
-Generation is an explicit **non-goal** for v1.0 (current model is toy-scale 2.5M
-params, CPU, monochrome path only). The tokenizer + evaluation are the production
-deliverables; generation is Phase 2.
+> **Generation is an explicit non-goal for v1.0.** The current model is toy-scale (2.5M params, CPU, monochrome path icons). The tokenizer + evaluation are the production deliverables; generation is Phase 2 (funding-gated).
+
+## What's distinctive
+
+Verified against the 2024–2026 SVG-tokenization literature (HiVG, OmniSVG, LLM4SVG, StrokeNUWA, InternSVG, CNM, GeoBPE):
+
+- **Controlled tokenizer-swap with held-out NLL on SVG** — no prior SVG work isolates the tokenizer on a held-constant backbone.
+- **GeomTok-Eval: a generator-decoupled tokenizer protocol** — existing SVG benchmarks (VGBench, SVGenius, VectorGym, LOO) score *generators*, not tokenizers.
+- **Learned unconstrained merges beat HiVG-style structure-constrained merges** (172 vs 236 tokens/icon at matched budget) — the direct head-to-head, unpublished elsewhere.
+- **Zero-added-vocabulary scalar fixed-point codec** — HiVG adds 2,384 coordinate tokens, OmniSVG ~40k; GeomTok adds none.
+
+The "compression ≠ modelability" relationship is established for *text* (PathPiece, EMNLP'24) and *raster images* (arXiv:2412.16326, NeurIPS'25); GeomTok is the **first vector-graphics instance**, and runs the opposite direction (more compression never reliably helps).
+
+## Roadmap
+
+- [x] **v1.0** — torch-free OSS core (FSA decode, vocab manifest, BPE-on-L1 L2), GeomTok-Eval, managed FastAPI service. *Validated on real icons: 100% parse + round-trip, FSA-valid, deterministic.*
+- [ ] **Phase 2** — generation at scale (currently toy-scale; explicit non-goal for v1.0)
+- [ ] **Phase 3** — Figma / Canva plugins
+
+## Documentation
+
+| | |
+|---|---|
+| [PAPER.md](PAPER.md) | Research paper (compression ≠ modelability) |
+| [PRD.md](PRD.md) | v1.0 product requirements (OSS API + managed service) |
+| [API_STATUS.md](API_STATUS.md) | Endpoint conformance & guarantees |
+| [REPRO.md](REPRO.md) | Reproducibility appendix (env, data, seeds) |
+| [RESEARCH_SUMMARY.md](RESEARCH_SUMMARY.md) | Milestone history |
 
 ## License
 
-Apache-2.0. The OSS core is complete and uncrippled — parser, normalization,
-L1/L2 tokenization, scalar codec, FSA grammar-constrained decoding, GeomTok-Eval,
-and the vocab manifest all ship under Apache-2.0. Paid value is operational
-(SLA round-trip, scale, drift monitoring), not algorithmic. See [LICENSE](./LICENSE)
-and [NOTICE](./NOTICE).
+**Apache-2.0** — the core, the evaluation protocol, and the vocab manifest are fully open (no crippling). Revenue is from managed hosting, SLAs, and support, not from withholding the algorithm. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
----
-
-*GeomTok — building the bridge between AI and visual design.*
+<p align="center"><sub>GeomTok — teaching models to see geometry as geometry.</sub></p>
