@@ -169,8 +169,12 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
         if len(req.items) > MAX_BATCH_ITEMS:
             raise PayloadTooLarge(f"items exceed {MAX_BATCH_ITEMS}",
                                   limit=MAX_BATCH_ITEMS)
-        # 총 페이로드 바이트 가드 (PRD §7.1: ≤32MB) — DoS 방어
-        total = sum(len((it.svg or "").encode("utf-8")) for it in req.items)
+        # 총 페이로드 바이트 가드 (PRD §7.1: ≤32MB) — DoS 방어.
+        # tokenize 는 svg 바이트, detokenize 는 token_ids(≈4바이트/정수)로 환산해
+        # 두 op 모두 바운드 (detokenize 배치가 가드를 우회하지 않도록).
+        total = sum(
+            len((it.svg or "").encode("utf-8")) + 4 * len(it.token_ids or [])
+            for it in req.items)
         if total > MAX_BATCH_BYTES:
             raise PayloadTooLarge(f"batch payload exceeds {MAX_BATCH_BYTES} bytes",
                                   limit=MAX_BATCH_BYTES)
