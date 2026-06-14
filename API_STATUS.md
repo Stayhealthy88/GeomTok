@@ -10,8 +10,9 @@ Status of the managed API (`geomtok/server/app.py`) + core façade (`geomtok/api
 | `POST /v1/detokenize` | ✅ production | `tokenizer_version` required; **FSA-validated** (`{valid, repaired}`); auto-unmerges L2 ids at any level |
 | `POST /v1/eval` | ✅ production | builtin + remote; echoes version/vocab |
 | `POST /v1/batch` | ✅ production | ≤1000 items, ≤32MB (svg+token bytes), op validated, `on_error∈{skip,fail_fast}` |
-| `POST /v1/batch/jobs` | ⚠️ **stub** | correct 202 contract; processes in-process synchronously — swap for a real queue/bucket backend in production |
-| `GET /v1/batch/jobs/{id}` | ⚠️ **stub** | correct status/progress/partial shape; backed by in-memory `app.state.jobs` |
+| `POST /v1/batch/jobs` | ✅ **async** | real background worker (ThreadPoolExecutor); inline items or `input_uri` NDJSON blob; `output_uri`, `webhook_url` |
+| `GET /v1/batch/jobs/{id}` | ✅ **async** | live status (client observes `running` + climbing progress); `results_url` for blob output |
+| `DELETE /v1/batch/jobs/{id}` | ✅ **async** | cooperative cancellation at the next item boundary |
 | `POST /v1/stream` | ✅ functional | NDJSON, ordered, bounded memory, per-line error isolation; verified over real chunked HTTP |
 | `GET /v1/vocab/{id}` | ✅ production | immutable manifest + `content_hash` |
 | `GET /v1/healthz` | ✅ production | version, vocab, has_l2, manifest hash |
@@ -27,11 +28,11 @@ Status of the managed API (`geomtok/server/app.py`) + core façade (`geomtok/api
 
 ## Known limitations / next for production
 
-1. **Async jobs & stream are single-node stubs.** `/v1/batch/jobs` processes synchronously and tracks jobs in process memory; a polling client never observes `running`. Production needs a real queue (e.g. Redis/SQS) + object-store in/out + webhooks (PRD §8).
+1. **Async jobs are genuinely async but single-node.** `/v1/batch/jobs` runs a real ThreadPoolExecutor worker — submit returns immediately, the client observes `running` + climbing progress, cooperative cancel works, and webhooks fire on completion. The `JobStore`/`BlobStore` are pluggable interfaces: the defaults are in-memory + local-filesystem (single node); production drops in Redis/DB + S3/GCS without touching routes. (`geomtok/server/jobs.py`.)
 2. **No auth / rate-limit / multi-tenancy yet** — these are the managed-tier wedge (PRD §6); the OSS core deliberately ships without them.
 3. **Domain-BPE compression baseline** (the honest 3.54×) is computed by `/v1/eval` over a corpus, not per-call; per-call `compression_ratio` is chars-per-token.
 4. **L3 spatial** tokens are experimental (emit L1 substrate with a warning).
 
 ## Tests
 
-Core 145 + API 77 + review-fix regressions 12 = **234 assertions, 0 regressions**. Run all via the subprocess meta-runner: `pytest tests/test_all_scripts.py` (17/17). New API regression tests: `tests/test_api_review_fixes.py`.
+Core 145 + API 77 + review-fix regressions 12 + async-jobs 17 = **251 assertions, 0 regressions**. Run all via the subprocess meta-runner: `pytest tests/test_all_scripts.py` (18/18). New: `tests/test_api_review_fixes.py`, `tests/test_async_jobs.py` (proves truly-async submit, live `running` + progress, cooperative cancel, blob I/O, webhook delivery).

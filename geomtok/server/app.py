@@ -72,6 +72,17 @@ class BatchReq(BaseModel):
     on_error: str = "skip"                # skip | fail_fast
 
 
+class JobReq(BaseModel):
+    """비동기 잡 — items(인라인) 또는 input_uri(NDJSON blob) 택1."""
+    op: str = "tokenize"
+    items: Optional[List[BatchItem]] = None
+    input_uri: Optional[str] = None       # file:// NDJSON (대규모)
+    output_uri: Optional[str] = None      # 결과 NDJSON 기록 위치
+    level: str = "L1"
+    on_error: str = "skip"
+    webhook_url: Optional[str] = None     # 종료 시 POST
+
+
 class EvalScene(BaseModel):
     name: Optional[str] = None
     svg: str
@@ -106,7 +117,25 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
     gt = GeomTokenizer(manifest=manifest) if manifest else GeomTokenizer(vocab_id=vocab_id)
     app.state.gt = gt
     app.state.manifest = gt.manifest
-    app.state.jobs = {}            # 비동기 잡 추적 (in-process stub)
+
+    # 진짜 비동기 잡 백엔드 (ThreadPoolExecutor + 교체 가능 store/blob)
+    from .jobs import JobManager
+
+    def _process_item(op: str, item: dict):
+        """잡 워커가 아이템 1건을 처리 — GeomTokenizer 에 바인딩."""
+        if op == "tokenize":
+            r = gt.tokenize(item.get("svg") or "", level=item.get("level", "L1"))
+            return ({"id": item.get("id"), "ok": True, "token_ids": r["token_ids"],
+                     "n_tokens": r["n_tokens"],
+                     "compression_ratio": r["compression_ratio"]}, True)
+        r = gt.detokenize(item.get("token_ids") or [],
+                          tokenizer_version=gt.tokenizer_version,
+                          vocab_id=gt.vocab_id, level=item.get("level", "L1"))
+        return ({"id": item.get("id"), "ok": True, "svg": r["svg"],
+                 "n_tokens": r["n_tokens"]}, True)
+
+    app.state.jobmgr = JobManager(
+        _process_item, gt.tokenizer_version, gt.vocab_id)
 
     # 표준 에러 → PRD JSON {code, message}
     @app.exception_handler(GeomTokError)
@@ -208,39 +237,44 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
         return out
 
     # ----- 비동기 대규모 잡 (PRD §7.1 / §8) -----
-    # in-process stub: 계약 형태 충족. 실제 배포는 queue/bucket 백엔드로 교체.
+    # 진짜 비동기: 즉시 queued 반환, 워커가 running→succeeded/partial 로 전이.
+    # 클라이언트는 GET 으로 running·진행률 증가를 실제 관찰. JobManager 가
+    # 교체 가능한 store/blob 으로 영속화·대규모 입출력을 담당.
     @app.post("/v1/batch/jobs", status_code=202)
-    def submit_job(req: BatchReq):
-        _validate_batch(req)
-        import uuid
-        job_id = "job_" + uuid.uuid4().hex[:16]
-        results, n_ok, n_failed = _run_batch(
-            req.op, req.items, req.level, req.on_error)  # stub: 즉시 처리
-        app.state.jobs[job_id] = {
-            "job_id": job_id, "op": req.op,
-            "status": "succeeded" if n_failed == 0 else "partial",
-            "progress": {"done": len(req.items), "total": len(req.items)},
-            "results": results,
-            "stats": {"n_ok": n_ok, "n_failed": n_failed},
-            "tokenizer_version": gt.tokenizer_version, "vocab_id": gt.vocab_id,
-        }
-        return {"job_id": job_id, "status": "queued",
-                "n_items": len(req.items),
+    def submit_job(req: JobReq):
+        if req.op not in ("tokenize", "detokenize"):
+            raise InvalidRequest(f"unknown op '{req.op}'", op=req.op)
+        if req.items is None and not req.input_uri:
+            raise InvalidRequest("provide items or input_uri")
+        if req.items is not None and len(req.items) > MAX_BATCH_ITEMS:
+            raise PayloadTooLarge(f"items exceed {MAX_BATCH_ITEMS}",
+                                  limit=MAX_BATCH_ITEMS)
+        items = ([it.model_dump() for it in req.items]
+                 if req.items is not None else None)
+        job = app.state.jobmgr.submit(
+            req.op, items=items, input_uri=req.input_uri, level=req.level,
+            on_error=req.on_error, webhook_url=req.webhook_url,
+            output_uri=req.output_uri)
+        # 제출 ack 은 항상 "queued" — 워커가 이미 시작했을 수 있으나(레이스)
+        # 제출 계약상 상태는 queued. 실시간 상태는 GET 으로 관찰.
+        n_items = len(items) if items is not None else None
+        return {"job_id": job.job_id, "status": "queued", "n_items": n_items,
                 "tokenizer_version": gt.tokenizer_version, "vocab_id": gt.vocab_id}
 
     @app.get("/v1/batch/jobs/{job_id}")
-    def get_job(job_id: str):
-        job = app.state.jobs.get(job_id)
+    def get_job(job_id: str, include_results: bool = True):
+        job = app.state.jobmgr.get(job_id)
         if job is None:
             raise JobNotFound(f"unknown job_id {job_id}", job_id=job_id)
-        return {
-            "job_id": job["job_id"], "status": job["status"],
-            "progress": job["progress"], "op": job["op"],
-            "partial": job["stats"]["n_failed"] > 0,
-            "results": job["results"], "stats": job["stats"],
-            "tokenizer_version": job["tokenizer_version"],
-            "vocab_id": job["vocab_id"],
-        }
+        return job.public(include_results=include_results)
+
+    @app.delete("/v1/batch/jobs/{job_id}")
+    def cancel_job(job_id: str):
+        if app.state.jobmgr.get(job_id) is None:
+            raise JobNotFound(f"unknown job_id {job_id}", job_id=job_id)
+        cancelled = app.state.jobmgr.cancel(job_id)
+        return {"job_id": job_id, "cancel_requested": cancelled,
+                "status": app.state.jobmgr.get(job_id).status}
 
     # ----- NDJSON 스트리밍 (PRD §7.1) -----
     @app.post("/v1/stream")

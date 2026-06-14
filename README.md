@@ -143,7 +143,7 @@ python scripts/validate_corpus.py --corpus corpus/icons
 | FSA grammar-constrained decoding (torch-free) — valid SVG guaranteed | ✅ OSS core |
 | Immutable vocab manifest — bit-identical, offline encode/decode | ✅ OSS core |
 | GeomTok-Eval/1.0 — render-SSIM, attr/coord error, count, token economy | ✅ OSS core |
-| Managed API (FastAPI): 8 endpoints incl. async jobs + NDJSON stream | ✅ `[server]` (jobs/stream as in-process stubs) |
+| Managed API (FastAPI): 9 routes incl. real async jobs (worker+cancel+webhook) + NDJSON stream | ✅ `[server]` |
 
 Generation is an explicit **non-goal** for v1.0 (current model is toy-scale 2.5M
 params, CPU, monochrome path only). The tokenizer + evaluation are the production
