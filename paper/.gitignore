@@ -1,0 +1,8 @@
+# tectonic / latex build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+acl_latex.pdf
