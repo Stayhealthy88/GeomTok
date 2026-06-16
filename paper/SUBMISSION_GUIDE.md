@@ -63,13 +63,14 @@ When you do preprint: `make preprint` → `acl_latex_preprint.pdf` (non-anonymou
 shows the author + the real repo URL). Primary arXiv category `cs.CL`, cross-list
 `cs.CV`/`cs.GR`.
 
-## Decisions only you can make
-- [ ] **Affiliation + contact email** for the author block (currently "Independent
-      Researcher, igotthepower0128@gmail.com" — confirm or change).
-- [ ] **Venue target**: EACL 2027 (recommended) vs an EMNLP 2026 workshop vs wait
-      for a later ARR cycle (NAACL/ACL 2027).
-- [ ] **Preprint timing**: hold for the anonymity incentive vs arXiv now.
-- [ ] **AI-assistance disclosure** wording (Responsible NLP Checklist A4).
+## Decisions — confirmed 2026-06-16
+- [x] **Venue target**: **EACL 2027** via the ARR August cycle.
+- [x] **Preprint timing**: **hold** the arXiv post until meta-reviews (keep the
+      anonymity incentive).
+- [x] **Author block**: **Gyuwook Byun · Independent Researcher ·
+      igotthepower0128@gmail.com** (confirmed as-is).
+- [ ] **AI-assistance disclosure** wording (Responsible NLP Checklist A4) — approve
+      the suggested text or supply your own.
 
 ## Actions only you can perform (I cannot do these for you)
 - Create the OpenReview account + ORCID.
