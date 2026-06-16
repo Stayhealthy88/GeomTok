@@ -17,16 +17,33 @@
 
 \graphicspath{{figures/}}
 
+% --- Anonymity-aware switches (driven by the acl class option) ---------------
+% [review]  -> author auto-hidden as "Anonymous ACL submission"; anonymized URL.
+% [preprint]/[final] -> real author shown; real repository URL.
+\makeatletter
+\ifacl@anonymize
+  \newcommand{\resourceurl}{\url{https://anonymous.4open.science/r/geomtok}\ (anonymized for review)}
+\else
+  \newcommand{\resourceurl}{\url{https://github.com/Stayhealthy88/GeomTok}}
+  \hypersetup{pdfauthor={Gyuwook Byun}, pdftitle={Compression Is Not Modelability}}
+\fi
+\makeatother
+% -----------------------------------------------------------------------------
+
 \title{Compression Is Not Modelability:\\ A Controlled Study of Tokenization Units for Vector Graphics}
 
-% Authors are hidden in [review] mode. Fill in for [final]/[preprint].
-\author{Anonymous ACL submission}
+% In [review] the author is auto-hidden as "Anonymous ACL submission" (acl.sty);
+% the name below appears only in [preprint]/[final]. Confirm affiliation + email
+% before camera-ready.
+\author{Gyuwook Byun \\
+  Independent Researcher \\
+  \texttt{igotthepower0128@gmail.com}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate like \texttt{150.5} into characters that carry no spatial meaning. We ask a narrow, falsifiable question: does the \emph{unit} a model reads geometry in change downstream modeling? We introduce \textbf{GeomTok}, a geometry-native SVG tokenizer (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), and \textbf{GeomTok-Eval}, a render-based intrinsic \emph{tokenizer} protocol decoupled from any generator. Under a controlled tokenizer-swap on an identical small transformer, geometric primitive tokens model held-out icons 18--26\% better (held-out NLL) than a domain-trained text BPE---a result that replicates across two corpora (icons and emoji) and does not vanish with scale (the gap \emph{widens then plateaus} over a $10\times$ parameter range)---and, under identical plain sampling, a text tokenizer generates 0\% renderable SVG versus 84\% for GeomTok. Our central result is a controlled counterexample, in the graphics setting, to the assumption that intrinsic compression predicts downstream modeling---a relationship already shown non-monotonic for text by PathPiece \citep{schmidt2024pathpiece}: more compression never reliably helps. We release the protocol, fair baselines, and a set of adversarially-verified negative results---including retracted claims---as a methodological contribution. We scope all model-level claims to the small-model, sample-efficient regime.\footnote{Code, the GeomTok-Eval protocol, per-experiment data-split manifests, and the full negative-results ledger are available, anonymized for review: \url{https://anonymous.4open.science/r/geomtok}.}
+Large language models tokenize vector graphics (SVG) the way they tokenize prose, shredding a coordinate like \texttt{150.5} into characters that carry no spatial meaning. We ask a narrow, falsifiable question: does the \emph{unit} a model reads geometry in change downstream modeling? We introduce \textbf{GeomTok}, a geometry-native SVG tokenizer (commands, shapes, and a zero-vocabulary fixed-point coordinate codec), and \textbf{GeomTok-Eval}, a render-based intrinsic \emph{tokenizer} protocol decoupled from any generator. Under a controlled tokenizer-swap on an identical small transformer, geometric primitive tokens model held-out icons 18--26\% better (held-out NLL) than a domain-trained text BPE---a result that replicates across two corpora (icons and emoji) and does not vanish with scale (the gap \emph{widens then plateaus} over a $10\times$ parameter range)---and, under identical plain sampling, a text tokenizer generates 0\% renderable SVG versus 84\% for GeomTok. Our central result is a controlled counterexample, in the graphics setting, to the assumption that intrinsic compression predicts downstream modeling---a relationship already shown non-monotonic for text by PathPiece \citep{schmidt2024pathpiece}: more compression never reliably helps. We release the protocol, fair baselines, and a set of adversarially-verified negative results---including retracted claims---as a methodological contribution. We scope all model-level claims to the small-model, sample-efficient regime.\footnote{Code, the GeomTok-Eval protocol, per-experiment data-split manifests, and the full negative-results ledger are available: \resourceurl.}
 \end{abstract}
 
 \section{Introduction}

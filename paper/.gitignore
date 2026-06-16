@@ -5,4 +5,7 @@
 *.log
 *.out
 *.synctex.gz
+_build_*.tex
 acl_latex.pdf
+acl_latex_preprint.pdf
+acl_latex_final.pdf
