@@ -151,6 +151,10 @@ class CoordStructureEncoder(nn.Module):
         # MLP 인코딩
         encoded = self.encoder(coord_features)  # (batch, seq, d_coord)
 
+        # Mask outputs so non-coordinate tokens get exact zero vectors
+        # (Linear bias makes zero inputs produce a nonzero constant otherwise)
+        encoded = encoded * is_coord.unsqueeze(-1).float()
+
         return encoded
 
 
