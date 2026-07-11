@@ -91,13 +91,20 @@ class PrimitiveTokenizer:
         self.use_adaptive_arcs = use_adaptive_arcs
 
     def tokenize(self, commands: List[PathCommand],
-                 original_text: str = "") -> TokenizationResult:
+                 original_text: str = "",
+                 emit_markers: bool = True) -> TokenizationResult:
         """
         PathCommand 시퀀스를 GPL 토큰 시퀀스로 변환.
 
         Args:
             commands: resolve_to_absolute() 완료된 PathCommand 리스트
             original_text: 원본 SVG 텍스트 (압축률 계산용)
+            emit_markers: 연속성·곡률 보조 마커 토큰 방출 여부.
+                False = "lean L1" — 마커는 좌표에서 파생 가능해 복원에
+                무영향(57/57 바이트 동일)이면서 L1 토큰의 24.2%를 차지하고
+                held-out NLL 을 ~12% 악화시킨다 (PAPER §5.1 ablation).
+                모델링·생성용 스트림엔 lean 권장. 기본값 True 는 v1.0
+                비트-동일성(매니페스트 계약) 보존용.
         Returns:
             TokenizationResult
         """
@@ -124,7 +131,8 @@ class PrimitiveTokenizer:
         tokens = [self.vocab.special_token(SpecialToken.BOS)]
 
         for i, cmd in enumerate(commands):
-            cmd_tokens = self._tokenize_command(i, cmd, curv_map, cont_map)
+            cmd_tokens = self._tokenize_command(i, cmd, curv_map, cont_map,
+                                                emit_markers=emit_markers)
             tokens.extend(cmd_tokens)
 
         tokens.append(self.vocab.special_token(SpecialToken.EOS))
@@ -145,12 +153,14 @@ class PrimitiveTokenizer:
                 "n_continuity_infos": len(cont_infos),
                 "arcs_leaves": self.arcs.total_leaf_count(),
                 "vocab_size": self.vocab.vocab_size,
+                "lean": not emit_markers,
             }
         )
 
     def _tokenize_command(self, index: int, cmd: PathCommand,
                           curv_map: Dict[int, CurvatureInfo],
-                          cont_map: Dict[int, ContinuityInfo]) -> List[GPLToken]:
+                          cont_map: Dict[int, ContinuityInfo],
+                          emit_markers: bool = True) -> List[GPLToken]:
         """단일 PathCommand를 GPL 토큰 서브시퀀스로 변환."""
         tokens = []
 
@@ -164,7 +174,9 @@ class PrimitiveTokenizer:
         coord_tokens = self._encode_coordinates(cmd)
         tokens.extend(coord_tokens)
 
-        # 3. 미분 기하학적 속성 토큰 (DiffAttr)
+        # 3. 미분 기하학적 속성 토큰 (DiffAttr) — lean L1 은 생략 (문법상 옵션)
+        if not emit_markers:
+            return tokens
         curv_info = curv_map.get(index)
         cont_info = cont_map.get(index)
 

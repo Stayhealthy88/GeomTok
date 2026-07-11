@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="geomtok",
-    version="1.0.0",
+    version="1.1.0",
     description="GeomTok — geometry-native tokenization for vector graphics",
     author="Byun",
     author_email="igotthepower0128@gmail.com",

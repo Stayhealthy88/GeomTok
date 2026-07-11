@@ -17,7 +17,7 @@ Modules:
     utils/       : 수학 유틸리티
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # 고수준 SDK (PRD §7.4 — pip install 후 <15분 quickstart)
 #   from geomtok import tokenize, detokenize, GeomTokenizer

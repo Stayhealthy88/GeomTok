@@ -60,7 +60,7 @@ def main():
 
     re_ = c.post("/v1/eval", json={"scenes": [{"name": "a", "svg": SVG}],
                  "tokenizer": {"builtin": True}, "render_res": 128}).json()
-    check(re_["protocol"] == "GeomTok-Eval/1.0", "eval protocol id")
+    check(re_["protocol"] == "GeomTok-Eval/1.1", "eval protocol id")
     check("render_ssim_mean" in re_["summary"], "eval summary has ssim")
 
     v = c.get("/v1/vocab/geom-5561-v1").json()

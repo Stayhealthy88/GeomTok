@@ -1,6 +1,10 @@
 """
-GeomTok-Eval / 1.0 — 게임-내성 렌더 기반 평가 프로토콜 (PRD §7.5 / G4)
+GeomTok-Eval / 1.1 — 게임-내성 렌더 기반 평가 프로토콜 (PRD §7.5 / G4)
 ======================================================================
+v1.1: (a) 좌표 오차 꼬리 지표 — 분위수 p50/p90/p95/p99 + 인지 가능(>2px)
+비율 (PAPER §10 E6). (b) 렌더러 부재(None)와 렌더 파탄(0.0)을 구분 —
+렌더러 없는 환경에서 SSIM 0.0 이 '충실도 붕괴'로 오독되는 것을 방지.
+
 토크나이저 품질을 **생성기와 분리**하여 측정하는 공개 표준 프로토콜.
 순진한 압축률은 게임 가능(랜덤 베이스라인 1.0)하므로, 본 프로토콜은
 원본↔복원의 (1) 속성/좌표 충실도, (2) 요소 수 정확도, (3) 실제 렌더 SSIM,
@@ -33,6 +37,23 @@ _BPE_VOCAB = 100256
 # --------------------------------------------------------------------------- #
 # 렌더링
 # --------------------------------------------------------------------------- #
+
+_RENDERER_PROBE = {"checked": False, "available": False}
+
+
+def renderer_available() -> bool:
+    """렌더러(cairosvg 또는 resvg) 사용 가능 여부 — 1회 프로브 후 캐시.
+
+    '측정 불가(환경에 렌더러 없음)'와 '충실도 0(내용 파탄)'을 구분하는 단일
+    진실 원천. 렌더러가 없으면 SSIM 은 None 으로 보고해야 하며 0.0 으로
+    뭉개면 안 된다 (0.0 은 게임-내성 패널티 전용)."""
+    if not _RENDERER_PROBE["checked"]:
+        probe = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4'>"
+                 "<path d='M0 0 L4 4' stroke='black'/></svg>")
+        _RENDERER_PROBE["available"] = _render_gray(probe, 8) is not None
+        _RENDERER_PROBE["checked"] = True
+    return _RENDERER_PROBE["available"]
+
 
 def _render_gray(svg: str, res: int = 128) -> Optional[np.ndarray]:
     """SVG → res×res 그레이스케일 [0,1] 배열. 실패 시 None.
@@ -191,14 +212,14 @@ class SceneScore:
     attr_mean_err: float
     attr_max_err: float
     count_match: bool
-    render_ssim: float
+    render_ssim: Optional[float]   # None = 렌더러 부재(측정 불가), 0.0 = 파탄
     n_tokens: int
     n_tokens_bpe: Optional[int]
 
 
 @dataclass
 class GeomTokEvalProtocol:
-    """GeomTok-Eval/1.0 하니스.
+    """GeomTok-Eval/1.1 하니스.
 
     Args:
         tokenize_fn   : svg(text) → token_ids
@@ -214,7 +235,9 @@ class GeomTokEvalProtocol:
     ssim_stroke: float = 3.0
     bpe_vocab: int = _BPE_VOCAB
     geom_vocab: int = 5561
+    perceptible_px: float = 2.0   # 인지 가능 좌표 오차 임계 (E6 tail 지표)
     results: List[SceneScore] = field(default_factory=list)
+    _pooled_errors: List[float] = field(default_factory=list, repr=False)
 
     def eval_scene(self, name: str, svg: str) -> SceneScore:
         token_ids = self.tokenize_fn(svg)
@@ -222,12 +245,17 @@ class GeomTokEvalProtocol:
         gt = self.gt_norm_fn(svg) if self.gt_norm_fn else svg
 
         errs, count_match = _attr_errors(gt, recon)
+        self._pooled_errors.extend(errs)
 
         # 렌더 SSIM (정답 정규화본 vs 복원본 — 양자화 오차만 분리).
         # 양측 stroke 굵기를 동일 가시값으로 맞춰 굵기차가 아닌 위치 오차만 본다.
-        a = _render_gray(_restyle_stroke(gt, self.ssim_stroke), self.render_res)
-        b = _render_gray(_restyle_stroke(recon, self.ssim_stroke), self.render_res)
-        s = ssim(a, b) if (a is not None and b is not None) else 0.0
+        # 렌더러 부재(환경)는 None, 렌더 실패(내용)는 0.0 패널티 — 게임-내성 유지.
+        if renderer_available():
+            a = _render_gray(_restyle_stroke(gt, self.ssim_stroke), self.render_res)
+            b = _render_gray(_restyle_stroke(recon, self.ssim_stroke), self.render_res)
+            s: Optional[float] = ssim(a, b) if (a is not None and b is not None) else 0.0
+        else:
+            s = None
 
         # 텍스트 BPE 베이스라인 (원본 SVG 기준)
         try:
@@ -251,20 +279,24 @@ class GeomTokEvalProtocol:
     def summary(self) -> Dict:
         rs = self.results
         if not rs:
-            return {"protocol": "GeomTok-Eval/1.0", "summary": {"scenes": 0}}
+            return {"protocol": "GeomTok-Eval/1.1", "summary": {"scenes": 0}}
         n_tok = sum(r.n_tokens for r in rs)
         n_bpe = sum((r.n_tokens_bpe or 0) for r in rs)
         # bits/icon: 토큰수 × log2(어휘). 정직한 정보량 비교 (PRD §2.3).
         bits_geom = (n_tok / len(rs)) * math.log2(self.geom_vocab)
         bits_bpe = (n_bpe / len(rs)) * math.log2(self.bpe_vocab) if n_bpe else 0.0
-        return {
-            "protocol": "GeomTok-Eval/1.0",
+        # 렌더 SSIM: 렌더러 부재 장면(None)은 평균에서 제외 — 0.0 오염 금지.
+        ssims = [r.render_ssim for r in rs if r.render_ssim is not None]
+        out = {
+            "protocol": "GeomTok-Eval/1.1",
             "summary": {
                 "scenes": len(rs),
                 "attr_mean_err": round(sum(r.attr_mean_err for r in rs) / len(rs), 4),
                 "attr_max_err": round(max(r.attr_max_err for r in rs), 4),
                 "count_acc": round(sum(r.count_match for r in rs) / len(rs), 4),
-                "render_ssim_mean": round(sum(r.render_ssim for r in rs) / len(rs), 4),
+                "render_ssim_mean": (round(sum(ssims) / len(ssims), 4)
+                                     if ssims else None),
+                "render_scenes": len(ssims),
                 "tokens": n_tok,
                 "tokens_bpe": n_bpe,
                 "compression_vs_baseline": round(n_bpe / n_tok, 4) if n_tok and n_bpe else 0.0,
@@ -272,6 +304,22 @@ class GeomTokEvalProtocol:
                 "bits_per_icon_bpe": round(bits_bpe, 1),
             },
         }
+        # 좌표 오차 꼬리 (E6): 평균은 꼬리를 숨긴다 — 인지 가능(>2px) 비율과
+        # 분위수를 함께 보고해야 "bounded-error" 주장이 검증 가능해진다.
+        errs = self._pooled_errors
+        if errs:
+            arr = np.asarray(errs, dtype=np.float64)
+            out["summary"].update({
+                "coords_measured": int(arr.size),
+                "coord_err_p50": round(float(np.percentile(arr, 50)), 4),
+                "coord_err_p90": round(float(np.percentile(arr, 90)), 4),
+                "coord_err_p95": round(float(np.percentile(arr, 95)), 4),
+                "coord_err_p99": round(float(np.percentile(arr, 99)), 4),
+                "perceptible_px": self.perceptible_px,
+                "perceptible_err_rate": round(
+                    float((arr > self.perceptible_px).mean()), 4),
+            })
+        return out
 
 
 # --------------------------------------------------------------------------- #
@@ -279,12 +327,16 @@ class GeomTokEvalProtocol:
 # --------------------------------------------------------------------------- #
 
 def run_builtin_eval(svgs: List[str], names: Optional[List[str]] = None,
-                     level: str = "L1", render_res: int = 256) -> Dict:
-    """내장 GeomTok 토크나이저로 장면 집합을 평가 (PRD /v1/eval builtin)."""
+                     level: str = "L1", render_res: int = 256,
+                     lean: bool = False) -> Dict:
+    """내장 GeomTok 토크나이저로 장면 집합을 평가 (PRD /v1/eval builtin).
+
+    lean=True 는 보조 마커(연속성·곡률) 없는 lean L1 스트림을 평가한다 —
+    마커는 파생 가능(복원 무영향)하므로 충실도는 동일해야 한다 (PAPER §5.1)."""
     from ..api import GeomTokenizer
     gt = GeomTokenizer.default()
     proto = GeomTokEvalProtocol(
-        tokenize_fn=lambda s: gt.tokenize(s, level=level)["token_ids"],
+        tokenize_fn=lambda s: gt.tokenize(s, level=level, lean=lean)["token_ids"],
         detokenize_fn=lambda ids: gt.detokenize(
             ids, tokenizer_version=gt.tokenizer_version,
             vocab_id=gt.vocab_id, level=level)["svg"],

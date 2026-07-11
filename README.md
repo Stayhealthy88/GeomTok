@@ -5,7 +5,7 @@
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache_2.0-8b6cff.svg"></a>
   <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-37e6d4.svg">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-251_passing-54e08a.svg">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-281_passing-54e08a.svg">
   <img alt="Core deps" src="https://img.shields.io/badge/core-numpy_only-ff5d9e.svg">
   <a href="PAPER.md"><img alt="Paper" src="https://img.shields.io/badge/paper-PAPER.md-ffc857.svg"></a>
   <a href="README.ko.md"><img alt="한국어" src="https://img.shields.io/badge/lang-한국어-aeb6d6.svg"></a>
@@ -41,7 +41,7 @@ The gap **holds and does not shrink** with model capacity (0.9M → 9.3M params;
 
 ## Round-trip fidelity is real, not lossless
 
-GeomTok's coordinate codec is bounded-error (mean **1.78px**, max 3.37px on a 300px canvas), render **SSIM 0.929** — the honest cost of 3.54× compression. A curvature-adaptive grid we tried *warps straight content* and was retracted in favor of a plain uniform grid:
+GeomTok's coordinate codec is bounded-error (mean **1.78px**, max 3.37px on a 300px canvas), render **SSIM 0.929** — the honest cost of 3.54× compression. The error *tail* is now measured, not just the mean: on the bundled 2,726-icon validation corpus (92,840 coordinates), p50/p90/p99 = 2.36/3.25/**3.32px** — the tail is pinned at the uniform grid's quantization ceiling rather than spreading — **61.7%** of coordinates exceed the 2px perceptibility threshold (the honest cost of the 64×64 grid), and only **2 of 92,840** coordinates exceed the codec's error ceiling (3.4px): both caused by out-of-viewBox clamping, and both flagged by the tokenizer's own `clamped` warning (`.research/results_e6_error_tail.txt`). A curvature-adaptive grid we tried *warps straight content* and was retracted in favor of a plain uniform grid:
 
 <p align="center">
   <img src="assets/fig3_render_panel.svg" alt="Original vs uniform-grid vs adaptive-quadtree round-trip" width="62%"/>
@@ -63,6 +63,10 @@ print(out["n_tokens"], out["tokenizer_version"], out["vocab_id"])
 svg = geomtok.detokenize(out["token_ids"],
                          tokenizer_version=out["tokenizer_version"],
                          vocab_id=out["vocab_id"])["svg"]   # FSA-valid SVG, guaranteed
+
+# For model training/generation: lean L1 — same reconstruction, ~23% fewer tokens.
+# (Continuity/curvature markers are derivable; keeping them costs ~12% held-out NLL.)
+lean = geomtok.tokenize(svg, lean=True)
 ```
 
 Run the managed API locally:
@@ -81,19 +85,20 @@ geomtok-serve --port 8000
 
 Endpoint-by-endpoint conformance and what is production vs single-node: **[API_STATUS.md](API_STATUS.md)**.
 
-## What ships in v1.0
+## What ships in v1.1
 
 | Capability | Status |
 |---|---|
 | Parser · transform-flatten · viewBox-normalize · arc-flatten | ✅ OSS core |
 | L1 geometric tokens + **zero-vocab scalar fixed-point coord codec** (0.04px) | ✅ OSS core |
+| **Lean L1** (`lean=True`) — the paper-recommended marker-free substrate: ~23% shorter streams, byte-identical reconstruction (2,726/2,726 verified) | ✅ OSS core · **new in v1.1** |
 | **L2 = learned BPE-on-L1 merges** (hand-crafted macros retired — 0% fire on real data) | ✅ OSS core |
 | FSA grammar-constrained decoding (torch-free) — **valid SVG guaranteed** | ✅ OSS core |
 | Immutable vocab manifest — bit-identical, offline encode/decode | ✅ OSS core |
-| GeomTok-Eval/1.0 — render-SSIM, value-level coord error, parse rate, token economy | ✅ OSS core |
-| Managed API (FastAPI): 9 routes incl. real async jobs + NDJSON stream | ✅ `[server]` |
+| GeomTok-Eval/1.1 — render-SSIM, value-level coord error + **error-tail percentiles & >2px perceptible rate**, parse rate, token economy | ✅ OSS core · **v1.1** |
+| Managed API (FastAPI): 9 routes incl. real async jobs + NDJSON stream — all tokenize paths accept `lean` | ✅ `[server]` |
 
-> **Generation is an explicit non-goal for v1.0.** The current model is toy-scale (2.5M params, CPU, monochrome path icons). The tokenizer + evaluation are the production deliverables; generation is Phase 2 (funding-gated).
+> **Generation is an explicit non-goal for v1.x.** The current model is toy-scale (2.5M params, CPU, monochrome path icons). The tokenizer + evaluation are the production deliverables; generation is Phase 2 (funding-gated).
 
 ## What's distinctive
 
@@ -109,7 +114,8 @@ The "compression ≠ modelability" relationship is established for *text* (PathP
 ## Roadmap
 
 - [x] **v1.0** — torch-free OSS core (FSA decode, vocab manifest, BPE-on-L1 L2), GeomTok-Eval, managed FastAPI service. *Validated on real icons: 100% parse + round-trip, FSA-valid, deterministic.*
-- [ ] **Phase 2** — generation at scale (currently toy-scale; explicit non-goal for v1.0)
+- [x] **v1.1** — lean L1 shipped as a first-class mode (the §5.1 ablation, productized); GeomTok-Eval/1.1 error-tail metrics; renderer-absence honesty (`null`, not fake `0.0`).
+- [ ] **Phase 2** — generation at scale (currently toy-scale; explicit non-goal for v1.x)
 - [ ] **Phase 3** — Figma / Canva plugins
 
 ## Documentation

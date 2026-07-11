@@ -149,7 +149,8 @@ class GeomTokenizer:
     def tokenize(self, svg: str, level: str = "L1",
                  config: Optional[Dict] = None,
                  return_fields: Optional[List[str]] = None,
-                 check_size: bool = True) -> Dict:
+                 check_size: bool = True,
+                 lean: bool = False) -> Dict:
         """SVG 1건 → 기하 토큰. PRD §7.2 응답 형식의 dict 반환.
 
         Args:
@@ -158,6 +159,11 @@ class GeomTokenizer:
             config: {canvas_size, max_coord_level} 등 — 현재는 에코·검증용.
             return_fields: 응답에 담을 키 화이트리스트 (None=전체).
             check_size: 페이로드 한도 검사 여부.
+            lean: True 면 연속성·곡률 보조 마커 없는 lean L1 스트림.
+                마커는 파생 가능(복원 무영향)하면서 시퀀스를 ~24% 늘리고
+                held-out NLL 을 ~12% 악화시킨다 (PAPER §5.1) — 모델
+                학습·생성용 스트림엔 lean 권장. 기본 False 는 v1.0
+                비트-동일성 계약 보존. detokenize 는 양쪽 모두 동일 SVG.
         Raises:
             PayloadTooLarge, ParseUnsupportedElement, ParseError.
         """
@@ -198,7 +204,7 @@ class GeomTokenizer:
                     if px < 0 or px > self.canvas_size \
                             or py < 0 or py > self.canvas_size:
                         n_clamped += 1
-            res = self._tok.tokenize(cmds)
+            res = self._tok.tokenize(cmds, emit_markers=not lean)
             # primitive tokenizer 가 부여한 BOS/EOS 제거 → 가운데 토큰만
             inner = res.token_ids
             if inner and inner[0] == int(SpecialToken.BOS):
@@ -224,6 +230,10 @@ class GeomTokenizer:
             if self._merge_codec is not None:
                 token_ids = self._merge_codec.encode(l1_ids)
                 applied_level = "L2"
+                if lean:
+                    warnings.append(
+                        "L2 merges were learned on full (marker) L1 streams; "
+                        "lean+L2 compression may be suboptimal")
             else:
                 warnings.append("L2 merges unavailable; falling back to L1")
         elif level.upper() == "L3":
@@ -239,6 +249,7 @@ class GeomTokenizer:
             "tokenizer_version": self.tokenizer_version,
             "vocab_id": self.vocab_id,
             "level": applied_level,
+            "lean": lean,
             "token_ids": token_ids,
             "tokens": [self._symbol(t) for t in token_ids],
             "n_commands": n_commands,
@@ -253,7 +264,8 @@ class GeomTokenizer:
         }
         if return_fields:
             keep = set(return_fields) | {
-                "tokenizer_version", "vocab_id", "level", "n_tokens", "warnings"}
+                "tokenizer_version", "vocab_id", "level", "lean",
+                "n_tokens", "warnings"}
             payload = {k: v for k, v in payload.items() if k in keep}
         return payload
 
