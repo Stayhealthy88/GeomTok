@@ -1,0 +1,28 @@
+corpus: 2726 icons (corpus/icons, real-world monochrome)
+
+== corpus round-trip (2726 icons, 0 parse-fail) ==
+coords measured      : 92840
+count-match rate     : 1.0000
+coord err mean       : 2.1354 px
+coord err p50        : 2.3552 px
+coord err p90        : 3.2527 px
+coord err p95        : 3.2527 px
+coord err p99        : 3.3236 px
+coord err max        : 14.8216 px
+perceptible (>2px)  : 0.6172
+
+== beyond-quantization-bound tail (> 3.4px) ==
+coords over bound    : 2 / 92840 (0.000022)
+  in clamp-warned icons: 2 (clamp warning = tokenizer's own honest signal)
+  worst   14.82px  feather__twitter.svg  clamp_warning=True
+  worst    7.04px  tabler__brand-mastodon.svg  clamp_warning=True
+
+== lean L1 vs full L1 ==
+tokens/icon full     : 78.2
+tokens/icon lean     : 60.3
+lean reduction       : 0.2292
+marker share (full)  : 0.2292
+detok byte-identical : 2726/2726
+lean FSA-valid       : 2726/2726
+
+verdict: PASS — lean is a free win iff byte-identical & FSA-valid are 100%

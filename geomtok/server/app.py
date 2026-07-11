@@ -48,6 +48,7 @@ class TokenizeReq(BaseModel):
     model_config = {"populate_by_name": True}
     svg: str
     level: str = "L1"
+    lean: bool = False        # 보조 마커 없는 lean L1 (PAPER §5.1 권장 기질)
     config: Optional[Dict[str, Any]] = None
     return_: Optional[List[str]] = Field(default=None, alias="return")
 
@@ -69,6 +70,7 @@ class BatchReq(BaseModel):
     op: str = "tokenize"                  # tokenize | detokenize
     items: List[BatchItem]
     level: str = "L1"
+    lean: bool = False
     on_error: str = "skip"                # skip | fail_fast
 
 
@@ -79,6 +81,7 @@ class JobReq(BaseModel):
     input_uri: Optional[str] = None       # file:// NDJSON (대규모)
     output_uri: Optional[str] = None      # 결과 NDJSON 기록 위치
     level: str = "L1"
+    lean: bool = False
     on_error: str = "skip"
     webhook_url: Optional[str] = None     # 종료 시 POST
 
@@ -102,6 +105,7 @@ class EvalReq(BaseModel):
     scenes: List[EvalScene]
     tokenizer: Optional[TokenizerSpec] = None
     level: str = "L1"
+    lean: bool = False
     render_res: int = 256
 
 
@@ -110,8 +114,8 @@ class EvalReq(BaseModel):
 # --------------------------------------------------------------------------- #
 
 def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
-    app = FastAPI(title="GeomTok API", version="1.0.0",
-                  description="Geometry-native SVG tokenization (PRD v1.0)")
+    app = FastAPI(title="GeomTok API", version="1.1.0",
+                  description="Geometry-native SVG tokenization (PRD v1.0 + lean L1)")
 
     manifest = load_bundled_manifest(vocab_id)
     gt = GeomTokenizer(manifest=manifest) if manifest else GeomTokenizer(vocab_id=vocab_id)
@@ -124,9 +128,11 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
     def _process_item(op: str, item: dict):
         """잡 워커가 아이템 1건을 처리 — GeomTokenizer 에 바인딩."""
         if op == "tokenize":
-            r = gt.tokenize(item.get("svg") or "", level=item.get("level", "L1"))
+            r = gt.tokenize(item.get("svg") or "", level=item.get("level", "L1"),
+                            lean=bool(item.get("lean", False)))
+            # lean 에코 — full/lean 혼합 스트림을 응답만으로 구분 가능하게
             return ({"id": item.get("id"), "ok": True, "token_ids": r["token_ids"],
-                     "n_tokens": r["n_tokens"],
+                     "n_tokens": r["n_tokens"], "lean": r["lean"],
                      "compression_ratio": r["compression_ratio"]}, True)
         r = gt.detokenize(item.get("token_ids") or [],
                           tokenizer_version=gt.tokenizer_version,
@@ -152,8 +158,8 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
     @app.post("/v1/tokenize")
     def tokenize(req: TokenizeReq):
         t0 = time.perf_counter()
-        out = gt.tokenize(req.svg, level=req.level, config=req.config,
-                          return_fields=req.return_)
+        out = gt.tokenize(req.svg, level=req.level, lean=req.lean,
+                          config=req.config, return_fields=req.return_)
         out["server_ms"] = round((time.perf_counter() - t0) * 1000, 2)
         return out
 
@@ -166,17 +172,19 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
         out["server_ms"] = round((time.perf_counter() - t0) * 1000, 2)
         return out
 
-    def _run_batch(op: str, items, level: str, on_error: str):
+    def _run_batch(op: str, items, level: str, on_error: str,
+                   lean: bool = False):
         """배치 처리 코어 — 동기 배치·비동기 잡 공용."""
         results = []
         n_ok = n_failed = 0
         for it in items:
             try:
                 if op == "tokenize":
-                    r = gt.tokenize(it.svg or "", level=level)
+                    r = gt.tokenize(it.svg or "", level=level, lean=lean)
                     results.append({"id": it.id, "ok": True,
                                     "token_ids": r["token_ids"],
                                     "n_tokens": r["n_tokens"],
+                                    "lean": r["lean"],
                                     "compression_ratio": r["compression_ratio"]})
                 else:
                     r = gt.detokenize(it.token_ids or [],
@@ -212,7 +220,8 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
     def batch(req: BatchReq):
         t0 = time.perf_counter()
         _validate_batch(req)
-        results, n_ok, n_failed = _run_batch(req.op, req.items, req.level, req.on_error)
+        results, n_ok, n_failed = _run_batch(req.op, req.items, req.level,
+                                             req.on_error, lean=req.lean)
         return {"tokenizer_version": gt.tokenizer_version, "vocab_id": gt.vocab_id,
                 "op": req.op, "results": results,
                 "stats": {"n_ok": n_ok, "n_failed": n_failed,
@@ -230,7 +239,7 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
                                   render_res=req.render_res)
         else:
             out = run_builtin_eval(svgs, names=names, level=req.level,
-                                   render_res=req.render_res)
+                                   render_res=req.render_res, lean=req.lean)
         # PRD §7.6: 모든 응답에 버전·vocab 에코
         out["tokenizer_version"] = gt.tokenizer_version
         out["vocab_id"] = gt.vocab_id
@@ -249,10 +258,13 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
         if req.items is not None and len(req.items) > MAX_BATCH_ITEMS:
             raise PayloadTooLarge(f"items exceed {MAX_BATCH_ITEMS}",
                                   limit=MAX_BATCH_ITEMS)
+        # level/lean 은 잡 레벨 기본값으로 JobManager 가 아이템에 병합한다 —
+        # NDJSON(input_uri) 라인이 자체 level/lean 키를 가지면 그 값이 이긴다.
         items = ([it.model_dump() for it in req.items]
                  if req.items is not None else None)
         job = app.state.jobmgr.submit(
             req.op, items=items, input_uri=req.input_uri, level=req.level,
+            lean=req.lean,
             on_error=req.on_error, webhook_url=req.webhook_url,
             output_uri=req.output_uri)
         # 제출 ack 은 항상 "queued" — 워커가 이미 시작했을 수 있으나(레이스)
@@ -302,9 +314,11 @@ def create_app(vocab_id: str = DEFAULT_VOCAB_ID) -> "FastAPI":
                 obj = _json.loads(raw)
                 op = obj.get("op", "tokenize")
                 if op == "tokenize":
-                    r = gt.tokenize(obj.get("svg", ""), level=obj.get("level", "L1"))
+                    r = gt.tokenize(obj.get("svg", ""), level=obj.get("level", "L1"),
+                                    lean=bool(obj.get("lean", False)))
                     out = {"id": obj.get("id"), "ok": True,
-                           "token_ids": r["token_ids"], "n_tokens": r["n_tokens"]}
+                           "token_ids": r["token_ids"], "n_tokens": r["n_tokens"],
+                           "lean": r["lean"]}
                 else:
                     r = gt.detokenize(obj.get("token_ids", []),
                                       tokenizer_version=gt.tokenizer_version,

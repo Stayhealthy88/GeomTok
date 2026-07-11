@@ -78,6 +78,14 @@ Complete end-to-end pipeline: synthetic dataset generator (7 shape/pattern types
 
 **Key result:** 200 training samples, 10 epochs, 8.5 seconds → loss 7.81→2.91, accuracy 5.6%→35.6%, 53.3% valid SVG generation rate, 0.88 structural score, 0.99 geometric score.
 
+### v1.0 — OSS core + managed API (251 tests)
+
+Torch-free `geomtok` package: FSA grammar-constrained decoding, immutable vocab manifest, learned BPE-on-L1 (L2), GeomTok-Eval/1.0, FastAPI service with real async jobs. Validated on real icons (100% parse + round-trip). See [API_STATUS.md](API_STATUS.md) and [PAPER.md](PAPER.md).
+
+### v1.1 — Lean L1 + error-tail metrics (281 tests)
+
+Productized the PAPER §5.1 ablation: **lean L1** (`lean=True`) omits the derivable continuity/curvature markers — on the bundled 2,726-icon validation corpus this cuts streams by 22.9% (78.2 → 60.3 tok/icon) with byte-identical reconstruction (2,726/2,726) and 100% FSA validity, matching the paper's finding that keeping markers costs ~12% held-out NLL. **GeomTok-Eval/1.1** adds coordinate-error tail metrics (p50/p90/p95/p99 + >2px perceptible rate) — first tail measurement: p99 3.32px pinned at the quantization ceiling, perceptible rate 61.7%, beyond-ceiling tail 2/92,840 coordinates (both clamp-attributed, both self-flagged by the `clamped` warning). Also fixed: a missing renderer now reports `render_ssim_mean: null` instead of a misleading `0.0`. Experiment: `.research/exp_e6_error_tail.py`.
+
 ---
 
 ## Codebase

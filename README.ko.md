@@ -5,7 +5,7 @@
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache_2.0-8b6cff.svg"></a>
   <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-37e6d4.svg">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-251_passing-54e08a.svg">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-281_passing-54e08a.svg">
   <img alt="Core deps" src="https://img.shields.io/badge/core-numpy_only-ff5d9e.svg">
   <a href="PAPER.md"><img alt="Paper" src="https://img.shields.io/badge/paper-PAPER.md-ffc857.svg"></a>
   <a href="README.md"><img alt="English" src="https://img.shields.io/badge/lang-English-aeb6d6.svg"></a>
@@ -41,7 +41,7 @@
 
 ## 왕복 충실도는 진짜다 — 무손실이 아니라 정직하다
 
-GeomTok의 좌표 코덱은 경계-한정 오차(평균 **1.78px**, 최대 3.37px / 300px 캔버스), 렌더 **SSIM 0.929** — 3.54× 압축의 정직한 비용입니다. 시도했던 곡률 적응 격자는 *직선을 뒤틀어* 폐기하고 균일 격자를 채택했습니다:
+GeomTok의 좌표 코덱은 경계-한정 오차(평균 **1.78px**, 최대 3.37px / 300px 캔버스), 렌더 **SSIM 0.929** — 3.54× 압축의 정직한 비용입니다. 이제 평균만이 아니라 오차 *꼬리*까지 측정합니다: 번들 검증 코퍼스(2,726 아이콘, 좌표 92,840개)에서 p50/p90/p99 = 2.36/3.25/**3.32px**로 꼬리가 퍼지지 않고 균일 격자의 양자화 상한에 고정되어 있고, 좌표의 **61.7%**가 2px 인지 가능 임계를 넘으며(64×64 격자의 정직한 비용), 코덱 오차 상한(3.4px)을 넘는 좌표는 **92,840개 중 2개**뿐 — 둘 다 viewBox 밖 클램핑이 원인이고 둘 다 토크나이저의 `clamped` 경고로 자체 신고됩니다(`.research/results_e6_error_tail.txt`). 시도했던 곡률 적응 격자는 *직선을 뒤틀어* 폐기하고 균일 격자를 채택했습니다:
 
 <p align="center">
   <img src="assets/fig3_render_panel.svg" alt="원본 vs 균일격자 vs 적응 쿼드트리 왕복" width="62%"/>
@@ -63,6 +63,10 @@ print(out["n_tokens"], out["tokenizer_version"], out["vocab_id"])
 svg = geomtok.detokenize(out["token_ids"],
                          tokenizer_version=out["tokenizer_version"],
                          vocab_id=out["vocab_id"])["svg"]   # FSA 유효 SVG 보장
+
+# 모델 학습·생성용: lean L1 — 복원은 동일, 토큰은 ~23% 절감.
+# (연속성·곡률 마커는 파생 가능 — 유지 시 held-out NLL ~12% 손해)
+lean = geomtok.tokenize(svg, lean=True)
 ```
 
 매니지드 API 로컬 실행:
@@ -81,19 +85,20 @@ geomtok-serve --port 8000
 
 엔드포인트별 적합성·프로덕션 여부: **[API_STATUS.md](API_STATUS.md)**.
 
-## v1.0 제공 범위
+## v1.1 제공 범위
 
 | 능력 | 상태 |
 |---|---|
 | 파서 · transform 평탄화 · viewBox 정규화 · 호 평탄화 | ✅ OSS 코어 |
 | L1 기하 토큰 + **어휘 추가 0 스칼라 고정소수점 좌표 코덱** (0.04px) | ✅ OSS 코어 |
+| **Lean L1** (`lean=True`) — 논문 권장 마커-프리 기질: 스트림 ~23% 단축, 바이트 동일 복원 (2,726/2,726 검증) | ✅ OSS 코어 · **v1.1 신규** |
 | **L2 = 학습 BPE-on-L1 머지** (수작업 매크로 폐기 — 실데이터 0% 발화) | ✅ OSS 코어 |
 | FSA 문법 제약 디코딩 (torch-free) — **유효 SVG 보장** | ✅ OSS 코어 |
 | 불변 vocab 매니페스트 — 비트-동일·오프라인 인코드/디코드 | ✅ OSS 코어 |
-| GeomTok-Eval/1.0 — 렌더 SSIM·값수준 좌표오차·파싱률·토큰 경제 | ✅ OSS 코어 |
-| 매니지드 API (FastAPI): 진짜 비동기 잡 + NDJSON 스트림 포함 9 라우트 | ✅ `[server]` |
+| GeomTok-Eval/1.1 — 렌더 SSIM·값수준 좌표오차 + **오차 꼬리 분위수·>2px 인지 가능 비율**·파싱률·토큰 경제 | ✅ OSS 코어 · **v1.1** |
+| 매니지드 API (FastAPI): 진짜 비동기 잡 + NDJSON 스트림 포함 9 라우트 — 모든 토큰화 경로가 `lean` 지원 | ✅ `[server]` |
 
-> **생성은 v1.0의 명시적 비목표입니다.** 현 모델은 토이 규모(2.5M·CPU·단색 path 아이콘). 토크나이저+평가가 프로덕션 산출물이고, 생성은 Phase 2(펀딩 게이트)입니다.
+> **생성은 v1.x의 명시적 비목표입니다.** 현 모델은 토이 규모(2.5M·CPU·단색 path 아이콘). 토크나이저+평가가 프로덕션 산출물이고, 생성은 Phase 2(펀딩 게이트)입니다.
 
 ## 무엇이 독보적인가
 
@@ -109,7 +114,8 @@ geomtok-serve --port 8000
 ## 로드맵
 
 - [x] **v1.0** — torch-free OSS 코어·GeomTok-Eval·매니지드 FastAPI. *실세계 아이콘 검증: 파싱+왕복 100%, FSA 유효, 결정적.*
-- [ ] **Phase 2** — 대규모 생성 (현재 토이 규모; v1.0 비목표)
+- [x] **v1.1** — lean L1 정식 모드화(§5.1 ablation 의 제품화); GeomTok-Eval/1.1 오차 꼬리 지표; 렌더러 부재 정직 보고(`null`, 가짜 `0.0` 금지).
+- [ ] **Phase 2** — 대규모 생성 (현재 토이 규모; v1.x 비목표)
 - [ ] **Phase 3** — Figma / Canva 플러그인
 
 ## 라이선스

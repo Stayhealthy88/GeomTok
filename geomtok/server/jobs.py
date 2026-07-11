@@ -169,9 +169,13 @@ class JobManager:
 
     def submit(self, op: str, *, items: Optional[List[dict]] = None,
                input_uri: Optional[str] = None, level: str = "L1",
+               lean: bool = False,
                on_error: str = "skip", webhook_url: Optional[str] = None,
                output_uri: Optional[str] = None) -> Job:
-        """잡 제출 — 즉시 QUEUED 반환. items(인라인) 또는 input_uri(blob) 택1."""
+        """잡 제출 — 즉시 QUEUED 반환. items(인라인) 또는 input_uri(blob) 택1.
+
+        level/lean 은 잡 레벨 기본값이며 아이템 딕셔너리에 병합된다 —
+        아이템(NDJSON 라인)이 자체 level/lean 키를 가지면 그 값이 이긴다."""
         job_id = "job_" + uuid.uuid4().hex[:16]
         total = len(items) if items is not None else 0   # blob 입력은 미상→0
         job = Job(job_id=job_id, op=op, status=QUEUED, total=total,
@@ -181,7 +185,8 @@ class JobManager:
         self.store.put(job)
         with self._lock:
             self._cancel[job_id] = threading.Event()
-        self._pool.submit(self._execute, job_id, items, input_uri, level, on_error)
+        self._pool.submit(self._execute, job_id, items, input_uri,
+                          {"level": level, "lean": lean}, on_error)
         return job
 
     # ---- 실행 (워커 스레드) ---- #
@@ -192,7 +197,7 @@ class JobManager:
         elif input_uri:
             yield from self.blob.read_items(input_uri)
 
-    def _execute(self, job_id, items, input_uri, level, on_error):
+    def _execute(self, job_id, items, input_uri, defaults, on_error):
         job = self.store.get(job_id)
         if job is None:
             return
@@ -211,7 +216,9 @@ class JobManager:
                     break
                 job.total = max(job.total, job.done + 1)   # blob 입력 시 점증
                 try:
-                    result, ok = self._process(job.op, item)
+                    # 잡 레벨 기본값 아래에 아이템 키를 병합 — 아이템이 이긴다.
+                    # (v1.0 은 level 을 죽은 파라미터로 무시했다 — v1.1 수정)
+                    result, ok = self._process(job.op, {**defaults, **item})
                 except Exception as e:  # noqa: BLE001 — 아이템 격리
                     if on_error == "fail_fast":
                         raise
